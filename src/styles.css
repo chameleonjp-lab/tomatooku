@@ -1,4 +1,4 @@
-/* トマトク スタイル ------------------------------------------------------
+/* トマトオク スタイル ------------------------------------------------------
    方針: スマホ最優先 / iPhone SE(320px)で破綻しない / 横スクロールなし。
    保存色やリッチな画像は使わず CSS のみで「安っぽく見えない」見た目に。
 --------------------------------------------------------------------------- */
@@ -443,9 +443,193 @@ details.rules summary {
   min-height: 1em;
 }
 
+/* --- モーダル(遊び方 / チュートリアル) --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal.open {
+  display: flex;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 20, 14, 0.62);
+  backdrop-filter: blur(2px);
+}
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 20px 18px calc(18px + env(safe-area-inset-bottom));
+  animation: modal-in 0.22s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+@keyframes modal-in {
+  from { transform: translateY(14px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.modal-title {
+  margin: 2px 0 10px;
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+.modal-h3 {
+  margin: 14px 0 4px;
+  font-size: 0.98rem;
+  color: var(--tomato-dark);
+}
+
+/* --- チュートリアル盤面(4×4)--- */
+.tutorial-card {
+  text-align: center;
+}
+.tutorial-stage {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 12px;
+}
+.tboard {
+  width: min(74vw, 280px);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 5px;
+  padding: 8px;
+  background: #2b3b30;
+  border-radius: 14px;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.tcell {
+  position: relative;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: min(9vw, 34px);
+  line-height: 1;
+  border: 2px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease, filter 0.2s ease, transform 0.15s ease;
+}
+.tcell .tomato {
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.2, 1.5, 0.5, 1);
+}
+.tcell.filled .tomato {
+  opacity: 1;
+  transform: scale(1);
+}
+/* 誤り例(置こうとしてダメ): 半透明🍅 + 赤枠 + 揺れ */
+.tcell.ghost-bad .tomato {
+  opacity: 0.55;
+  transform: scale(1);
+}
+.tcell.ghost-bad {
+  box-shadow: 0 0 0 3px var(--tomato) inset;
+  animation: shake 0.34s ease;
+  background-image: linear-gradient(
+    rgba(232, 72, 47, 0.32),
+    rgba(232, 72, 47, 0.32)
+  );
+}
+/* ハイライト(行/列/エリア) */
+.tcell.hl-soft {
+  box-shadow: 0 0 0 3px var(--accent) inset;
+  filter: saturate(1.3) brightness(1.04);
+}
+/* 隣接マーク */
+.tcell.adj {
+  box-shadow: 0 0 0 3px rgba(232, 72, 47, 0.7) inset;
+}
+/* ✓ / ✗ マーク */
+.tcell .tmark {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.15s ease, transform 0.2s ease;
+}
+.tcell.mark-ok .tmark {
+  content: "";
+}
+.tcell.mark-ok .tmark::after {
+  content: "✓";
+  color: #1f7a32;
+}
+.tcell.mark-bad .tmark::after {
+  content: "✗";
+  color: var(--tomato-dark);
+}
+.tcell.mark-ok .tmark,
+.tcell.mark-bad .tmark {
+  opacity: 1;
+  transform: scale(1);
+}
+.tboard.tcleared {
+  box-shadow: 0 0 0 4px var(--accent), var(--shadow);
+  animation: pop 0.45s ease;
+}
+
+.tutorial-caption {
+  min-height: 2.6em;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.tutorial-caption b {
+  color: var(--tomato-dark);
+}
+.tutorial-progress {
+  height: 6px;
+  background: #e7ede7;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+#tutorial-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--tomato);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
 /* 小型端末(iPhone SE 等)向け微調整 */
 @media (max-width: 340px) {
   .brand h1 { font-size: 1.8rem; }
   .hud .stat .v { font-size: 0.92rem; }
   .btn { font-size: 1rem; padding: 13px; }
+  .tboard { width: min(80vw, 240px); }
 }

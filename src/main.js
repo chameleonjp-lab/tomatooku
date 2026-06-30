@@ -1,5 +1,5 @@
 /**
- * トマトク 画面制御 (UI)
+ * トマトオク 画面制御 (UI)
  *
  * ホーム → ゲーム(3ステージ) → 結果 の3画面を切り替える。
  * 盤面操作・タイマー・スコア表示・ランキング送信をまとめる。
@@ -12,6 +12,7 @@ import {
   resetSubmission,
   isConfigured,
 } from "./ranking.js";
+import { playTutorial, stopTutorial } from "./tutorial.js";
 
 const PLAYER_KEY = "tomatoku.playerName";
 const AREA_LETTERS = ["A", "B", "C", "D", "E"];
@@ -21,7 +22,7 @@ function gameUrl() {
   try {
     return location.origin + location.pathname;
   } catch (_) {
-    return "https://chameleonjp-lab.github.io/tomatoku/";
+    return "https://chameleonjp-lab.github.io/tomatooku/";
   }
 }
 
@@ -66,10 +67,57 @@ function initHome() {
     if (e.key === "Enter") onStart();
   });
   $("#home-share-btn").addEventListener("click", () =>
-    shareText(`「トマトク」5×5に🍅を置くパズル! ${gameUrl()}`)
+    shareText(`「トマトオク」5×5に🍅を置くパズル! ${gameUrl()}`)
   );
 
+  // 遊び方 / チュートリアル
+  $("#howto-btn").addEventListener("click", () => openModal("howto-modal"));
+  $("#tutorial-btn").addEventListener("click", openTutorial);
+  $("#howto-to-tutorial").addEventListener("click", () => {
+    closeModal("howto-modal");
+    openTutorial();
+  });
+  $("#tutorial-replay").addEventListener("click", playTutorial);
+
+  initModals();
+
   loadRankingInto("#home-ranking");
+}
+
+// ---- モーダル -------------------------------------------------------------
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.add("open");
+  m.setAttribute("aria-hidden", "false");
+}
+
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.remove("open");
+  m.setAttribute("aria-hidden", "true");
+  if (id === "tutorial-modal") stopTutorial();
+}
+
+function openTutorial() {
+  openModal("tutorial-modal");
+  playTutorial(); // 開くたびに最初から再生
+}
+
+/** data-close 属性を持つ要素・背景クリックで閉じる。Escでも閉じる。 */
+function initModals() {
+  document.querySelectorAll(".modal").forEach((m) => {
+    m.querySelectorAll("[data-close]").forEach((b) =>
+      b.addEventListener("click", () => closeModal(m.id))
+    );
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document
+      .querySelectorAll(".modal.open")
+      .forEach((m) => closeModal(m.id));
+  });
 }
 
 function onStart() {
@@ -280,7 +328,7 @@ function goToResult() {
 
   // 結果シェア文(必ずゲームURLを含む)
   const shareMsg =
-    `トマトクで ${finalScore.toLocaleString()}pt!` +
+    `トマトオクで ${finalScore.toLocaleString()}pt!` +
     ` ⏱${formatTime(elapsedMs)} / 誤タップ${session.mistakeCount} / ヒント${session.hintCount}\n` +
     gameUrl();
   $("#result-share-btn").onclick = () => shareText(shareMsg);
@@ -345,7 +393,7 @@ function escapeHtml(s) {
 async function shareText(text) {
   try {
     if (navigator.share) {
-      await navigator.share({ text, url: gameUrl(), title: "トマトク" });
+      await navigator.share({ text, url: gameUrl(), title: "トマトオク" });
       return;
     }
   } catch (_) {

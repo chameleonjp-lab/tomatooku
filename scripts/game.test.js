@@ -1,5 +1,5 @@
 /**
- * トマトク ゲームロジックのテスト(DOM 非依存)。
+ * トマトオク ゲームロジックのテスト(DOM 非依存)。
  * 実行: node scripts/game.test.js
  */
 import {

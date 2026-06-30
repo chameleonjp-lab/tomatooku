@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * トマトク ステージ生成・検証スクリプト (ESM)
+ * トマトオク ステージ生成・検証スクリプト (ESM)
  *
  * ルール (5x5):
  *   - 各行に🍅は1個
@@ -272,7 +272,7 @@ function main() {
       `regions: ${JSON.stringify(st.regions)}, solution: ${JSON.stringify(st.solution)} }`
   );
   const header = `/**
- * トマトク ステージバンク (自動生成: scripts/generate_stages.js)
+ * トマトオク ステージバンク (自動生成: scripts/generate_stages.js)
  *
  * 各ステージは 5x5。regions は 5 行の文字列で、A〜E の 5 エリアを表す。
  * 各エリアはちょうど 5 マス。solution は正解の🍅配置 [row, col] x5。

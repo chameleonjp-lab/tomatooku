@@ -1,4 +1,4 @@
-# トマトク 実装計画書 (IMPLEMENTATION_PLAN)
+# トマトオク 実装計画書 (IMPLEMENTATION_PLAN)
 
 ## 1. 実装フェーズ
 
@@ -17,12 +17,13 @@
 ## 2. ファイル構成
 
 ```
-index.html              … 静的エントリ。viewport / ランキング設定 / 3画面マークアップ
+index.html              … 静的エントリ。viewport / ランキング設定 / 3画面 + モーダル
 src/
-  main.js               … 画面制御・盤面描画・タイマー・送信・シェア(UI)
+  main.js               … 画面制御・盤面描画・タイマー・送信・シェア・モーダル(UI)
   game.js               … ゲームロジック(StageState / GameSession / スコア)
   stages.js             … 30ステージのデータ(自動生成)
   ranking.js            … Supabase 連携(fetch ベース・二重送信防止)
+  tutorial.js           … 遊び方チュートリアル(4×4の自動アニメ)
   styles.css            … モバイル最優先のスタイル
 scripts/
   generate_stages.js    … ステージ生成 + ソルバ + 難易度分類

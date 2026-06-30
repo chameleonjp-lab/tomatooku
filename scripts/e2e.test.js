@@ -1,5 +1,5 @@
 /**
- * トマトク ブラウザ E2E テスト (Playwright)
+ * トマトオク ブラウザ E2E テスト (Playwright)
  * iPhone SE 相当(320x568)で実際にプレイし、白画面/横スクロール/
  * フロー破綻が無いかを確認する。
  *
@@ -146,7 +146,7 @@ async function main() {
   // 1. 白画面でない: ブランドが見える
   console.log("# ホーム表示");
   ok(await page.isVisible("#screen-home"), "ホーム画面が表示される");
-  ok((await page.textContent(".brand h1")).includes("トマトク"), "タイトル表示");
+  ok((await page.textContent(".brand h1")).includes("トマトオク"), "タイトル表示");
 
   // 横スクロールが無い
   const noHScroll = await page.evaluate(

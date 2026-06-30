@@ -1,9 +1,9 @@
-# トマトク Supabase セットアップ (SUPABASE_SETUP)
+# トマトオク Supabase セットアップ (SUPABASE_SETUP)
 
 ランキングは Supabase で連携する。クライアントは **公開 anon key のみ** を使う。
 **secret key(service_role key)は絶対にコードへ入れないこと。**
 
-> 注意: chameleonjp-lab に既存ランキング基盤がある場合、本書は「トマトク側で
+> 注意: chameleonjp-lab に既存ランキング基盤がある場合、本書は「トマトオク側で
 > 想定する RPC インターフェース」を示すもの。既存の関数名・引数名・テーブルが
 > 異なる場合は、本 SQL を流す代わりに `src/ranking.js` の `CONFIG`
 > (`submitRpc` / `rankingRpc`、および `submitScore` / `fetchRanking` 内の
@@ -30,7 +30,7 @@
 | key | value |
 | --- | --- |
 | game_slug | `tomatoku` |
-| title | トマトク |
+| title | トマトオク |
 | top_ranking_type | best |
 | score_order | desc |
 | score_unit | pt |
@@ -61,7 +61,7 @@ create table if not exists public.games (
   created_at timestamptz not null default now()
 );
 
-insert into public.games (slug, title) values ('tomatoku', 'トマトク')
+insert into public.games (slug, title) values ('tomatoku', 'トマトオク')
 on conflict (slug) do nothing;
 
 -- プレイヤー別スコア(初回・最高を保持)

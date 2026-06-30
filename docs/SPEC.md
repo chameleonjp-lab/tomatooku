@@ -1,4 +1,4 @@
-# トマトク 仕様書 (SPEC) — 実装の正本
+# トマトオク 仕様書 (SPEC) — 実装の正本
 
 本書は実装後の **正本仕様**。コードと一致しない記述は残さない。
 (更新基準: `src/` 実装と `scripts/` テスト)
@@ -7,7 +7,8 @@
 
 - 静的サイト。素の ES Modules。サーバー常駐処理なし。
 - エントリ: `index.html`(`<script type="module" src="./src/main.js">`)。
-- モジュール依存: `main.js` → `game.js` → `stages.js` / `main.js` → `ranking.js`。
+- モジュール依存: `main.js` → `game.js` → `stages.js` / `main.js` → `ranking.js` /
+  `main.js` → `tutorial.js`。
 
 ## 2. データ: `src/stages.js`
 
@@ -65,7 +66,13 @@
 - 画面: `#screen-home` / `#screen-game` / `#screen-result`(`.active` で表示切替)。
 - localStorage は **`tomatoku.playerName` のみ**読み書き(他は一切保存しない)。
 - ホーム: 名前必須(空ならエラー表示・開始しない)。Enter でも開始。
-  ランキング表示 / シェア。
+  ボタンは スタート / **遊び方**(`#howto-btn`)/ **チュートリアル**(`#tutorial-btn`)/
+  シェア。ランキング表示。
+- モーダル(`#howto-modal` / `#tutorial-modal`):`.modal.open` で表示。
+  背景(`.modal-backdrop`)・×・`data-close` ボタン・Esc で閉じる。
+  - 遊び方: ルール/操作/スコアの静的説明。「チュートリアルで動きを見る」導線あり。
+  - チュートリアル: `src/tutorial.js` の 4×4 自動アニメを再生(下記§7)。
+    開くたびに最初から再生。閉じると `stopTutorial()` で停止。
 - ゲーム:
   - 盤面は 25 個の `<button.cell.area-X>`。タップで `StageState.tap`。
   - 誤タップ: `mistakeCount++`、対象セルに揺れ+赤(`.mistake` 0.36s)、バイブ。
@@ -107,15 +114,32 @@
   失敗・未設定時は空配列。
 - `resetSubmission()`: 新規プレイ開始時に送信状態を初期化。
 
-## 6. スタイル: `src/styles.css`
+## 6. チュートリアル: `src/tutorial.js`
+
+- **目的**: 本番は 5×5 だが、4×4 の小盤面でルールと操作を自動アニメで解説。
+- 盤面: 4×4・4分割(クォーター)の `REGIONS=["AABB","AABB","CCDD","CCDD"]`。
+  解 `SOLUTION=[[0,1],[1,3],[2,0],[3,2]]`(各行/列/エリア1個・斜め隣接なし)。
+- ステップエンジン: `async` シーケンス + キャンセル可能な `delay(ms, runId)`。
+  `runId` 世代で再生をキャンセル(再生し直し・モーダルを閉じる時)。
+- 流れ: 導入 → タップで置く → ルール①行 → ②列 → ③エリア → ④隣接(各ルールで
+  ハイライト + 誤り例 `ghost-bad` を ✗ 表示)→ 残りを ✓ 付きで配置 → クリア演出
+  → 「本番は5×5・3ステージ」。進捗バー(`#tutorial-bar`)を更新。
+- 公開 API: `playTutorial()`(最初から再生)/ `stopTutorial()`(停止)。
+- DOM 構築は初回のみ。タイマー以外の副作用なし・例外は `catch` で無視。
+
+## 7. スタイル: `src/styles.css`
 
 - `.app` は `max-width:480px` 中央寄せ。`overflow-x:hidden`。
 - 盤面 `.board` は `width:min(92vw,380px)`, `aspect-ratio:1`, 5×5 grid。
 - エリア色: `--area-a..e`(淡色 5 種)。`.cell.filled .tomato` で 🍅 表示。
 - `.mistake`(揺れ+赤)/ `.cleared`(pop)/ `.toast` / 結果・ランキング表。
-- `@media (max-width:340px)` で iPhone SE 微調整。
+- モーダル: `.modal`/`.modal-card`(`modal-in` アニメ)/`.modal-close`。
+- チュートリアル盤面: `.tboard`/`.tcell`、`hl-soft`(黄ハイライト)/
+  `adj`(隣接赤枠)/`ghost-bad`(誤り例)/`mark-ok`(✓)/`mark-bad`(✗)/
+  `tcleared`(クリア演出)。
+- `@media (max-width:340px)` で iPhone SE 微調整(`.tboard` も縮小)。
 
-## 7. 保存・通信の制約(遵守事項)
+## 8. 保存・通信の制約(遵守事項)
 
 - localStorage: `tomatoku.playerName` のみ。スコア/履歴/進行は保存しない。
 - ランキング送信はゲーム終了時 1 回のみ。

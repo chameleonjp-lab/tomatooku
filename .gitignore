@@ -1,0 +1,6 @@
+node_modules/
+scratch_stages.json
+gen.log
+*.log
+shot-*.png
+.DS_Store

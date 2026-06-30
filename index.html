@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#20402c" />
+    <meta
+      name="description"
+      content="トマトク - 5×5の畑に🍅を置く短時間パズル。ランダム3ステージを速く解いてハイスコアを狙おう。"
+    />
+    <title>トマトク</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%85%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+
+    <!-- ランキング連携設定。公開可能な anon key のみを入れること。
+         未設定でもゲームは動作する(ローカル表示のみ)。
+         詳細は docs/SUPABASE_SETUP.md 参照。 -->
+    <script>
+      window.TOMATOKU_CONFIG = {
+        supabaseUrl: "", // 例: https://xxxx.supabase.co
+        supabaseAnonKey: "", // 公開 anon key
+        gameSlug: "tomatoku",
+      };
+    </script>
+  </head>
+  <body>
+    <div class="app">
+      <!-- ===== ホーム ===== -->
+      <section id="screen-home" class="screen active">
+        <div class="brand">
+          <div class="logo">🍅</div>
+          <h1>トマトク</h1>
+          <p>5×5の畑に🍅を置く 3ステージ・タイムパズル</p>
+        </div>
+
+        <div class="card stack">
+          <div>
+            <label for="player-name">プレイヤー名(必須)</label>
+            <input
+              id="player-name"
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              placeholder="なまえを入力"
+              inputmode="text"
+            />
+            <div id="name-error" class="field-error" aria-live="polite"></div>
+          </div>
+          <button id="start-btn" class="btn">スタート</button>
+
+          <details class="rules">
+            <summary>あそびかた / ルール</summary>
+            <ul class="rules-list">
+              <li>5×5の盤面に🍅を5個置きます。</li>
+              <li>各行・各列・各エリア(色分け)に🍅は1個だけ。</li>
+              <li>🍅同士は上下左右ななめで隣り合えません。</li>
+              <li>マスをタップで置く/もう一度タップで取り除く。</li>
+              <li>3ステージを速く解くほど高スコア。</li>
+              <li>誤タップで減点、ヒントで大きく減点。</li>
+            </ul>
+          </details>
+
+          <button id="home-share-btn" class="btn secondary">シェア</button>
+        </div>
+
+        <div class="card ranking" style="margin-top: 14px">
+          <h3>ランキング(最高スコア・高い順)</h3>
+          <div id="home-ranking"></div>
+        </div>
+
+        <p class="muted" style="text-align: center; margin-top: 14px">
+          保存されるのはプレイヤー名だけです。
+        </p>
+      </section>
+
+      <!-- ===== ゲーム ===== -->
+      <section id="screen-game" class="screen">
+        <div class="hud">
+          <div class="stat">
+            <span class="k">ステージ</span>
+            <span class="v" id="hud-stage">1/3</span>
+          </div>
+          <div class="stat">
+            <span class="k">タイム</span>
+            <span class="v" id="hud-time">0:00.0</span>
+          </div>
+          <div class="stat">
+            <span class="k">スコア目安</span>
+            <span class="v" id="hud-score">180,000</span>
+          </div>
+          <div class="stat">
+            <span class="k">誤/ヒント</span>
+            <span class="v"
+              ><span id="hud-mistakes">0</span>/<span id="hud-hints">0</span></span
+            >
+          </div>
+        </div>
+
+        <div class="board-wrap">
+          <div id="board" class="board"></div>
+        </div>
+
+        <div class="game-foot">
+          <div class="btn-row">
+            <button id="hint-btn" class="btn secondary">ヒント(大きく減点)</button>
+          </div>
+          <div class="btn-row">
+            <button id="quit-btn" class="btn ghost">ホームへ戻る</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 結果 ===== -->
+      <section id="screen-result" class="screen">
+        <div class="brand">
+          <h1 style="font-size: 1.6rem">けっか</h1>
+        </div>
+
+        <div class="card">
+          <div class="result-score">
+            <span class="num" id="result-score">0</span
+            ><span class="unit">pt</span>
+          </div>
+
+          <div class="result-grid">
+            <div class="item">
+              <span class="k">クリアタイム</span>
+              <span class="v" id="result-time">0:00.0</span>
+            </div>
+            <div class="item">
+              <span class="k">ステージ</span>
+              <span class="v" id="result-stages">3/3</span>
+            </div>
+            <div class="item">
+              <span class="k">誤タップ</span>
+              <span class="v" id="result-mistakes">0</span>
+            </div>
+            <div class="item">
+              <span class="k">ヒント</span>
+              <span class="v" id="result-hints">0</span>
+            </div>
+          </div>
+
+          <div id="submit-state" class="submit-state pending">送信中…</div>
+
+          <div class="btn-row">
+            <button id="again-btn" class="btn">もう一度遊ぶ</button>
+          </div>
+          <div class="btn-row">
+            <button id="result-share-btn" class="btn secondary">結果をシェア</button>
+            <button id="home-btn" class="btn ghost">ホーム</button>
+          </div>
+        </div>
+
+        <div class="card ranking" style="margin-top: 14px">
+          <h3>ランキング(最高スコア・高い順)</h3>
+          <div id="result-ranking"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

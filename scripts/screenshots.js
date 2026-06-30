@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { launchBrowser } from "./launch.js";
 import http from "http";
 import fs from "fs";
 import path from "path";
@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
 const N = 5;
 function solveBoard(rs){const region=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)region[r*N+c]=rs[r].charCodeAt(c)-65;const cu=Array(N).fill(false),ru=Array(N).fill(false),pl=[],sols=[];(function rec(row){if(row===N){sols.push(pl.slice());return;}for(let c=0;c<N;c++){if(cu[c])continue;const rg=region[row*N+c];if(ru[rg])continue;if(row>0&&Math.abs(pl[row-1]-c)<2)continue;cu[c]=ru[rg]=true;pl[row]=c;rec(row+1);cu[c]=ru[rg]=false;}})(0);return sols;}
 await new Promise((r) => server.listen(PORT, r));
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const browser = await launchBrowser();
 const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 await page.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle" });

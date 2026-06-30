@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { launchBrowser } from "./launch.js";
 import http from "http";
 import fs from "fs";
 import path from "path";
@@ -17,7 +17,7 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(PORT, r));
-const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const browser = await launchBrowser();
 const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 const errs = [];

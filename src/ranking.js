@@ -17,6 +17,12 @@
  * 下の CONFIG とこのファイル内のパラメータ名のみ合わせれば差し替え可能。
  */
 
+import { SCORE } from "./game.js";
+
+// 理論上の満点。クライアント側でもこの範囲(0〜MAX_SCORE)に丸めてから送る。
+// サーバー側 RPC でも同じ範囲に clamp すること(docs/SUPABASE_SETUP.md 参照)。
+const MAX_SCORE = SCORE.BASE; // 180000
+
 // グローバル設定(index.html の window.TOMATOKU_CONFIG で上書き可能)
 const DEFAULTS = {
   supabaseUrl: "",
@@ -118,7 +124,8 @@ export function submitScore({ playerName, score }) {
       const data = await rpc(CONFIG.submitRpc, {
         p_game_slug: CONFIG.gameSlug,
         p_player_name: String(playerName || "").slice(0, 24),
-        p_score: Math.max(0, Math.floor(score)),
+        // 0〜MAX_SCORE に丸める(改ざん・桁あふれ対策。サーバー側でも再 clamp)
+        p_score: Math.min(MAX_SCORE, Math.max(0, Math.floor(score))),
       });
       // RPC は配列または単一オブジェクトを返し得るので吸収する
       const row = Array.isArray(data) ? data[0] : data;

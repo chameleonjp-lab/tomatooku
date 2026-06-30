@@ -6,11 +6,11 @@
  * 盤面の解は「見えているエリア色」だけから一意解ソルバで求める
  * (隠し solution は使わない)。
  */
-import { chromium } from "playwright";
 import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { launchBrowser } from "./launch.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -123,9 +123,7 @@ async function solveCurrentStage(page) {
 
 async function main() {
   const server = await startServer();
-  const browser = await chromium.launch({
-    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
-  });
+  const browser = await launchBrowser();
   const context = await browser.newContext({
     viewport: { width: 320, height: 568 }, // iPhone SE 相当
     deviceScaleFactor: 2,

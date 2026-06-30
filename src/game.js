@@ -39,6 +39,11 @@ function shuffled(arr, rand = Math.random) {
  * 難易度グループ(1/2/3)から1問ずつ選び、3ステージを返す。
  * 異なる難易度から取るため同一プレイ内で重複しない。
  */
+/** ステージの正解パターン署名(行ごとの列番号)。重複検出に使う。 */
+export function solutionSignature(stage) {
+  return stage.solution.map((p) => p[1]).join(",");
+}
+
 export function pickStages(rand = Math.random) {
   const groups = { 1: [], 2: [], 3: [] };
   for (const st of STAGES) {
@@ -46,12 +51,19 @@ export function pickStages(rand = Math.random) {
   }
   const chosen = [];
   const usedIds = new Set();
+  const usedSolutions = new Set();
   for (const diff of [1, 2, 3]) {
-    const pool = groups[diff].filter((s) => !usedIds.has(s.id));
-    // グループが空の場合のフォールバック(全ステージから補完)
-    const source = pool.length > 0 ? pool : STAGES.filter((s) => !usedIds.has(s.id));
-    const pick = shuffled(source, rand)[0];
+    const inGroup = groups[diff].filter((s) => !usedIds.has(s.id));
+    const source = inGroup.length > 0 ? inGroup : STAGES.filter((s) => !usedIds.has(s.id));
+    // 同一プレイ内では正解パターンが被らないものを優先(暗記ゲー化を防ぐ)。
+    // 被らない候補が無ければ通常通り選ぶ。
+    const shuffledSource = shuffled(source, rand);
+    const distinct = shuffledSource.filter(
+      (s) => !usedSolutions.has(solutionSignature(s))
+    );
+    const pick = (distinct.length > 0 ? distinct : shuffledSource)[0];
     usedIds.add(pick.id);
+    usedSolutions.add(solutionSignature(pick));
     chosen.push(pick);
   }
   return chosen;
@@ -234,12 +246,19 @@ export class GameSession {
     this.states = this.stages.map((s) => new StageState(s));
     this.mistakeCount = 0;
     this.hintCount = 0;
-    this.startTime = null;
-    this.endTime = null;
+    // タイマーは「プレイヤーが操作できる時間」だけを積み上げる。
+    // クリア演出やステージ間の待ち時間はスコアに含めない(公平性のため)。
+    this.accumulatedMs = 0; // クリア済みステージの実プレイ時間の合計
+    this.stageStartTime = null; // 現在ステージの計測開始時刻(計測中以外は null)
+    this.startTime = null; // 参考: プレイ開始時刻
+    this.endTime = null; // 全クリア時刻(=完了マーカー)
   }
 
   start(now = Date.now()) {
     this.startTime = now;
+    this.accumulatedMs = 0;
+    this.stageStartTime = now; // ステージ1の計測開始
+    this.endTime = null;
   }
 
   get current() {
@@ -254,10 +273,28 @@ export class GameSession {
     return this.stages.length;
   }
 
-  /** 次のステージへ。最後なら true(=全クリア)を返す */
+  /**
+   * 現在ステージのクリア時に呼ぶ。クリアした瞬間までの実プレイ時間を確定し、
+   * 以降の演出時間は計測しない(stageStartTime を止める)。
+   */
+  clearCurrentStage(now = Date.now()) {
+    if (this.stageStartTime != null) {
+      this.accumulatedMs += Math.max(0, now - this.stageStartTime);
+      this.stageStartTime = null;
+    }
+  }
+
+  /**
+   * 次のステージへ。最後なら true(=全クリア)を返す。
+   * 非最終では「新しいステージの盤面が表示された時刻」を渡し、計測を再開する。
+   * 計測の確定は clearCurrentStage が担うため、ここでは累計に時間を足さない。
+   */
   advance(now = Date.now()) {
+    // 念のため: clearCurrentStage 未呼び出しでも二重計上しないよう確定する
+    this.clearCurrentStage(now);
     if (this.index < this.states.length - 1) {
       this.index++;
+      this.stageStartTime = now; // 次ステージの計測開始(演出時間は除外済み)
       return false;
     }
     this.endTime = now;
@@ -269,9 +306,9 @@ export class GameSession {
   }
 
   elapsedMs(now = Date.now()) {
-    if (this.startTime == null) return 0;
-    const end = this.endTime != null ? this.endTime : now;
-    return Math.max(0, end - this.startTime);
+    const running =
+      this.stageStartTime != null ? Math.max(0, now - this.stageStartTime) : 0;
+    return this.accumulatedMs + running;
   }
 
   /** 現在(または終了時)の見込みスコア */

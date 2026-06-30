@@ -40,6 +40,22 @@
 | first_score_label | 初回スコア |
 | best_score_label | 最高スコア |
 
+### 実験場(ゲーム一覧)への登録行
+
+**重要:** `game_slug` は **`tomatoku`**(据え置き)、`game_url` は **`tomatooku`**
+(リポジトリ改名後)で**混在する**。ここを取り違えるとランキングが別ゲーム扱いに
+なるため、登録時は必ず下記のとおり固定すること。
+
+```csv
+game_slug,title,game_url,description,is_active,release_date,top_ranking_type,score_order,score_unit,score_scale,score_decimals,score_label,first_score_label,best_score_label
+tomatoku,トマトオク,https://chameleonjp.codeberg.page/tomatooku/,5×5の畑に🍅を置く3ステージ・タイムパズル,true,2026-06-30,best,desc,pt,1,0,スコア,初回スコア,最高スコア
+```
+
+- 公開先が GitHub Pages の場合は `game_url` を
+  `https://chameleonjp-lab.github.io/tomatooku/` に置き換える(`game_slug` は変えない)。
+- `index.html` の `window.TOMATOKU_CONFIG.gameSlug` も **`tomatoku`** のまま
+  (上の登録行と一致させる)。
+
 ## 3. スキーマ(新規に作る場合の参考 SQL)
 
 既存基盤が無い場合、最小構成は以下。**初回スコア**と**最高スコア**を
@@ -98,9 +114,9 @@ declare
   v_first int;
   v_best int;
 begin
-  if p_score is null or p_score < 0 then
-    p_score := 0;
-  end if;
+  -- 0〜180000(理論上の満点 BASE_SCORE)に必ず丸める。
+  -- ブラウザから直接 RPC を叩かれてもありえない点数を登録させない。
+  p_score := least(180000, greatest(0, coalesce(p_score, 0)));
   p_player_name := left(coalesce(p_player_name, ''), 24);
 
   insert into public.scores (game_slug, player_name, first_score, best_score, play_count)
@@ -121,6 +137,42 @@ begin
 end;
 $$;
 ```
+
+### (任意・より安全)サーバー側で再計算する強化版
+
+クライアントの `p_score` を信用せず、`elapsed_ms` / `mistake_count` / `hint_count`
+を受け取ってサーバーで再計算すれば、点数の改ざんをさらに防げる。採用する場合は
+RPC のシグネチャを変えるため、`src/ranking.js` の `submitScore` の送信 body にも
+同じキー(`p_elapsed_ms` / `p_mistake_count` / `p_hint_count`)を追加すること。
+
+```sql
+create or replace function public.submit_score(
+  p_game_slug text,
+  p_player_name text,
+  p_elapsed_ms bigint,
+  p_mistake_count int,
+  p_hint_count int
+) returns table (first_score int, best_score int, rank int)
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_score int;
+begin
+  -- スコア式はクライアントと一致させる(BASE 180000 / 誤タップ3000 / ヒント30000)
+  v_score := 180000
+    - floor(greatest(0, coalesce(p_elapsed_ms, 0)))
+    - greatest(0, coalesce(p_mistake_count, 0)) * 3000
+    - greatest(0, coalesce(p_hint_count, 0)) * 30000;
+  v_score := least(180000, greatest(0, v_score));
+  -- 以降は基本版と同じ upsert / ランキング算出(p_score を v_score に置換)
+  -- ...(基本版の本体を参照)...
+end;
+$$;
+```
+
+> 既存ランキング基盤が 3 引数版 `submit_score(p_game_slug, p_player_name, p_score)` で
+> 固定なら、まずは基本版(0〜180000 clamp 済み)で運用すればよい。トマトオク側の
+> クライアントは現状 3 引数版に合わせて送信し、`p_score` を 0〜180000 に丸めている。
 
 ## 5. RPC: ランキング取得 `get_ranking`
 

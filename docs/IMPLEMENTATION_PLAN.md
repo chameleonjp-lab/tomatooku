@@ -30,7 +30,8 @@ scripts/
   verify_stages.js      … 出力ステージの独立検証(一意解など)
   game.test.js          … ゲームロジックの単体テスト(Node)
   e2e.test.js           … Playwright によるブラウザ E2E
-  screenshots.js        … スクリーンショット取得(任意)
+  launch.js             … Chromium 起動ヘルパー(固定パス無ければ既定へフォールバック)
+  screenshots.js / shot-tutorial.js / check-tut-end.js … 目視・検証用キャプチャ
 docs/
   REQUIREMENTS.md / IMPLEMENTATION_PLAN.md / SPEC.md
   SUPABASE_SETUP.md / TEST_REPORT.md

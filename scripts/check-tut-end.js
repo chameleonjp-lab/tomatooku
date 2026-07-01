@@ -1,11 +1,11 @@
-import { chromium } from "playwright";
+import { launchBrowser } from "./launch.js";
 import http from "http"; import fs from "fs"; import path from "path"; import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, ".."); const PORT = 8093;
 const MIME = { ".html":"text/html",".js":"text/javascript",".css":"text/css" };
 const server = http.createServer((req,res)=>{let p=req.url.split("?")[0]; if(p==="/")p="/index.html"; const f=path.join(ROOT,p); if(!fs.existsSync(f)){res.writeHead(404);res.end();return;} res.writeHead(200,{"Content-Type":MIME[path.extname(f)]||"text/plain"}); fs.createReadStream(f).pipe(res);});
 await new Promise(r=>server.listen(PORT,r));
-const b = await chromium.launch({ executablePath:"/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+const b = await launchBrowser();
 const ctx = await b.newContext({ viewport:{width:375,height:667}, deviceScaleFactor:2, isMobile:true, hasTouch:true });
 const page = await ctx.newPage();
 await page.goto(`http://localhost:${PORT}/`,{waitUntil:"networkidle"});

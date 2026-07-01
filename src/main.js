@@ -160,6 +160,12 @@ function buildBoard() {
       cell.type = "button";
       const area = state.stage.regions[r][c]; // 'A'..'E'
       cell.className = `cell area-${area}`;
+      // エリア境界を太い枠で描く(色覚に依存せずエリアを見分けられるように)
+      const reg = state.stage.regions;
+      if (r === 0 || reg[r - 1][c] !== area) cell.classList.add("edge-top");
+      if (r === N - 1 || reg[r + 1][c] !== area) cell.classList.add("edge-bottom");
+      if (c === 0 || reg[r][c - 1] !== area) cell.classList.add("edge-left");
+      if (c === N - 1 || reg[r][c + 1] !== area) cell.classList.add("edge-right");
       cell.setAttribute("aria-label", `${r + 1}行${c + 1}列 エリア${area}`);
       const t = document.createElement("span");
       t.className = "tomato";
@@ -238,6 +244,8 @@ function updateHintButton() {
 function onStageClear() {
   if (advancing) return;
   advancing = true;
+  // クリアした瞬間に計測を確定(以降の演出時間はスコアに含めない)
+  session.clearCurrentStage();
   stopTimer();
   updateHud();
   $("#board").classList.add("cleared");
@@ -370,14 +378,18 @@ async function loadRankingInto(sel) {
     return;
   }
   box.innerHTML = rows
-    .map(
-      (r) => `
+    .map((r) => {
+      const first =
+        r.firstScore != null
+          ? `<span class="first">初回 ${Number(r.firstScore).toLocaleString()}</span>`
+          : "";
+      return `
       <div class="rank-row">
         <span class="pos">${r.rank}</span>
-        <span class="name">${escapeHtml(r.playerName)}</span>
+        <span class="name">${escapeHtml(r.playerName)}${first}</span>
         <span class="sc">${Number(r.bestScore).toLocaleString()}pt</span>
-      </div>`
-    )
+      </div>`;
+    })
     .join("");
 }
 

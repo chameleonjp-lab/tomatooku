@@ -281,6 +281,12 @@ details.rules summary {
 .area-D { background: var(--area-d); }
 .area-E { background: var(--area-e); }
 
+/* エリア境界の太枠(色覚に依存せずエリアを区別できるように) */
+.cell.edge-top { border-top: 3px solid #34453b; }
+.cell.edge-bottom { border-bottom: 3px solid #34453b; }
+.cell.edge-left { border-left: 3px solid #34453b; }
+.cell.edge-right { border-right: 3px solid #34453b; }
+
 /* 誤タップの揺れ + 赤フラッシュ */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -412,6 +418,12 @@ details.rules summary {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.rank-row .name .first {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }
 .rank-row .sc {
   font-weight: 800;

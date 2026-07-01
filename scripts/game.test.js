@@ -6,8 +6,10 @@ import {
   GameSession,
   StageState,
   pickStages,
+  solutionSignature,
   computeScore,
   formatTime,
+  SCORE,
   N,
 } from "../src/game.js";
 import { STAGES } from "../src/stages.js";
@@ -191,6 +193,63 @@ section("セッション全体フロー");
   }
   ok(finished, "3ステージ目で finished=true(結果へ)");
   ok(sess.endTime != null, "endTime が設定される");
+}
+
+// ---- 8b. タイマー: クリア演出時間をスコアに含めない ----
+section("タイマー(演出時間の除外)");
+{
+  const sess = new GameSession("t", seededRand(3));
+  sess.start(0);
+  // 各ステージを「実プレイ1000ms」で解き、その後「演出+待ち5000ms」を挟む
+  let t = 0;
+  for (let i = 0; i < 3; i++) {
+    t += 1000; // 実プレイ時間
+    sess.clearCurrentStage(t); // クリア瞬間に確定
+    t += 5000; // 演出・ステージ間の待ち(スコアに入れない)
+    sess.advance(t);
+  }
+  // 実プレイは 3 * 1000ms のみ。演出 5000ms*3 は除外される。
+  ok(
+    sess.elapsedMs(t) === 3000,
+    `演出を除いた実時間のみ計上される (got ${sess.elapsedMs(t)}ms, 期待3000)`
+  );
+  // 演出を含めていたら 3000 + 15000 = 18000ms になっていたはず
+  ok(sess.elapsedMs(t) < 18000, "演出時間がスコアに混入していない");
+}
+
+// ---- 8c. ステージ進行中はタイマーが動く ----
+section("タイマー(進行中は加算)");
+{
+  const sess = new GameSession("t", seededRand(9));
+  sess.start(100);
+  ok(sess.elapsedMs(100) === 0, "開始直後は0");
+  ok(sess.elapsedMs(2100) === 2000, "進行中は経過する");
+}
+
+// ---- 8d. スコアは BASE(180000)を超えない ----
+section("スコア上限");
+{
+  // 正規の計算では elapsed>=0 なので必ず BASE 以下
+  ok(
+    computeScore({ elapsedMs: 0, mistakeCount: 0, hintCount: 0 }) === SCORE.BASE,
+    "満点 = BASE"
+  );
+  ok(
+    computeScore({ elapsedMs: 1, mistakeCount: 0, hintCount: 0 }) < SCORE.BASE,
+    "少しでも時間経過で BASE 未満"
+  );
+}
+
+// ---- 8e. pickStages は同一プレイ内で正解パターンが重複しない ----
+section("正解パターンの重複回避");
+{
+  let allDistinct = true;
+  for (let s = 1; s <= 500; s++) {
+    const picks = pickStages(seededRand(s));
+    const sigs = new Set(picks.map(solutionSignature));
+    if (sigs.size !== 3) allDistinct = false;
+  }
+  ok(allDistinct, "500プレイすべてで3ステージの正解パターンが相異なる");
 }
 
 // ---- 9. formatTime ----

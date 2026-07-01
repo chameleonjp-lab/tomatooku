@@ -7,8 +7,8 @@
 
 - 静的サイト。素の ES Modules。サーバー常駐処理なし。
 - エントリ: `index.html`(`<script type="module" src="./src/main.js">`)。
-- モジュール依存: `main.js` → `game.js` → `stages.js` / `main.js` → `ranking.js` /
-  `main.js` → `tutorial.js`。
+- モジュール依存: `main.js` → `game.js` → `stages.js` / `main.js` → `ranking.js`
+  (`ranking.js` も `game.js` の `SCORE` を参照)/ `main.js` → `tutorial.js`。
 
 ## 2. データ: `src/stages.js`
 
@@ -21,8 +21,14 @@
 ```
 
 - difficulty: 1=やさしい / 2=ふつう / 3=むずかしい(各 10 問)。
-- 全ステージ一意解。`scripts/verify_stages.js` で検証済み。
+- 全ステージ一意解。`scripts/verify_stages.js` で検証済み(盤面 30 種すべて相異なる)。
 - 再生成: `node scripts/generate_stages.js`(乱数シード固定で再現可能)。
+- **正解パターンの重複について**: 5×5 で本ルールを満たす正解配置は理論上 14 通りしか
+  なく、一意解になる盤面が希少なため、30 問は **10 種類の正解パターン**を共有する
+  (盤面=エリア形は全て異なる)。盤面の見た目は別でも、上位勢が正解位置を暗記する
+  懸念があるため、`pickStages` が**同一プレイ内で正解パターンが重ならない**よう選出する
+  (検証: 2000 プレイすべてで 3 パターン相異なり)。将来版でエリア生成を増やし、
+  正解パターンの種類自体を増やすのが望ましい。
 
 ## 3. ロジック: `src/game.js`
 
@@ -31,8 +37,12 @@
 - `SCORE = { BASE: 180000, MISTAKE_PENALTY: 3000, HINT_PENALTY: 30000 }`
 
 ### `pickStages(rand=Math.random) → [stage,stage,stage]`
-難易度 1/2/3 から 1 問ずつランダム選出。同一プレイ内で重複しない。
-グループが空のときは全ステージから補完(フォールバック)。
+難易度 1/2/3 から 1 問ずつランダム選出。同一プレイ内で **ステージ ID** も
+**正解パターン(`solutionSignature`)** も重複しないよう選ぶ(暗記ゲー化の抑止)。
+被らない候補が無い場合のみ通常選出にフォールバック。グループが空のときは全ステージから補完。
+
+### `solutionSignature(stage) → string`
+正解の行ごとの列番号を結合した署名。プレイ内の正解パターン重複検出に使う。
 
 ### `class StageState(stage)`
 1ステージ分の盤面。`placed[r][c]: bool`, `count`, `cleared`。
@@ -50,14 +60,21 @@
 
 ### `class GameSession(playerName, rand=Math.random)`
 - `stages`(3) / `states`(3) / `index` / `mistakeCount` / `hintCount` /
-  `startTime` / `endTime`。
+  `accumulatedMs` / `stageStartTime` / `startTime` / `endTime`。
 - `start(now)`, `current`, `stageNumber`(1始まり), `totalStages`,
-  `isLastStage()`, `advance(now) → finished:bool`(最終で endTime 確定),
-  `elapsedMs(now)`, `score(now)`。
+  `isLastStage()`, `clearCurrentStage(now)`,
+  `advance(now) → finished:bool`(最終で endTime 確定), `elapsedMs(now)`, `score(now)`。
+- **計測モデル(重要)**: タイマーは「プレイヤーが操作できる時間」だけを積み上げる。
+  - `clearCurrentStage(now)`: クリアした**瞬間**に呼び、その時点までの実時間を
+    `accumulatedMs` へ確定し計測を止める。
+  - `advance(now)`: 次ステージの**盤面表示時**に呼び、計測を再開(`stageStartTime`)。
+  - これにより**クリア演出(850ms)やステージ間の待ち時間はスコアに含まれない**。
+    `elapsedMs = accumulatedMs + (計測中なら now - stageStartTime)`。
 
 ### `computeScore({elapsedMs, mistakeCount, hintCount}) → int`
 `max(0, 180000 - floor(elapsedMs) - mistakeCount*3000 - hintCount*30000)`。
-`elapsedMs` は 3ステージ通しの合計。
+`elapsedMs` は 3ステージ通しの**実プレイ時間の合計**(演出時間を除く)。
+正規プレイでは `elapsedMs ≥ 0` のため値は常に 0〜180000。
 
 ### `formatTime(ms) → "m:ss.S"`
 
@@ -75,8 +92,11 @@
     開くたびに最初から再生。閉じると `stopTutorial()` で停止。
 - ゲーム:
   - 盤面は 25 個の `<button.cell.area-X>`。タップで `StageState.tap`。
+    エリア境界には太枠(`.edge-top/bottom/left/right`)を付け、**色覚に依存せず**
+    エリアを見分けられるようにする。
   - 誤タップ: `mistakeCount++`、対象セルに揺れ+赤(`.mistake` 0.36s)、バイブ。
-  - 配置/除去: 再描画 + HUD 更新。クリアなら `onStageClear`。
+  - 配置/除去: 再描画 + HUD 更新。クリアなら `onStageClear`
+    (先頭で `clearCurrentStage()` を呼び計測を確定)。
   - HUD: ステージ `n/3` / タイム / スコア目安 / 誤タップ・ヒント。
     タイムとスコア目安は `requestAnimationFrame` で更新。
   - ヒント: `applyHint` → `hintCount++`、対象セルを黄枠表示。`canHint()` で無効化。
@@ -109,9 +129,12 @@
   - `status ∈ {ok, skipped, error}`。
   - **二重送信防止**: 初回呼び出しで送信し Promise をキャッシュ。再呼び出しは同一 Promise。
   - 未設定なら `skipped`。失敗なら `error`(例外を投げない)。
-  - 送信 body: `{ p_game_slug, p_player_name(24字まで), p_score(整数) }`。
+  - 送信 body: `{ p_game_slug, p_player_name(24字まで), p_score }`。
+    `p_score` は **0〜MAX_SCORE(=SCORE.BASE=180000)に clamp**(改ざん・桁あふれ対策)。
+    サーバー側 RPC でも同範囲に clamp する(`docs/SUPABASE_SETUP.md`)。
 - `fetchRanking(limit=10) → Promise<[{playerName,bestScore,firstScore,rank}]>`
-  失敗・未設定時は空配列。
+  失敗・未設定時は空配列。ランキング表示は最高スコアを主表示し、`firstScore` が
+  あれば「初回 X」を副表示する。
 - `resetSubmission()`: 新規プレイ開始時に送信状態を初期化。
 
 ## 6. チュートリアル: `src/tutorial.js`
@@ -132,7 +155,9 @@
 - `.app` は `max-width:480px` 中央寄せ。`overflow-x:hidden`。
 - 盤面 `.board` は `width:min(92vw,380px)`, `aspect-ratio:1`, 5×5 grid。
 - エリア色: `--area-a..e`(淡色 5 種)。`.cell.filled .tomato` で 🍅 表示。
-- `.mistake`(揺れ+赤)/ `.cleared`(pop)/ `.toast` / 結果・ランキング表。
+- エリア境界: `.cell.edge-*` の太枠で区画線を描画(色覚非依存の補強)。
+- `.mistake`(揺れ+赤)/ `.cleared`(pop)/ `.toast` / 結果・ランキング表
+  (`.rank-row .name .first` で初回スコアを副表示)。
 - モーダル: `.modal`/`.modal-card`(`modal-in` アニメ)/`.modal-close`。
 - チュートリアル盤面: `.tboard`/`.tcell`、`hl-soft`(黄ハイライト)/
   `adj`(隣接赤枠)/`ghost-bad`(誤り例)/`mark-ok`(✓)/`mark-bad`(✗)/

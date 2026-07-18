@@ -1,72 +1,102 @@
 # 🍅 トマトオク
 
-5×5 の畑に 🍅 を置く、短時間ブラウザパズル。
-ランダムに選ばれた **3 ステージ**を連続で解き、速さと正確さをスコアで競います。
+5×5の畑に🍅を置く、短時間ブラウザパズルです。
 
-- 各行・各列・各エリア(色分け)に 🍅 は 1 個
-- 🍅 同士は上下左右斜めで隣り合えない
-- 速く解くほど高スコア / 誤タップで減点 / ヒントで大きく減点
-- ランキングは「最高スコア・高い順」(Supabase 連携)
-- ホームに **「遊び方」**(モーダル)と **「チュートリアル」**(4×4 の自動アニメで
-  ルールと操作を実演)を用意
+## 現行v1
+
+現在の実装は、ランダムに選ばれた3ステージを連続で解き、速さと正確さを点数で競います。
+
+- 各行・各列・各エリアに🍅は1個
+- 🍅同士は上下左右斜めで隣り合えない
+- 誤タップとヒントで減点
+- Supabaseランキングを想定
+- 遊び方モーダルと4×4自動チュートリアル
+- 30ステージを一意解検証済み
 
 | ホーム | ゲーム | 結果 |
 | --- | --- | --- |
-| 名前入力・遊び方・チュートリアル・ランキング | 5×5 盤面・タイマー・ヒント | スコア・タイム・誤タップ・ヒント |
+| 名前入力・遊び方・チュートリアル・ランキング | 5×5盤面・タイマー・ヒント | スコア・タイム・誤タップ・ヒント |
 
-## 遊び方(ローカル)
+現行v1の実装仕様は [`docs/SPEC.md`](docs/SPEC.md) を参照してください。
 
-ES Modules を使うため、ファイルを直接開くのではなく HTTP で配信してください。
+## v2計画
+
+v2は将来仕様であり、まだ実装されていません。
+
+主な予定:
+
+- 全員が同じ条件で遊ぶ「公式3問」
+- ランキング対象外の「ランダム練習」
+- 点数ではなく、誤タップとヒントを加算した「補正タイム」
+- 実験場の共通Supabase RPCへの対応
+- カウントダウン、ステージ別時間、競合防止
+- 実験場と詳細ランキングへの導線
+- 問題生成器と難易度判定の強化
+
+v2の契約:
+
+- [v2要件書](docs/REQUIREMENTS_v2.md)
+- [v2技術仕様](docs/SPEC_v2.md)
+- [v2実装計画](docs/IMPLEMENTATION_PLAN_v2.md)
+
+## ローカル実行
+
+ES Modulesを使うため、ファイルを直接開かずHTTPで配信してください。
 
 ```bash
-npm run serve     # http://localhost:8080 を開く
-# もしくは任意の静的サーバ
+npm run serve
+# http://localhost:8080
 ```
 
 ## 構成
 
-```
-index.html        静的エントリ(viewport / ランキング設定 / 3画面)
+```text
+index.html        静的エントリ
 src/
   main.js         画面制御・盤面描画・タイマー・送信・シェア
-  game.js         ゲームロジック(DOM 非依存)
-  stages.js       30ステージ(自動生成・一意解検証済み)
-  ranking.js      Supabase 連携(fetch・二重送信防止)
-  tutorial.js     遊び方チュートリアル(4×4 自動アニメ)
-  styles.css      モバイル最優先スタイル
+  game.js         ゲームロジック
+  stages.js       30ステージ
+  ranking.js      Supabase連携
+  tutorial.js     4×4自動チュートリアル
+  styles.css      スタイル
 scripts/          生成・検証・テスト
-docs/             要件 / 実装計画 / 仕様 / Supabase / テスト報告
+docs/             v1文書・v2計画
 ```
+
+現在の複数ファイル・ES Modules構成を正式な開発構成として維持できます。1ファイル化や全作品共通の容量上限は必須条件ではありません。
 
 ## 開発コマンド
 
 ```bash
-npm run gen       # src/stages.js を再生成(再現可能)
-npm run verify    # 出荷ステージの一意解検証(30/30)
-npm test          # ゲームロジック単体テスト(26 件)
-npm run e2e       # ブラウザ E2E(Playwright, iPhone SE 幅)
+npm run gen       # ステージを再生成
+npm run verify    # 出荷ステージの一意解・形式を検証
+npm test          # ゲームロジック単体テスト
+npm run e2e       # Playwrightブラウザテスト
+npm run serve     # ローカルHTTPサーバー
 ```
+
+実行済み結果は [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md) を参照してください。
 
 ## ランキング設定
 
-`index.html` の `window.TOMATOKU_CONFIG` に **公開 anon key のみ**を設定します
-(secret key は使いません)。未設定でもゲームは動作し、ランキングのみ
-「未設定」表示になります。Supabase 側の SQL は
-[`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md) を参照。
+現行v1は`index.html`の`window.TOMATOKU_CONFIG`から公開可能なanon / Publishable keyを読みます。secretまたはservice role keyを入れないでください。
 
 ```js
 window.TOMATOKU_CONFIG = {
   supabaseUrl: "https://xxxx.supabase.co",
-  supabaseAnonKey: "公開 anon key",
+  supabaseAnonKey: "公開可能なキー",
   gameSlug: "tomatoku",
 };
 ```
 
-## 設計メモ
+`game_slug`は`tomatoku`、表示名・リポジトリ名・公開予定パスは`tomatooku`です。
 
-- 配信物は HTML/CSS/JS のみ・数十 KB(画像/音声/重いライブラリなし)。
-- ブラウザ保存は **プレイヤー名のみ**(`localStorage["tomatoku.playerName"]`)。
-- ランキング送信はゲーム終了時に 1 回だけ(二重送信防止)。
-- パズルは 5×5 の Queens/Star Battle 変種。全ステージ一意解を保証。
+v2では、実験場の共通RPC契約へ合わせてランキング接続を更新する予定です。現行の参考SQLを共有Supabaseへそのまま適用しないでください。
 
-詳細は [`docs/SPEC.md`](docs/SPEC.md)。
+## 保存
+
+現行v1でブラウザに保存する情報はプレイヤー名だけです。
+
+```text
+localStorage["tomatoku.playerName"]
+```

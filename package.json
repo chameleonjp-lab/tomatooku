@@ -1,7 +1,7 @@
 {
   "name": "tomatoku",
   "version": "1.0.0",
-  "description": "トマトク - 5×5に🍅を置く短時間ブラウザパズル",
+  "description": "トマトオク - 5×5に🍅を置く短時間ブラウザパズル",
   "type": "module",
   "scripts": {
     "gen": "node scripts/generate_stages.js",

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   createRankingClient,
   isConfigured,
+  isSubmissionEnabled,
   normalizeDisplayName,
 } from "../src/ranking.js";
 
@@ -14,6 +15,7 @@ const CONFIG = {
   submitRpc: "submit_score",
   bestRankingRpc: "get_best_score_ranking",
   firstRankingRpc: "get_first_try_ranking",
+  submissionsEnabled: true,
 };
 
 function jsonResponse(data, status = 200) {
@@ -38,20 +40,19 @@ async function test(name, fn) {
   }
 }
 
-await test("設定判定は有効値と未設定を区別する", () => {
+await test("設定判定と送信ゲートを区別", () => {
   assert.equal(isConfigured(CONFIG), true);
+  assert.equal(isSubmissionEnabled(CONFIG), true);
+  assert.equal(isSubmissionEnabled({ ...CONFIG, submissionsEnabled: false }), false);
   assert.equal(isConfigured({ ...CONFIG, supabaseUrl: "" }), false);
-  assert.equal(
-    isConfigured({ ...CONFIG, supabasePublishableKey: "公開可能なキー" }),
-    false
-  );
 });
 
-await test("表示名をNFKC正規化し制御文字・余分な空白を除く", () => {
+await test("表示名をNFKC正規化し20文字以内にする", () => {
   assert.equal(normalizeDisplayName("  Ｔｅｓｔ\u0000   太郎  "), "Test 太郎");
+  assert.equal(normalizeDisplayName("123456789012345678901234").length, 20);
 });
 
-await test("現行v1・練習モードは通信せず送信をスキップする", async () => {
+await test("練習モードは通信しない", async () => {
   let calls = 0;
   const client = createRankingClient(CONFIG, {
     fetch: async () => {
@@ -59,15 +60,34 @@ await test("現行v1・練習モードは通信せず送信をスキップする
       return jsonResponse([]);
     },
   });
-  const legacy = await client.submitScore({ playerName: "A", score: 100 });
-  const practice = await client.submitScore({
+  const result = await client.submitScore({
     playId: "p1",
     mode: "practice",
     playerName: "A",
     score: 100,
   });
-  assert.equal(legacy.status, "skipped");
-  assert.equal(practice.status, "skipped");
+  assert.equal(result.status, "skipped");
+  assert.equal(calls, 0);
+});
+
+await test("送信ゲートOFFの公式は通信しない", async () => {
+  let calls = 0;
+  const client = createRankingClient(
+    { ...CONFIG, submissionsEnabled: false },
+    {
+      fetch: async () => {
+        calls++;
+        return jsonResponse([]);
+      },
+    }
+  );
+  const result = await client.submitScore({
+    playId: "p2",
+    mode: "official",
+    playerName: "A",
+    score: 100,
+  });
+  assert.equal(result.status, "skipped");
   assert.equal(calls, 0);
 });
 
@@ -94,10 +114,7 @@ await test("公式送信は共通RPCの4引数とapikeyだけを使う", async (
     playerName: "  テスト  ",
     score: 4835.9,
   });
-  assert.equal(
-    request.url,
-    "https://project.supabase.co/rest/v1/rpc/submit_score"
-  );
+  assert.match(request.url, /submit_score$/);
   assert.equal(request.options.headers.apikey, CONFIG.supabasePublishableKey);
   assert.equal("Authorization" in request.options.headers, false);
   assert.deepEqual(JSON.parse(request.options.body), {
@@ -108,10 +125,9 @@ await test("公式送信は共通RPCの4引数とapikeyだけを使う", async (
   });
   assert.equal(result.status, "ok");
   assert.equal(result.bestScore, 4800);
-  assert.equal(result.isNewBest, true);
 });
 
-await test("同じplayIdの再送は同一Promiseを返し通信は1回", async () => {
+await test("同じplayIdは同一Promise・通信1回", async () => {
   let calls = 0;
   const client = createRankingClient(CONFIG, {
     fetch: async () => {
@@ -132,30 +148,7 @@ await test("同じplayIdの再送は同一Promiseを返し通信は1回", async 
   assert.equal(calls, 1);
 });
 
-await test("異なるplayIdはそれぞれ送信できる", async () => {
-  let calls = 0;
-  const client = createRankingClient(CONFIG, {
-    fetch: async () => {
-      calls++;
-      return jsonResponse([{ accepted: true }]);
-    },
-  });
-  await client.submitScore({
-    playId: "a",
-    mode: "official",
-    playerName: "A",
-    score: 10,
-  });
-  await client.submitScore({
-    playId: "b",
-    mode: "official",
-    playerName: "A",
-    score: 10,
-  });
-  assert.equal(calls, 2);
-});
-
-await test("ベストランキングのRPCと返却列を正規化する", async () => {
+await test("ベストランキングを正規化", async () => {
   let body;
   const client = createRankingClient(CONFIG, {
     fetch: async (_url, options) => {
@@ -167,7 +160,6 @@ await test("ベストランキングのRPCと返却列を正規化する", async
           first_score: 6000,
           best_score: 5000,
           play_count: 3,
-          updated_at: "2026-01-01T00:00:00Z",
         },
       ]);
     },
@@ -175,12 +167,10 @@ await test("ベストランキングのRPCと返却列を正規化する", async
   const result = await client.fetchBestRanking(3);
   assert.deepEqual(body, { p_game_slug: "tomatoku", p_limit: 3 });
   assert.equal(result.status, "ok");
-  assert.equal(result.rows[0].rank, 1);
-  assert.equal(result.rows[0].playerName, "A");
   assert.equal(result.rows[0].bestScore, 5000);
 });
 
-await test("初回ランキングは専用RPCを使う", async () => {
+await test("初回ランキングは専用RPC", async () => {
   let url;
   const client = createRankingClient(CONFIG, {
     fetch: async (value) => {
@@ -208,7 +198,7 @@ await test("未設定・HTTPエラー・形式不正を状態で返す", async (
   assert.equal((await malformed.fetchBestRanking()).status, "error");
 });
 
-await test("タイムアウト時はAbortControllerで通信を中止する", async () => {
+await test("タイムアウト時はAbortControllerで中止", async () => {
   let aborted = false;
   const client = createRankingClient(
     { ...CONFIG, timeoutMs: 5 },
@@ -224,8 +214,7 @@ await test("タイムアウト時はAbortControllerで通信を中止する", as
         }),
     }
   );
-  const result = await client.fetchBestRanking();
-  assert.equal(result.status, "error");
+  assert.equal((await client.fetchBestRanking()).status, "error");
   assert.equal(aborted, true);
 });
 

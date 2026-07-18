@@ -19,9 +19,16 @@ assert.match(RANKING_CONFIG.supabasePublishableKey, /^sb_publishable_/);
 
 const labUrl = "https://chameleonjp.codeberg.page/chameleonjp_lab/";
 const detailUrl = `${labUrl}ranking.html?game=tomatoku`;
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-assert.equal((html.match(new RegExp(labUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length, 2);
-assert.equal((html.match(new RegExp(detailUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length, 2);
+assert.equal(
+  (html.match(new RegExp(`href="${escapeRegExp(labUrl)}"`, "g")) || []).length,
+  2
+);
+assert.equal(
+  (html.match(new RegExp(`href="${escapeRegExp(detailUrl)}"`, "g")) || []).length,
+  2
+);
 assert.match(html, /id="lab-link"/);
 assert.match(html, /id="detail-ranking-link"/);
 assert.match(html, /id="result-lab-link"/);

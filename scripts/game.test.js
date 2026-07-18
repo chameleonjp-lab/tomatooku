@@ -156,6 +156,16 @@ test("補正タイム表示は小数2桁", () => {
   assert.equal(formatAdjustedTime(4835), "48.35秒");
 });
 
+test("3分を超える補正タイムも上限で切らない", () => {
+  const score = computeAdjustedTime({
+    elapsedMs: 181_000,
+    mistakeCount: 1,
+    hintCount: 0,
+  });
+  assert.equal(score, 18_100 + 300);
+  assert.equal(formatCentiseconds(score), "184.00");
+});
+
 test("公式セッションは固定3問", () => {
   const session = new GameSession("A", seededRand(1), {
     mode: GAME_MODE.OFFICIAL,

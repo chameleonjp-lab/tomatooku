@@ -3,13 +3,12 @@ import { RANKING_CONFIG } from "./ranking-config.js";
 /**
  * トマトオク 共通ランキング連携 (Supabase REST RPC)
  *
- * - ブラウザ公開可能な Publishable key だけを `apikey` ヘッダーへ設定する。
+ * - Publishable key だけを `apikey` ヘッダーへ設定する。
  * - secret / service_role key と Authorization: Bearer は使用しない。
- * - 共有 RPC の引数・返却列は実DBで確認済みの契約へ固定する。
- * - v2公式モード以外（現行v1のランダム3問を含む）は送信しない。
+ * - 公式モードかつ明示的な送信ゲート有効時だけ送信する。
  */
 
-export const DEFAULT_CLIENT_VERSION = "tomatooku-web-2.0.0-ranking-v1";
+export const DEFAULT_CLIENT_VERSION = "tomatooku-web-2.1.0-mode-score-v1";
 const MAX_POSTGRES_INT = 2_147_483_647;
 const CONTROL_OR_FORMAT_RE = /[\p{Cc}\p{Cf}]/gu;
 const PLACEHOLDER_RE = /(xxxx|example|placeholder|公開可能なキー|publishable key|anon key)/i;
@@ -17,13 +16,14 @@ const PLACEHOLDER_RE = /(xxxx|example|placeholder|公開可能なキー|publisha
 const DEFAULTS = {
   supabaseUrl: RANKING_CONFIG.supabaseUrl,
   supabasePublishableKey: RANKING_CONFIG.supabasePublishableKey,
-  supabaseAnonKey: "", // v1設定名の後方互換
+  supabaseAnonKey: "",
   gameSlug: RANKING_CONFIG.gameSlug,
   clientVersion: RANKING_CONFIG.clientVersion || DEFAULT_CLIENT_VERSION,
   timeoutMs: RANKING_CONFIG.timeoutMs,
   submitRpc: RANKING_CONFIG.submitRpc,
   bestRankingRpc: RANKING_CONFIG.bestRankingRpc,
   firstRankingRpc: RANKING_CONFIG.firstRankingRpc,
+  submissionsEnabled: RANKING_CONFIG.submissionsEnabled === true,
 };
 
 function globalConfig() {
@@ -43,6 +43,9 @@ export const CONFIG = Object.freeze({
       OVERRIDES.supabaseAnonKey ||
       DEFAULTS.supabasePublishableKey
   ),
+  submissionsEnabled:
+    OVERRIDES.submissionsEnabled === true ||
+    (OVERRIDES.submissionsEnabled == null && DEFAULTS.submissionsEnabled),
 });
 export const CLIENT_VERSION = CONFIG.clientVersion;
 
@@ -68,13 +71,17 @@ export function isConfigured(config = CONFIG) {
   }
 }
 
+export function isSubmissionEnabled(config = CONFIG) {
+  return isConfigured(config) && config.submissionsEnabled === true;
+}
+
 export function normalizeDisplayName(input) {
   return String(input ?? "")
     .normalize("NFKC")
     .replace(CONTROL_OR_FORMAT_RE, "")
     .replace(/\s+/gu, " ")
     .trim()
-    .slice(0, 24);
+    .slice(0, 20);
 }
 
 function normalizeScore(score) {
@@ -135,7 +142,10 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
     }
 
     const controller = new AbortController();
-    const timer = setTimeoutImpl(() => controller.abort(), effectiveConfig.timeoutMs);
+    const timer = setTimeoutImpl(
+      () => controller.abort(),
+      effectiveConfig.timeoutMs
+    );
     const endpoint = `${String(effectiveConfig.supabaseUrl).replace(/\/$/, "")}/rest/v1/rpc/${name}`;
 
     try {
@@ -180,18 +190,14 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
   }
 
   function submitScore({ playId, mode, playerName, score } = {}) {
-    // 現行v1はランダム3問で、v2公式モードではないため本番送信しない。
     if (mode !== "official") {
       return Promise.resolve(
-        baseResult(
-          "skipped",
-          "v2公式モード実装までランキング送信を停止しています"
-        )
+        baseResult("skipped", "ランダム練習はランキング対象外です")
       );
     }
-    if (!isConfigured(effectiveConfig)) {
+    if (!isSubmissionEnabled(effectiveConfig)) {
       return Promise.resolve(
-        baseResult("not_configured", "ランキングは未設定です")
+        baseResult("skipped", "公式ランキングは公開準備中です")
       );
     }
 
@@ -218,7 +224,10 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
         });
         const row = Array.isArray(data) ? data[0] : data;
         if (!row || row.accepted !== true) {
-          return baseResult("error", "ランキング登録を受け付けられませんでした");
+          return baseResult(
+            "error",
+            "ランキング登録を受け付けられませんでした"
+          );
         }
         return {
           status: "ok",
@@ -245,7 +254,9 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
       return rankingState("not_configured", [], "ランキングは未設定です");
     }
     const isFirst = type === "first";
-    const rpcName = isFirst ? effectiveConfig.firstRankingRpc : effectiveConfig.bestRankingRpc;
+    const rpcName = isFirst
+      ? effectiveConfig.firstRankingRpc
+      : effectiveConfig.bestRankingRpc;
 
     try {
       const data = await rpc(rpcName, {
@@ -294,16 +305,11 @@ export function fetchFirstRanking(limit = 10) {
   return defaultClient.fetchFirstRanking(limit);
 }
 
-/** 現行v1 UIとの互換: ベストランキング行だけを返す。 */
 export async function fetchRanking(limit = 10) {
   const result = await fetchBestRanking(limit);
   return result.status === "ok" ? result.rows : [];
 }
 
-/**
- * v1 UIがプレイ開始時に呼ぶ後方互換API。
- * v2はplayId単位で重複防止するため、画面遷移ではキャッシュを解除しない。
- */
 export function resetSubmission() {
-  // intentional no-op
+  // playId単位で管理するため、画面遷移では解除しない。
 }

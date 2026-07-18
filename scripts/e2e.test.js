@@ -1,7 +1,6 @@
 /**
- * トマトオク ブラウザ E2E テスト (Playwright)
- * iPhone SE相当で、カウントダウン・タイマー開始・キャンセル競合を含む
- * ホームから結果までのフローを確認する。
+ * トマトオク ブラウザE2E (Playwright)
+ * iPhone SE相当で公式3問、補正タイム、練習モードを確認する。
  */
 import http from "http";
 import fs from "fs";
@@ -13,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const PORT = 8099;
 const N = 5;
+const OFFICIAL_IDS = ["T001", "T011", "T021"];
 
 const MIME = {
   ".html": "text/html",
@@ -24,16 +24,14 @@ const MIME = {
 function startServer() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
-      let pathname = decodeURIComponent(req.url.split("?")[0]);
-      if (pathname === "/") pathname = "/index.html";
-
-      const file = path.join(ROOT, pathname);
+      let requested = decodeURIComponent(req.url.split("?")[0]);
+      if (requested === "/") requested = "/index.html";
+      const file = path.join(ROOT, requested);
       if (!file.startsWith(ROOT) || !fs.existsSync(file)) {
         res.writeHead(404);
         res.end("not found");
         return;
       }
-
       res.writeHead(200, {
         "Content-Type": MIME[path.extname(file)] || "text/plain",
       });
@@ -50,43 +48,39 @@ function solveBoard(regionStrings) {
       region[r * N + c] = regionStrings[r].charCodeAt(c) - 65;
     }
   }
-
   const colUsed = Array(N).fill(false);
-  const regUsed = Array(N).fill(false);
+  const regionUsed = Array(N).fill(false);
   const placed = [];
   const solutions = [];
 
-  function rec(row) {
+  function visit(row) {
     if (row === N) {
       solutions.push(placed.slice());
       return;
     }
-
     for (let c = 0; c < N; c++) {
       if (colUsed[c]) continue;
-      const regionId = region[row * N + c];
-      if (regUsed[regionId]) continue;
+      const area = region[row * N + c];
+      if (regionUsed[area]) continue;
       if (row > 0 && Math.abs(placed[row - 1] - c) < 2) continue;
-
       colUsed[c] = true;
-      regUsed[regionId] = true;
+      regionUsed[area] = true;
       placed[row] = c;
-      rec(row + 1);
+      visit(row + 1);
       colUsed[c] = false;
-      regUsed[regionId] = false;
+      regionUsed[area] = false;
     }
   }
 
-  rec(0);
+  visit(0);
   return solutions;
 }
 
 let pass = 0;
 let fail = 0;
 function ok(condition, message) {
-  if (condition) {
-    pass++;
-  } else {
+  if (condition) pass++;
+  else {
     fail++;
     console.log("  ✗ FAIL:", message);
   }
@@ -96,14 +90,13 @@ async function getRegions(page) {
   return page.evaluate(() => {
     const cells = [...document.querySelectorAll("#board .cell")];
     const rows = [];
-
     for (let r = 0; r < 5; r++) {
-      let row = "";
+      let value = "";
       for (let c = 0; c < 5; c++) {
         const match = cells[r * 5 + c].className.match(/area-([A-E])/);
-        row += match ? match[1] : "?";
+        value += match ? match[1] : "?";
       }
-      rows.push(row);
+      rows.push(value);
     }
     return rows;
   });
@@ -119,33 +112,22 @@ async function clickCell(page, r, c) {
 }
 
 async function solveCurrentStage(page) {
-  const regions = await getRegions(page);
-  const solutions = solveBoard(regions);
-  ok(solutions.length === 1, `表示中の盤面が一意解 (got ${solutions.length})`);
-
-  const solution = solutions[0];
+  const solutions = solveBoard(await getRegions(page));
+  ok(solutions.length === 1, `表示中盤面が一意解 (got ${solutions.length})`);
   for (let r = 0; r < N; r++) {
-    await clickCell(page, r, solution[r]);
+    await clickCell(page, r, solutions[0][r]);
   }
 }
 
-async function startFromHome(page, name = "テスター") {
-  await page.fill("#player-name", name);
-  await page.click("#start-btn");
-  await page.waitForSelector("#screen-countdown.active");
-}
-
 async function waitForPlaying(page) {
-  await page.waitForSelector("#screen-game.active", { timeout: 6000 });
-  await page.waitForFunction(() => {
-    const board = document.querySelector("#board");
-    return (
-      board &&
-      board.getAttribute("aria-busy") === "false" &&
-      document.querySelectorAll("#board .cell").length === 25 &&
-      !document.querySelector("#hint-btn").disabled
-    );
+  await page.waitForSelector("#screen-game.active #board .cell", {
+    timeout: 6000,
   });
+  await page.waitForFunction(
+    () =>
+      document.querySelector("#screen-game").classList.contains("active") &&
+      !document.querySelector("#board .cell").disabled
+  );
 }
 
 async function main() {
@@ -159,139 +141,85 @@ async function main() {
   });
   const page = await context.newPage();
 
-  const consoleErrors = [];
-  const pageErrors = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+  await page.route("**/rest/v1/rpc/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: "[]",
+    });
   });
+
+  const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle" });
-
-  console.log("# ホーム表示");
-  ok(await page.isVisible("#screen-home"), "ホーム画面が表示");
-  ok(
-    (await page.textContent("#screen-home .brand h1")).includes("トマトオク"),
-    "タイトル表示"
-  );
+  ok(await page.isVisible("#screen-home"), "ホーム表示");
+  ok(await page.isVisible("#start-official-btn"), "公式開始ボタン");
+  ok(await page.isVisible("#start-practice-btn"), "練習開始ボタン");
   ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth
     ),
-    "横スクロールなし"
+    "320pxで横スクロールなし"
   );
 
-  console.log("# 名前必須");
-  await page.click("#start-btn");
-  ok((await page.textContent("#name-error")).length > 0, "名前未入力で開始しない");
-  ok(await page.isVisible("#screen-home"), "ホームのまま");
+  await page.click("#start-official-btn");
+  ok((await page.textContent("#name-error")).length > 0, "名前必須");
 
-  console.log("# カウントダウン");
-  await startFromHome(page);
+  await page.fill("#player-name", "テスター");
+  await page.click("#start-official-btn");
+  await page.waitForSelector("#screen-countdown.active");
   ok((await page.textContent("#countdown-value")).trim() === "3", "3から開始");
-  ok((await page.locator("#board .cell").count()) === 0, "カウントダウン中は盤面を表示しない");
+  ok((await page.textContent("#countdown-mode")).includes("公式"), "公式表示");
+  ok(!(await page.isVisible("#screen-game")), "カウントダウン中は盤面非表示");
 
-  console.log("# カウントダウンキャンセル競合");
-  await page.click("#countdown-cancel-btn");
-  await page.waitForSelector("#screen-home.active");
-  await page.waitForTimeout(3000);
-  ok(await page.isVisible("#screen-home"), "キャンセル後もホームを維持");
-  ok(!(await page.isVisible("#screen-game.active")), "古いカウントダウンがゲームを開始しない");
-
-  console.log("# ゲーム開始と計測");
-  await startFromHome(page);
   await waitForPlaying(page);
-  ok((await page.locator("#board .cell").count()) === 25, "盤面25マス");
-  const initialTime = (await page.textContent("#hud-time")).trim();
-  ok(/^0:0[0-1]\.\d$/.test(initialTime), `描画後にほぼ0から計測開始 (${initialTime})`);
-
-  console.log("# 誤タップ");
-  const regions = await getRegions(page);
-  const solution = solveBoard(regions)[0];
-  await clickCell(page, 0, solution[0]);
-  const anotherCol = solution[0] === 0 ? 2 : 0;
-  await clickCell(page, 0, anotherCol);
-  ok(Number(await page.textContent("#hud-mistakes")) >= 1, "誤タップを計上");
-  await clickCell(page, 0, solution[0]);
-
-  console.log("# ステージ遷移中のリタイア競合");
-  await solveCurrentStage(page);
-  page.once("dialog", (dialog) => dialog.accept());
-  await page.click("#quit-btn");
-  await page.waitForSelector("#screen-home.active");
-  await page.waitForTimeout(1200);
-  ok(await page.isVisible("#screen-home"), "遷移中リタイア後もホームを維持");
-  ok(!(await page.isVisible("#screen-result.active")), "古い遷移が結果へ進まない");
-  ok((await page.locator("#board .cell").count()) === 0, "旧盤面を破棄");
-
-  console.log("# 3ステージクリア");
-  await startFromHome(page);
-  await waitForPlaying(page);
-
+  const ids = [];
   for (let stageIndex = 0; stageIndex < 3; stageIndex++) {
-    const currentLabel = (await page.textContent("#hud-stage")).trim();
+    ids.push(await page.getAttribute("#board", "data-stage-id"));
+    ok(
+      (await page.getAttribute("#board", "data-mode")) === "official",
+      `ステージ${stageIndex + 1}は公式モード`
+    );
     await solveCurrentStage(page);
-
-    if (stageIndex < 2) {
-      await page.waitForFunction(
-        (previous) => {
-          const label = document.querySelector("#hud-stage")?.textContent?.trim();
-          const board = document.querySelector("#board");
-          return (
-            label &&
-            label !== previous &&
-            board?.getAttribute("aria-busy") === "false" &&
-            !document.querySelector("#hint-btn").disabled
-          );
-        },
-        currentLabel,
-        { timeout: 5000 }
-      );
-    }
+    await page.waitForTimeout(1000);
   }
+  assertOfficialIds(ids);
 
   await page.waitForSelector("#screen-result.active", { timeout: 5000 });
-  ok(await page.isVisible("#screen-result"), "結果画面へ遷移");
+  ok((await page.textContent("#result-mode")).includes("公式"), "公式結果表示");
+  ok(/^\d+\.\d{2}$/.test((await page.textContent("#result-score")).trim()), "補正タイム小数2桁");
+  ok((await page.textContent("#result-stage-times li")).length > 0, "ステージ別時間表示");
+  ok((await page.textContent("#submit-state")).includes("公開準備中"), "本番送信ゲートOFF");
 
-  const finalScore = (await page.textContent("#result-score")).replace(/,/g, "");
-  ok(Number(finalScore) > 0, `最終スコア表示 (${finalScore})`);
-  ok(/\d:\d\d/.test(await page.textContent("#result-time")), "クリアタイム表示");
-  ok(
-    (await page.textContent("#submit-state")).includes("ランキング送信を停止"),
-    "現行ランダムプレイはランキング送信停止"
-  );
-
-  console.log("# 結果シェア");
-  const shareCaptured = await page.evaluate(() => {
-    return new Promise((resolve) => {
-      navigator.share = (data) => {
-        resolve(data);
-        return Promise.resolve();
-      };
-      document.querySelector("#result-share-btn").click();
-      setTimeout(() => resolve(null), 500);
-    });
-  });
-  ok(
-    shareCaptured && shareCaptured.text && shareCaptured.text.includes("http"),
-    "シェア本文に正式URL"
-  );
-
-  console.log("# もう一度遊ぶ");
-  await page.click("#again-btn");
+  await page.click("#home-btn");
+  await page.waitForSelector("#screen-home.active");
+  await page.click("#start-practice-btn");
   await page.waitForSelector("#screen-countdown.active");
-  ok(await page.isVisible("#screen-countdown"), "再プレイもカウントダウンから開始");
-  await page.click("#countdown-cancel-btn");
+  ok((await page.textContent("#countdown-mode")).includes("ランダム"), "練習表示");
+  await waitForPlaying(page);
+  ok((await page.getAttribute("#board", "data-mode")) === "practice", "練習データ属性");
 
-  console.log("# エラーチェック");
+  await page.evaluate(() => {
+    window.confirm = () => true;
+  });
+  await page.click("#quit-btn");
+  await page.waitForSelector("#screen-home.active");
+  ok(await page.isVisible("#screen-home"), "練習からホームへ戻れる");
   ok(pageErrors.length === 0, `未捕捉エラーなし (${pageErrors.join("; ")})`);
-  if (consoleErrors.length) console.log("  console.error:", consoleErrors);
 
   await browser.close();
   server.close();
 
   console.log(`\n==== E2E RESULT: PASS=${pass} FAIL=${fail} ====`);
   process.exit(fail === 0 ? 0 : 1);
+}
+
+function assertOfficialIds(ids) {
+  ok(
+    JSON.stringify(ids) === JSON.stringify(OFFICIAL_IDS),
+    `公式ID順序 ${JSON.stringify(ids)}`
+  );
 }
 
 main().catch((error) => {

@@ -1,76 +1,92 @@
 # 🍅 トマトオク
 
-5×5の畑に🍅を置く、短時間ブラウザパズルです。
+5×5の畑に🍅を置く、3ステージのタイムパズルです。
 
-## 現行ゲーム
+## ゲームモード
 
-現在のゲームは、ランダムに選ばれた3ステージを連続で解き、速さと正確さを点数で競います。
+### 公式3問
 
-- 各行・各列・各エリアに🍅は1個
-- 🍅同士は上下左右斜めで隣り合えない
-- 誤タップとヒントで減点
-- 遊び方モーダルと4×4自動チュートリアル
-- 30ステージを一意解検証済み
-- 開始前に`3 → 2 → 1 → スタート`を表示
-- 盤面描画後に計測を開始
-- クリア演出・ステージ間待機を計測から除外
-- ステージ別時間を内部保持
-- play IDで古い非同期処理を無効化
+全員が同じ問題を同じ順番で遊びます。
 
-| ホーム | カウントダウン | ゲーム | 結果 |
-| --- | --- | --- | --- |
-| 名前入力・遊び方・チュートリアル・ランキング | 盤面を隠して3・2・1 | 5×5盤面・タイマー・ヒント | スコア・タイム・誤タップ・ヒント |
+```text
+T001（やさしい）
+T011（ふつう）
+T021（むずかしい）
+```
 
-現行の点数式・ランダム3問など、v1部分の実装仕様は [`docs/SPEC.md`](docs/SPEC.md) を参照してください。
+記録は、実際に操作した時間へペナルティを加えた「補正タイム」です。短いほど好成績です。
 
-## v2進行状況
+```text
+補正タイム
+= 実時間
++ 誤タップ数 × 3秒
++ ヒント数 × 30秒
+```
 
-v2は段階的に実装しています。
+### ランダム練習
 
-### 完了
+難易度1・2・3から有効な3問組をランダムに選びます。ステージIDと正解配置は同一プレイ内で重複しません。練習結果はランキングへ送信しません。
 
-- v2要件・技術仕様・実装計画の確定
-- 実験場の共有Supabase RPC定義の確認
-- 共通ランキング取得クライアント
-- 共通`submit_score`送信クライアント
-- Publishable keyを`apikey`だけに設定する構成
-- `AbortController`による通信タイムアウト
-- play ID単位のランキング二重送信防止
-- ランキング通信の単体テスト
-- `performance.now()`優先の単調増加タイマー
-- カウントダウン中の非計測
-- 盤面描画後の計測開始
-- クリア瞬間の計測停止
-- ステージ別時間
-- カウントダウン・ステージ遷移タイマーの明示解除
-- 古いplay IDの非同期コールバック無効化
-- カウントダウン取消し・遷移中リタイアのE2E検査項目を追加
+## 現在のランキング状態
 
-### 未実装
+共有Supabase RPCへ接続するクライアントは実装済みです。ただし、`tomatoku`の`public.games`登録と本番疎通確認が完了するまで送信ゲートを閉じています。
 
-- 全員が同じ条件で遊ぶ「公式3問」
-- ランキング対象外の「ランダム練習」
-- 誤タップとヒントを加算した「補正タイム」
-- 実験場と詳細ランキングへの導線
-- 問題生成器と難易度判定の強化
+- 公式3問: ランキング送信対象となる設計だが、現在は公開準備中
+- ランダム練習: 常にランキング対象外
+- `game_slug`: `tomatoku`
+- 表示名・リポジトリ名・公開パス: `tomatooku`
+- `score_order`: `asc`
+- `score_unit`: `秒`
+- `score_scale`: `100`
+- `score_decimals`: `2`
 
-**重要:** 現在はランダム3問のため、本番ランキングへスコアを送信しません。`submit_score`は、将来の`official`モードとplay IDが明示された場合だけ動作します。
+## ルール
 
-v2文書:
+- 各行に🍅は1個
+- 各列に🍅は1個
+- 各エリアに🍅は1個
+- 🍅同士は上下左右斜めで隣り合わない
 
-- [v2要件書](docs/REQUIREMENTS_v2.md)
-- [v2技術仕様](docs/SPEC_v2.md)
-- [v2実装計画](docs/IMPLEMENTATION_PLAN_v2.md)
-- [ランキング契約確認](docs/RANKING_REVIEW_v2.md)
-- [タイマー・競合確認](docs/TIMER_REVIEW_v2.md)
+## 画面フロー
+
+```text
+home
+→ countdown
+→ playing
+→ stageTransition
+→ result
+```
+
+カウントダウンとステージ間演出は計測に含めません。盤面描画後に計測を開始し、クリア確定時に停止します。
+
+## 結果表示
+
+- モード
+- 補正タイム
+- 実時間
+- 誤タップ数と加算秒
+- ヒント数と加算秒
+- ステージ別の実時間、誤タップ数、ヒント数
 
 ## ローカル実行
 
-ES Modulesを使うため、ファイルを直接開かずHTTPで配信してください。
+ES Modulesを使うため、HTTPで配信してください。
 
 ```bash
 npm run serve
 # http://localhost:8080
+```
+
+## 開発コマンド
+
+```bash
+npm run gen           # ステージを再生成
+npm run verify        # ステージ形式・一意解検証
+npm test              # ゲームロジック + ランキング契約
+npm run test:game     # ゲームロジック
+npm run test:ranking  # ランキング契約
+npm run e2e           # Playwrightブラウザテスト
+npm run serve         # ローカルHTTPサーバー
 ```
 
 ## 構成
@@ -78,56 +94,33 @@ npm run serve
 ```text
 index.html
 src/
-  game.js             ゲームロジック・セッション・タイマー
-  main.js             画面状態・非同期キャンセル・描画
-  ranking-config.js   ブラウザ公開可能なランキング設定
-  ranking.js          共有Supabase RPCクライアント
-  stages.js           30ステージ
-  styles.css          スタイル
-  tutorial.js         4×4自動チュートリアル
+  game.js
+  main.js
+  ranking-config.js
+  ranking.js
+  stages.js
+  styles.css
+  tutorial.js
 scripts/
   game.test.js
   ranking.test.js
-  verify_stages.js
   e2e.test.js
 docs/
-  v1文書・v2契約・確認記録
+  REQUIREMENTS_v2.md
+  SPEC_v2.md
+  IMPLEMENTATION_PLAN_v2.md
+  RANKING_REVIEW_v2.md
+  TIMER_REVIEW_v2.md
+  MODE_SCORE_REVIEW_v2.md
 ```
 
-現在の複数ファイル・ES Modules構成を正式な開発構成として維持できます。1ファイル化や全作品共通の容量上限は必須条件ではありません。
+## セキュリティ
 
-## 開発コマンド
-
-```bash
-npm run gen           # ステージを再生成
-npm run verify        # 出荷ステージの一意解・形式を検証
-npm test              # ゲームロジックとランキング契約の単体テスト
-npm run test:game     # ゲームロジックだけをテスト
-npm run test:ranking  # ランキング契約だけをテスト
-npm run e2e           # Playwrightブラウザテスト
-npm run serve         # ローカルHTTPサーバー
-```
-
-ゲームロジックの検査は`game.test.js`、ランキング契約は`ranking.test.js`、ブラウザ上の開始・取消し・ステージ遷移競合は`e2e.test.js`で確認します。
-
-## ランキング連携
-
-ブラウザ公開可能な設定は`src/ranking-config.js`へ集約しています。
-
-- `game_slug`: `tomatoku`
-- 送信: `submit_score`
-- 最高記録取得: `get_best_score_ranking`
-- 初回記録取得: `get_first_try_ranking`
-- ヘッダー: `apikey`
-- 送信本文: `p_display_name`、`p_game_slug`、`p_score`、`p_client_version`
-
-secret key、service role key、`Authorization: Bearer`は使用しません。Publishable keyはブラウザ公開用ですが、文書や作業報告へ複製しません。
-
-共有Supabaseの関数やテーブルを、このリポジトリのSQLで置き換えないでください。現在`tomatoku`は`public.games`へ未登録で、実スコア送信も未実施です。公式問題と補正タイムの実装後に登録・疎通確認を行います。
+ブラウザにはPublishable keyだけを置きます。secret key、service role key、`Authorization: Bearer`は使用しません。共有Supabaseの関数やテーブルを、このリポジトリのSQLで置き換えないでください。
 
 ## 保存
 
-現在ブラウザに保存する情報はプレイヤー名だけです。
+ブラウザに保存する情報はプレイヤー名だけです。
 
 ```text
 localStorage["tomatoku.playerName"]

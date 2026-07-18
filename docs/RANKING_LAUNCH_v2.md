@@ -38,6 +38,25 @@
 5×5の畑に🍅を置き、公式3問の補正タイムを競うパズル
 ```
 
+### Data API読取権限
+
+`public.games`はRLS有効で、次の既存ポリシーを確認した。
+
+```text
+policy: games_select_public
+role: anon
+command: SELECT
+condition: is_active = true
+```
+
+ポリシーは存在していたが、`anon`にテーブルの`SELECT`権限が無かったため、次だけを追加した。
+
+```sql
+grant select on table public.games to anon;
+```
+
+`INSERT`、`UPDATE`、`DELETE`権限は追加していない。実験場のData APIからは、RLSポリシーにより`is_active=true`のゲームだけを取得できる。
+
 ## 3. 共通RPC契約
 
 利用する関数:
@@ -103,7 +122,7 @@ game_scores_left = 0
 players_left = 0
 ```
 
-`public.games`の`tomatoku`登録だけを残した。
+`public.games`の`tomatoku`登録だけを残した。ゲーム統計は`total_play_count=0`、`player_count=0`へ戻っている。
 
 ## 6. クライアント設定
 
@@ -146,6 +165,12 @@ submissionsEnabled = true
 - Supabase URLとPublishable keyの形式
 - ホームの実験場・詳細ランキングリンク
 - 結果画面の実験場・詳細ランキングリンク
+
+確認結果:
+
+```text
+LAUNCH CONFIG TEST RESULT: PASS
+```
 
 ## 9. 残る確認
 

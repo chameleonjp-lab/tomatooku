@@ -1,175 +1,309 @@
+import { RANKING_CONFIG } from "./ranking-config.js";
+
 /**
- * トマトオク ランキング連携 (Supabase)
+ * トマトオク 共通ランキング連携 (Supabase REST RPC)
  *
- * 設計方針:
- *   - 公開可能な anon key のみを使用(secret key は絶対に使わない)。
- *   - 依存ライブラリを入れず、Supabase の REST(/rest/v1/rpc/...)へ fetch する。
- *   - 設定が無い/通信失敗でも結果画面は必ず表示できるよう、例外を投げない。
- *   - スコア送信は1プレイにつき1回だけ(二重送信防止)。
- *
- * 想定する Supabase 側 RPC(詳細は docs/SUPABASE_SETUP.md):
- *   submit_score(p_game_slug text, p_player_name text, p_score int)
- *     -> { first_score int, best_score int, rank int }
- *   get_ranking(p_game_slug text, p_limit int)
- *     -> [{ player_name text, best_score int, first_score int, rank int }]
- *
- * 既存 chameleonjp ゲームの RPC 名/引数名が異なる場合は、
- * 下の CONFIG とこのファイル内のパラメータ名のみ合わせれば差し替え可能。
+ * - ブラウザ公開可能な Publishable key だけを `apikey` ヘッダーへ設定する。
+ * - secret / service_role key と Authorization: Bearer は使用しない。
+ * - 共有 RPC の引数・返却列は実DBで確認済みの契約へ固定する。
+ * - v2公式モード以外（現行v1のランダム3問を含む）は送信しない。
  */
 
-import { SCORE } from "./game.js";
+export const DEFAULT_CLIENT_VERSION = "tomatooku-web-2.0.0-ranking-v1";
+const MAX_POSTGRES_INT = 2_147_483_647;
+const CONTROL_OR_FORMAT_RE = /[\p{Cc}\p{Cf}]/gu;
+const PLACEHOLDER_RE = /(xxxx|example|placeholder|公開可能なキー|publishable key|anon key)/i;
 
-// 理論上の満点。クライアント側でもこの範囲(0〜MAX_SCORE)に丸めてから送る。
-// サーバー側 RPC でも同じ範囲に clamp すること(docs/SUPABASE_SETUP.md 参照)。
-const MAX_SCORE = SCORE.BASE; // 180000
-
-// グローバル設定(index.html の window.TOMATOKU_CONFIG で上書き可能)
 const DEFAULTS = {
-  supabaseUrl: "",
-  supabaseAnonKey: "",
-  gameSlug: "tomatoku",
-  submitRpc: "submit_score",
-  rankingRpc: "get_ranking",
-  timeoutMs: 8000,
+  supabaseUrl: RANKING_CONFIG.supabaseUrl,
+  supabasePublishableKey: RANKING_CONFIG.supabasePublishableKey,
+  supabaseAnonKey: "", // v1設定名の後方互換
+  gameSlug: RANKING_CONFIG.gameSlug,
+  clientVersion: RANKING_CONFIG.clientVersion || DEFAULT_CLIENT_VERSION,
+  timeoutMs: RANKING_CONFIG.timeoutMs,
+  submitRpc: RANKING_CONFIG.submitRpc,
+  bestRankingRpc: RANKING_CONFIG.bestRankingRpc,
+  firstRankingRpc: RANKING_CONFIG.firstRankingRpc,
 };
 
-export const CONFIG = Object.assign(
-  {},
-  DEFAULTS,
-  typeof window !== "undefined" && window.TOMATOKU_CONFIG
+function globalConfig() {
+  return typeof window !== "undefined" && window.TOMATOKU_CONFIG
     ? window.TOMATOKU_CONFIG
-    : {}
-);
-
-export function isConfigured() {
-  return Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
+    : {};
 }
 
-// 二重送信防止: 1プレイにつき送信は1回。再呼び出しは同じ結果を返す。
-let _submitPromise = null;
-let _submitted = false;
+const OVERRIDES = globalConfig();
+export const CONFIG = Object.freeze({
+  ...DEFAULTS,
+  ...OVERRIDES,
+  supabaseUrl: String(OVERRIDES.supabaseUrl || DEFAULTS.supabaseUrl),
+  supabasePublishableKey: String(
+    OVERRIDES.supabasePublishableKey ||
+      OVERRIDES.publishableKey ||
+      OVERRIDES.supabaseAnonKey ||
+      DEFAULTS.supabasePublishableKey
+  ),
+});
+export const CLIENT_VERSION = CONFIG.clientVersion;
 
-/** 送信状態をリセット(新しいプレイ開始時に呼ぶ) */
-export function resetSubmission() {
-  _submitPromise = null;
-  _submitted = false;
+function publishableKeyOf(config = CONFIG) {
+  return String(
+    config.supabasePublishableKey ||
+      config.publishableKey ||
+      config.supabaseAnonKey ||
+      ""
+  ).trim();
 }
 
-function withTimeout(promise, ms) {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error("timeout")), ms);
-    promise.then(
-      (v) => {
-        clearTimeout(t);
-        resolve(v);
-      },
-      (e) => {
-        clearTimeout(t);
-        reject(e);
-      }
-    );
-  });
-}
-
-async function rpc(name, body) {
-  const url = `${CONFIG.supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/${name}`;
-  const res = await withTimeout(
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: CONFIG.supabaseAnonKey,
-        Authorization: `Bearer ${CONFIG.supabaseAnonKey}`,
-      },
-      body: JSON.stringify(body),
-    }),
-    CONFIG.timeoutMs
-  );
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`RPC ${name} failed: ${res.status} ${text}`);
-  }
-  return res.json();
-}
-
-/**
- * スコアを送信(1プレイ1回)。例外は投げず、状態オブジェクトを返す。
- * 返り値: {
- *   status: "ok" | "skipped" | "error",
- *   firstScore: number|null,
- *   bestScore: number|null,
- *   rank: number|null,
- *   message: string,
- * }
- */
-export function submitScore({ playerName, score }) {
-  if (_submitted && _submitPromise) {
-    return _submitPromise; // 二重送信防止: 既存の結果を返す
-  }
-  _submitted = true;
-
-  if (!isConfigured()) {
-    _submitPromise = Promise.resolve({
-      status: "skipped",
-      firstScore: null,
-      bestScore: null,
-      rank: null,
-      message: "ランキング未設定(ローカル表示のみ)",
-    });
-    return _submitPromise;
-  }
-
-  _submitPromise = (async () => {
-    try {
-      const data = await rpc(CONFIG.submitRpc, {
-        p_game_slug: CONFIG.gameSlug,
-        p_player_name: String(playerName || "").slice(0, 24),
-        // 0〜MAX_SCORE に丸める(改ざん・桁あふれ対策。サーバー側でも再 clamp)
-        p_score: Math.min(MAX_SCORE, Math.max(0, Math.floor(score))),
-      });
-      // RPC は配列または単一オブジェクトを返し得るので吸収する
-      const row = Array.isArray(data) ? data[0] : data;
-      return {
-        status: "ok",
-        firstScore: row && row.first_score != null ? row.first_score : null,
-        bestScore: row && row.best_score != null ? row.best_score : score,
-        rank: row && row.rank != null ? row.rank : null,
-        message: "ランキングに送信しました",
-      };
-    } catch (err) {
-      // 失敗しても結果画面は表示する
-      return {
-        status: "error",
-        firstScore: null,
-        bestScore: null,
-        rank: null,
-        message: "ランキング送信に失敗しました(結果は表示されています)",
-      };
-    }
-  })();
-
-  return _submitPromise;
-}
-
-/**
- * ランキング上位を取得。失敗時は空配列を返す(例外は投げない)。
- * 返り値: [{ playerName, bestScore, firstScore, rank }]
- */
-export async function fetchRanking(limit = 10) {
-  if (!isConfigured()) return [];
+export function isConfigured(config = CONFIG) {
+  const url = String(config.supabaseUrl || "").trim();
+  const key = publishableKeyOf(config);
+  if (!url || !key || key.length < 20) return false;
+  if (PLACEHOLDER_RE.test(url) || PLACEHOLDER_RE.test(key)) return false;
   try {
-    const data = await rpc(CONFIG.rankingRpc, {
-      p_game_slug: CONFIG.gameSlug,
-      p_limit: limit,
-    });
-    const rows = Array.isArray(data) ? data : [];
-    return rows.map((row, i) => ({
-      playerName: row.player_name != null ? row.player_name : "?",
-      bestScore: row.best_score != null ? row.best_score : 0,
-      firstScore: row.first_score != null ? row.first_score : null,
-      rank: row.rank != null ? row.rank : i + 1,
-    }));
-  } catch (err) {
-    return [];
+    const parsed = new URL(url);
+    return parsed.protocol === "https:";
+  } catch (_) {
+    return false;
   }
+}
+
+export function normalizeDisplayName(input) {
+  return String(input ?? "")
+    .normalize("NFKC")
+    .replace(CONTROL_OR_FORMAT_RE, "")
+    .replace(/\s+/gu, " ")
+    .trim()
+    .slice(0, 24);
+}
+
+function normalizeScore(score) {
+  const numeric = Number(score);
+  if (!Number.isFinite(numeric)) return null;
+  const integer = Math.floor(numeric);
+  if (integer < 0 || integer > MAX_POSTGRES_INT) return null;
+  return integer;
+}
+
+function normalizeLimit(limit) {
+  const numeric = Math.floor(Number(limit));
+  if (!Number.isFinite(numeric)) return 10;
+  return Math.min(100, Math.max(1, numeric));
+}
+
+function baseResult(status, message) {
+  return {
+    status,
+    accepted: false,
+    firstScore: null,
+    bestScore: null,
+    playCount: null,
+    isFirstPlay: false,
+    isNewBest: false,
+    rank: null,
+    message,
+  };
+}
+
+function rankingState(status, rows, message) {
+  return { status, rows, message };
+}
+
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+export function createRankingClient(config = CONFIG, dependencies = {}) {
+  const effectiveConfig = { ...DEFAULTS, ...config };
+  const fetchImpl = dependencies.fetch || globalThis.fetch;
+  const setTimeoutImpl = dependencies.setTimeout || globalThis.setTimeout;
+  const clearTimeoutImpl = dependencies.clearTimeout || globalThis.clearTimeout;
+  const submissionByPlayId = new Map();
+
+  async function rpc(name, body) {
+    if (!isConfigured(effectiveConfig)) {
+      const error = new Error("ranking_not_configured");
+      error.code = "NOT_CONFIGURED";
+      throw error;
+    }
+    if (typeof fetchImpl !== "function") {
+      const error = new Error("fetch_unavailable");
+      error.code = "FETCH_UNAVAILABLE";
+      throw error;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeoutImpl(() => controller.abort(), effectiveConfig.timeoutMs);
+    const endpoint = `${String(effectiveConfig.supabaseUrl).replace(/\/$/, "")}/rest/v1/rpc/${name}`;
+
+    try {
+      const response = await fetchImpl(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: publishableKeyOf(effectiveConfig),
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      if (!response || typeof response.ok !== "boolean") {
+        throw new Error("invalid_response");
+      }
+      if (!response.ok) {
+        const error = new Error(`rpc_http_${response.status || 0}`);
+        error.code = "HTTP_ERROR";
+        error.httpStatus = response.status || null;
+        throw error;
+      }
+
+      try {
+        return await response.json();
+      } catch (_) {
+        const error = new Error("invalid_json");
+        error.code = "INVALID_JSON";
+        throw error;
+      }
+    } catch (error) {
+      if (controller.signal.aborted && (!error || error.name !== "AbortError")) {
+        const timeoutError = new Error("ranking_timeout");
+        timeoutError.name = "AbortError";
+        timeoutError.code = "TIMEOUT";
+        throw timeoutError;
+      }
+      throw error;
+    } finally {
+      clearTimeoutImpl(timer);
+    }
+  }
+
+  function submitScore({ playId, mode, playerName, score } = {}) {
+    // 現行v1はランダム3問で、v2公式モードではないため本番送信しない。
+    if (mode !== "official") {
+      return Promise.resolve(
+        baseResult(
+          "skipped",
+          "v2公式モード実装までランキング送信を停止しています"
+        )
+      );
+    }
+    if (!isConfigured(effectiveConfig)) {
+      return Promise.resolve(
+        baseResult("not_configured", "ランキングは未設定です")
+      );
+    }
+
+    const normalizedPlayId = String(playId || "").trim();
+    const normalizedName = normalizeDisplayName(playerName);
+    const normalizedScore = normalizeScore(score);
+    if (!normalizedPlayId || !normalizedName || normalizedScore === null) {
+      return Promise.resolve(
+        baseResult("error", "ランキングへ送信できない結果です")
+      );
+    }
+
+    if (submissionByPlayId.has(normalizedPlayId)) {
+      return submissionByPlayId.get(normalizedPlayId);
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await rpc(effectiveConfig.submitRpc, {
+          p_display_name: normalizedName,
+          p_game_slug: effectiveConfig.gameSlug,
+          p_score: normalizedScore,
+          p_client_version: effectiveConfig.clientVersion,
+        });
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row || row.accepted !== true) {
+          return baseResult("error", "ランキング登録を受け付けられませんでした");
+        }
+        return {
+          status: "ok",
+          accepted: true,
+          firstScore: numberOrNull(row.result_first_score),
+          bestScore: numberOrNull(row.result_best_score),
+          playCount: numberOrNull(row.result_play_count),
+          isFirstPlay: row.is_first_play === true,
+          isNewBest: row.is_new_best === true,
+          rank: null,
+          message: "ランキングへ登録しました",
+        };
+      } catch (_) {
+        return baseResult("error", "ランキング送信に失敗しました");
+      }
+    })();
+
+    submissionByPlayId.set(normalizedPlayId, promise);
+    return promise;
+  }
+
+  async function fetchRankingByType(type, limit = 10) {
+    if (!isConfigured(effectiveConfig)) {
+      return rankingState("not_configured", [], "ランキングは未設定です");
+    }
+    const isFirst = type === "first";
+    const rpcName = isFirst ? effectiveConfig.firstRankingRpc : effectiveConfig.bestRankingRpc;
+
+    try {
+      const data = await rpc(rpcName, {
+        p_game_slug: effectiveConfig.gameSlug,
+        p_limit: normalizeLimit(limit),
+      });
+      if (!Array.isArray(data)) {
+        return rankingState("error", [], "ランキングの形式が不正です");
+      }
+      const rows = data.map((row, index) => ({
+        rank: numberOrNull(row.rank_no) ?? index + 1,
+        playerName: String(row.display_name ?? "?"),
+        firstScore: numberOrNull(row.first_score),
+        bestScore: numberOrNull(row.best_score),
+        playCount: numberOrNull(row.play_count),
+        updatedAt: row.updated_at ?? null,
+      }));
+      return rows.length
+        ? rankingState("ok", rows, "")
+        : rankingState("empty", [], "まだランキングがありません");
+    } catch (_) {
+      return rankingState("error", [], "ランキングを読み込めませんでした");
+    }
+  }
+
+  return {
+    config: effectiveConfig,
+    submitScore,
+    fetchBestRanking: (limit) => fetchRankingByType("best", limit),
+    fetchFirstRanking: (limit) => fetchRankingByType("first", limit),
+    clearSubmissionCacheForTests: () => submissionByPlayId.clear(),
+  };
+}
+
+const defaultClient = createRankingClient(CONFIG);
+
+export function submitScore(args) {
+  return defaultClient.submitScore(args);
+}
+
+export function fetchBestRanking(limit = 10) {
+  return defaultClient.fetchBestRanking(limit);
+}
+
+export function fetchFirstRanking(limit = 10) {
+  return defaultClient.fetchFirstRanking(limit);
+}
+
+/** 現行v1 UIとの互換: ベストランキング行だけを返す。 */
+export async function fetchRanking(limit = 10) {
+  const result = await fetchBestRanking(limit);
+  return result.status === "ok" ? result.rows : [];
+}
+
+/**
+ * v1 UIがプレイ開始時に呼ぶ後方互換API。
+ * v2はplayId単位で重複防止するため、画面遷移ではキャッシュを解除しない。
+ */
+export function resetSubmission() {
+  // intentional no-op
 }

@@ -4,12 +4,11 @@
 
 ## 現行v1
 
-現在の実装は、ランダムに選ばれた3ステージを連続で解き、速さと正確さを点数で競います。
+現在のゲーム画面は、ランダムに選ばれた3ステージを連続で解き、速さと正確さを点数で競うv1です。
 
 - 各行・各列・各エリアに🍅は1個
 - 🍅同士は上下左右斜めで隣り合えない
 - 誤タップとヒントで減点
-- Supabaseランキングを想定
 - 遊び方モーダルと4×4自動チュートリアル
 - 30ステージを一意解検証済み
 
@@ -19,25 +18,38 @@
 
 現行v1の実装仕様は [`docs/SPEC.md`](docs/SPEC.md) を参照してください。
 
-## v2計画
+## v2進行状況
 
-v2は将来仕様であり、まだ実装されていません。
+v2は段階的に実装しています。
 
-主な予定:
+### 完了
+
+- v2要件・技術仕様・実装計画の確定
+- 実験場の共有Supabase RPC定義の確認
+- 共通ランキング取得クライアント
+- 共通`submit_score`送信クライアント
+- Publishable keyを`apikey`だけに設定する構成
+- `AbortController`による通信タイムアウト
+- play ID単位の二重送信防止
+- ランキング通信の単体テスト
+
+### 未実装
 
 - 全員が同じ条件で遊ぶ「公式3問」
 - ランキング対象外の「ランダム練習」
-- 点数ではなく、誤タップとヒントを加算した「補正タイム」
-- 実験場の共通Supabase RPCへの対応
-- カウントダウン、ステージ別時間、競合防止
+- 誤タップとヒントを加算した「補正タイム」
+- カウントダウン、ステージ別時間、非同期競合防止
 - 実験場と詳細ランキングへの導線
 - 問題生成器と難易度判定の強化
 
-v2の契約:
+**重要:** 現行v1はランダム3問のため、本番ランキングへスコアを送信しません。`submit_score`は、将来の`official`モードとplay IDが明示された場合だけ動作します。
+
+v2文書:
 
 - [v2要件書](docs/REQUIREMENTS_v2.md)
 - [v2技術仕様](docs/SPEC_v2.md)
 - [v2実装計画](docs/IMPLEMENTATION_PLAN_v2.md)
+- [ランキング契約確認](docs/RANKING_REVIEW_v2.md)
 
 ## ローカル実行
 
@@ -51,16 +63,22 @@ npm run serve
 ## 構成
 
 ```text
-index.html        静的エントリ
+index.html
 src/
-  main.js         画面制御・盤面描画・タイマー・送信・シェア
-  game.js         ゲームロジック
-  stages.js       30ステージ
-  ranking.js      Supabase連携
-  tutorial.js     4×4自動チュートリアル
-  styles.css      スタイル
-scripts/          生成・検証・テスト
-docs/             v1文書・v2計画
+  game.js             ゲームロジック
+  main.js             画面制御
+  ranking-config.js   ブラウザ公開可能なランキング設定
+  ranking.js          共有Supabase RPCクライアント
+  stages.js           30ステージ
+  styles.css          スタイル
+  tutorial.js         4×4自動チュートリアル
+scripts/
+  game.test.js
+  ranking.test.js
+  verify_stages.js
+  e2e.test.js
+docs/
+  v1文書・v2契約・確認記録
 ```
 
 現在の複数ファイル・ES Modules構成を正式な開発構成として維持できます。1ファイル化や全作品共通の容量上限は必須条件ではありません。
@@ -68,30 +86,31 @@ docs/             v1文書・v2計画
 ## 開発コマンド
 
 ```bash
-npm run gen       # ステージを再生成
-npm run verify    # 出荷ステージの一意解・形式を検証
-npm test          # ゲームロジック単体テスト
-npm run e2e       # Playwrightブラウザテスト
-npm run serve     # ローカルHTTPサーバー
+npm run gen           # ステージを再生成
+npm run verify        # 出荷ステージの一意解・形式を検証
+npm test              # ゲームロジックとランキング契約の単体テスト
+npm run test:game     # ゲームロジックだけをテスト
+npm run test:ranking  # ランキング契約だけをテスト
+npm run e2e           # Playwrightブラウザテスト
+npm run serve         # ローカルHTTPサーバー
 ```
 
-実行済み結果は [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md) を参照してください。
+既存のゲームテスト結果は [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md) を参照してください。ランキング契約の確認結果は [`docs/RANKING_REVIEW_v2.md`](docs/RANKING_REVIEW_v2.md) に記録しています。
 
-## ランキング設定
+## ランキング連携
 
-現行v1は`index.html`の`window.TOMATOKU_CONFIG`から公開可能なanon / Publishable keyを読みます。secretまたはservice role keyを入れないでください。
+ブラウザ公開可能な設定は`src/ranking-config.js`へ集約しています。
 
-```js
-window.TOMATOKU_CONFIG = {
-  supabaseUrl: "https://xxxx.supabase.co",
-  supabaseAnonKey: "公開可能なキー",
-  gameSlug: "tomatoku",
-};
-```
+- `game_slug`: `tomatoku`
+- 送信: `submit_score`
+- 最高記録取得: `get_best_score_ranking`
+- 初回記録取得: `get_first_try_ranking`
+- ヘッダー: `apikey`
+- 送信本文: `p_display_name`、`p_game_slug`、`p_score`、`p_client_version`
 
-`game_slug`は`tomatoku`、表示名・リポジトリ名・公開予定パスは`tomatooku`です。
+secret key、service role key、`Authorization: Bearer`は使用しません。Publishable keyはブラウザ公開用ですが、文書や作業報告へ複製しません。
 
-v2では、実験場の共通RPC契約へ合わせてランキング接続を更新する予定です。現行の参考SQLを共有Supabaseへそのまま適用しないでください。
+共有Supabaseの関数やテーブルを、このリポジトリのSQLで置き換えないでください。現在`tomatoku`は`public.games`へ未登録で、実スコア送信も未実施です。公式問題と補正タイムの実装後に登録・疎通確認を行います。
 
 ## 保存
 

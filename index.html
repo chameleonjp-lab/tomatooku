@@ -18,13 +18,11 @@
     />
     <link rel="stylesheet" href="./src/styles.css" />
 
-    <!-- ランキング連携設定。公開可能な anon key のみを入れること。
-         未設定でもゲームは動作する(ローカル表示のみ)。
-         詳細は docs/SUPABASE_SETUP.md 参照。 -->
+    <!-- v1互換設定。空値の場合は src/ranking-config.js の公開設定を使う。 -->
     <script>
       window.TOMATOKU_CONFIG = {
-        supabaseUrl: "", // 例: https://xxxx.supabase.co
-        supabaseAnonKey: "", // 公開 anon key
+        supabaseUrl: "",
+        supabasePublishableKey: "",
         gameSlug: "tomatoku",
       };
     </script>
@@ -70,6 +68,39 @@
         </p>
       </section>
 
+      <!-- ===== カウントダウン ===== -->
+      <section
+        id="screen-countdown"
+        class="screen"
+        aria-label="ゲーム開始カウントダウン"
+        aria-live="assertive"
+        style="justify-content: center"
+      >
+        <div class="brand">
+          <div class="logo">🍅</div>
+          <h1>準備</h1>
+          <p>盤面はスタート後に表示されます</p>
+        </div>
+        <div class="card" style="text-align: center">
+          <div
+            id="countdown-value"
+            style="
+              min-height: 1.2em;
+              font-size: clamp(3.8rem, 22vw, 7rem);
+              line-height: 1.1;
+              font-weight: 900;
+              color: var(--tomato);
+              font-variant-numeric: tabular-nums;
+            "
+          >
+            3
+          </div>
+          <button id="countdown-cancel-btn" class="btn secondary">
+            ホームへ戻る
+          </button>
+        </div>
+      </section>
+
       <!-- ===== ゲーム ===== -->
       <section id="screen-game" class="screen">
         <div class="hud">
@@ -94,7 +125,7 @@
         </div>
 
         <div class="board-wrap">
-          <div id="board" class="board"></div>
+          <div id="board" class="board" aria-busy="false"></div>
         </div>
 
         <div class="game-foot">
@@ -138,7 +169,7 @@
             </div>
           </div>
 
-          <div id="submit-state" class="submit-state pending">送信中…</div>
+          <div id="submit-state" class="submit-state pending">確認中…</div>
 
           <div class="btn-row">
             <button id="again-btn" class="btn">もう一度遊ぶ</button>
@@ -218,7 +249,7 @@
       </div>
     </div>
 
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script type="module" src="./src/main.js"></script>
   </body>

@@ -1,10 +1,7 @@
 /**
  * トマトオク ブラウザ E2E テスト (Playwright)
- * iPhone SE 相当(320x568)で実際にプレイし、白画面/横スクロール/
- * フロー破綻が無いかを確認する。
- *
- * 盤面の解は「見えているエリア色」だけから一意解ソルバで求める
- * (隠し solution は使わない)。
+ * iPhone SE相当で、カウントダウン・タイマー開始・キャンセル競合を含む
+ * ホームから結果までのフローを確認する。
  */
 import http from "http";
 import fs from "fs";
@@ -27,61 +24,71 @@ const MIME = {
 function startServer() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
-      let p = decodeURIComponent(req.url.split("?")[0]);
-      if (p === "/") p = "/index.html";
-      const file = path.join(ROOT, p);
+      let pathname = decodeURIComponent(req.url.split("?")[0]);
+      if (pathname === "/") pathname = "/index.html";
+
+      const file = path.join(ROOT, pathname);
       if (!file.startsWith(ROOT) || !fs.existsSync(file)) {
         res.writeHead(404);
         res.end("not found");
         return;
       }
-      const ext = path.extname(file);
-      res.writeHead(200, { "Content-Type": MIME[ext] || "text/plain" });
+
+      res.writeHead(200, {
+        "Content-Type": MIME[path.extname(file)] || "text/plain",
+      });
       fs.createReadStream(file).pipe(res);
     });
     server.listen(PORT, () => resolve(server));
   });
 }
 
-// 一意解ソルバ(エリア文字列から)
 function solveBoard(regionStrings) {
   const region = [];
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
       region[r * N + c] = regionStrings[r].charCodeAt(c) - 65;
+    }
+  }
+
   const colUsed = Array(N).fill(false);
   const regUsed = Array(N).fill(false);
   const placed = [];
-  const sols = [];
+  const solutions = [];
+
   function rec(row) {
     if (row === N) {
-      sols.push(placed.slice());
+      solutions.push(placed.slice());
       return;
     }
+
     for (let c = 0; c < N; c++) {
       if (colUsed[c]) continue;
-      const rg = region[row * N + c];
-      if (regUsed[rg]) continue;
+      const regionId = region[row * N + c];
+      if (regUsed[regionId]) continue;
       if (row > 0 && Math.abs(placed[row - 1] - c) < 2) continue;
+
       colUsed[c] = true;
-      regUsed[rg] = true;
+      regUsed[regionId] = true;
       placed[row] = c;
       rec(row + 1);
       colUsed[c] = false;
-      regUsed[rg] = false;
+      regUsed[regionId] = false;
     }
   }
+
   rec(0);
-  return sols;
+  return solutions;
 }
 
-let pass = 0,
-  fail = 0;
-function ok(cond, msg) {
-  if (cond) pass++;
-  else {
+let pass = 0;
+let fail = 0;
+function ok(condition, message) {
+  if (condition) {
+    pass++;
+  } else {
     fail++;
-    console.log("  ✗ FAIL:", msg);
+    console.log("  ✗ FAIL:", message);
   }
 }
 
@@ -89,14 +96,14 @@ async function getRegions(page) {
   return page.evaluate(() => {
     const cells = [...document.querySelectorAll("#board .cell")];
     const rows = [];
+
     for (let r = 0; r < 5; r++) {
-      let s = "";
+      let row = "";
       for (let c = 0; c < 5; c++) {
-        const cls = cells[r * 5 + c].className;
-        const m = cls.match(/area-([A-E])/);
-        s += m ? m[1] : "?";
+        const match = cells[r * 5 + c].className.match(/area-([A-E])/);
+        row += match ? match[1] : "?";
       }
-      rows.push(s);
+      rows.push(row);
     }
     return rows;
   });
@@ -104,8 +111,8 @@ async function getRegions(page) {
 
 async function clickCell(page, r, c) {
   await page.evaluate(
-    ([r, c]) => {
-      document.querySelectorAll("#board .cell")[r * 5 + c].click();
+    ([row, col]) => {
+      document.querySelectorAll("#board .cell")[row * 5 + col].click();
     },
     [r, c]
   );
@@ -113,19 +120,39 @@ async function clickCell(page, r, c) {
 
 async function solveCurrentStage(page) {
   const regions = await getRegions(page);
-  const sols = solveBoard(regions);
-  ok(sols.length === 1, `表示中の盤面が一意解 (got ${sols.length})`);
-  const sol = sols[0]; // sol[row] = col
+  const solutions = solveBoard(regions);
+  ok(solutions.length === 1, `表示中の盤面が一意解 (got ${solutions.length})`);
+
+  const solution = solutions[0];
   for (let r = 0; r < N; r++) {
-    await clickCell(page, r, sol[r]);
+    await clickCell(page, r, solution[r]);
   }
+}
+
+async function startFromHome(page, name = "テスター") {
+  await page.fill("#player-name", name);
+  await page.click("#start-btn");
+  await page.waitForSelector("#screen-countdown.active");
+}
+
+async function waitForPlaying(page) {
+  await page.waitForSelector("#screen-game.active", { timeout: 6000 });
+  await page.waitForFunction(() => {
+    const board = document.querySelector("#board");
+    return (
+      board &&
+      board.getAttribute("aria-busy") === "false" &&
+      document.querySelectorAll("#board .cell").length === 25 &&
+      !document.querySelector("#hint-btn").disabled
+    );
+  });
 }
 
 async function main() {
   const server = await startServer();
   const browser = await launchBrowser();
   const context = await browser.newContext({
-    viewport: { width: 320, height: 568 }, // iPhone SE 相当
+    viewport: { width: 320, height: 568 },
     deviceScaleFactor: 2,
     isMobile: true,
     hasTouch: true,
@@ -133,83 +160,108 @@ async function main() {
   const page = await context.newPage();
 
   const consoleErrors = [];
-  page.on("console", (m) => {
-    if (m.type() === "error") consoleErrors.push(m.text());
-  });
   const pageErrors = [];
-  page.on("pageerror", (e) => pageErrors.push(e.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle" });
 
-  // 1. 白画面でない: ブランドが見える
   console.log("# ホーム表示");
-  ok(await page.isVisible("#screen-home"), "ホーム画面が表示される");
-  ok((await page.textContent(".brand h1")).includes("トマトオク"), "タイトル表示");
-
-  // 横スクロールが無い
-  const noHScroll = await page.evaluate(
-    () => document.documentElement.scrollWidth <= window.innerWidth
+  ok(await page.isVisible("#screen-home"), "ホーム画面が表示");
+  ok(
+    (await page.textContent("#screen-home .brand h1")).includes("トマトオク"),
+    "タイトル表示"
   );
-  ok(noHScroll, "横スクロールが発生しない(320px)");
+  ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    ),
+    "横スクロールなし"
+  );
 
-  // 2. 名前未入力でスタート → エラー
   console.log("# 名前必須");
   await page.click("#start-btn");
-  ok(
-    (await page.textContent("#name-error")).length > 0,
-    "名前未入力でエラー表示・開始しない"
-  );
-  ok(await page.isVisible("#screen-home"), "まだホームのまま");
+  ok((await page.textContent("#name-error")).length > 0, "名前未入力で開始しない");
+  ok(await page.isVisible("#screen-home"), "ホームのまま");
 
-  // 3. 名前入力して開始
-  console.log("# ゲーム開始");
-  await page.fill("#player-name", "テスター");
-  await page.click("#start-btn");
-  await page.waitForSelector("#screen-game.active");
-  ok(await page.isVisible("#screen-game"), "ゲーム画面に遷移");
-  const cellCount = await page.evaluate(
-    () => document.querySelectorAll("#board .cell").length
-  );
-  ok(cellCount === 25, `盤面に25マス (got ${cellCount})`);
+  console.log("# カウントダウン");
+  await startFromHome(page);
+  ok((await page.textContent("#countdown-value")).trim() === "3", "3から開始");
+  ok((await page.locator("#board .cell").count()) === 0, "カウントダウン中は盤面を表示しない");
 
-  // 4. 誤タップ検証: 同じ行に2個置く
+  console.log("# カウントダウンキャンセル競合");
+  await page.click("#countdown-cancel-btn");
+  await page.waitForSelector("#screen-home.active");
+  await page.waitForTimeout(3000);
+  ok(await page.isVisible("#screen-home"), "キャンセル後もホームを維持");
+  ok(!(await page.isVisible("#screen-game.active")), "古いカウントダウンがゲームを開始しない");
+
+  console.log("# ゲーム開始と計測");
+  await startFromHome(page);
+  await waitForPlaying(page);
+  ok((await page.locator("#board .cell").count()) === 25, "盤面25マス");
+  const initialTime = (await page.textContent("#hud-time")).trim();
+  ok(/^0:0[0-1]\.\d$/.test(initialTime), `描画後にほぼ0から計測開始 (${initialTime})`);
+
   console.log("# 誤タップ");
-  const regions0 = await getRegions(page);
-  const sol0 = solveBoard(regions0)[0];
-  // row0 の正解列に置く
-  await clickCell(page, 0, sol0[0]);
-  // row0 の別の列(正解でない)に置く → 誤タップ(row)
-  const otherCol = sol0[0] === 0 ? 2 : 0;
-  await clickCell(page, 0, otherCol);
-  const mistakesAfter = await page.textContent("#hud-mistakes");
-  ok(Number(mistakesAfter) >= 1, `誤タップが計上される (${mistakesAfter})`);
-  // 取り除いてリセット
-  await clickCell(page, 0, sol0[0]);
+  const regions = await getRegions(page);
+  const solution = solveBoard(regions)[0];
+  await clickCell(page, 0, solution[0]);
+  const anotherCol = solution[0] === 0 ? 2 : 0;
+  await clickCell(page, 0, anotherCol);
+  ok(Number(await page.textContent("#hud-mistakes")) >= 1, "誤タップを計上");
+  await clickCell(page, 0, solution[0]);
 
-  // 5. 3ステージを解いて結果へ
+  console.log("# ステージ遷移中のリタイア競合");
+  await solveCurrentStage(page);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.click("#quit-btn");
+  await page.waitForSelector("#screen-home.active");
+  await page.waitForTimeout(1200);
+  ok(await page.isVisible("#screen-home"), "遷移中リタイア後もホームを維持");
+  ok(!(await page.isVisible("#screen-result.active")), "古い遷移が結果へ進まない");
+  ok((await page.locator("#board .cell").count()) === 0, "旧盤面を破棄");
+
   console.log("# 3ステージクリア");
-  for (let s = 0; s < 3; s++) {
+  await startFromHome(page);
+  await waitForPlaying(page);
+
+  for (let stageIndex = 0; stageIndex < 3; stageIndex++) {
+    const currentLabel = (await page.textContent("#hud-stage")).trim();
     await solveCurrentStage(page);
-    // クリア演出(850ms)待ち
-    await page.waitForTimeout(1000);
+
+    if (stageIndex < 2) {
+      await page.waitForFunction(
+        (previous) => {
+          const label = document.querySelector("#hud-stage")?.textContent?.trim();
+          const board = document.querySelector("#board");
+          return (
+            label &&
+            label !== previous &&
+            board?.getAttribute("aria-busy") === "false" &&
+            !document.querySelector("#hint-btn").disabled
+          );
+        },
+        currentLabel,
+        { timeout: 5000 }
+      );
+    }
   }
+
   await page.waitForSelector("#screen-result.active", { timeout: 5000 });
-  ok(await page.isVisible("#screen-result"), "結果画面に遷移");
+  ok(await page.isVisible("#screen-result"), "結果画面へ遷移");
 
-  const finalScore = await page.textContent("#result-score");
-  ok(Number(finalScore.replace(/,/g, "")) > 0, `最終スコア表示 (${finalScore})`);
+  const finalScore = (await page.textContent("#result-score")).replace(/,/g, "");
+  ok(Number(finalScore) > 0, `最終スコア表示 (${finalScore})`);
+  ok(/\d:\d\d/.test(await page.textContent("#result-time")), "クリアタイム表示");
   ok(
-    (await page.textContent("#result-time")).match(/\d:\d\d/),
-    "クリアタイム表示"
+    (await page.textContent("#submit-state")).includes("ランキング送信を停止"),
+    "現行ランダムプレイはランキング送信停止"
   );
-  ok((await page.textContent("#result-mistakes")) !== "", "誤タップ数表示");
-  ok((await page.textContent("#result-hints")) !== "", "ヒント回数表示");
-  // ランキング未設定 → skipped 表示(白画面/例外でなく)
-  const submitState = await page.textContent("#submit-state");
-  ok(submitState.length > 0, `送信状態が表示される: "${submitState}"`);
 
-  // 6. シェア文にURLが含まれるか(navigator.share をスタブして捕捉)
-  console.log("# 結果シェアURL");
+  console.log("# 結果シェア");
   const shareCaptured = await page.evaluate(() => {
     return new Promise((resolve) => {
       navigator.share = (data) => {
@@ -221,22 +273,18 @@ async function main() {
     });
   });
   ok(
-    shareCaptured &&
-      ((shareCaptured.text && shareCaptured.text.includes("http")) ||
-        (shareCaptured.url && shareCaptured.url.includes("http"))),
-    "結果シェアにゲームURLが含まれる"
+    shareCaptured && shareCaptured.text && shareCaptured.text.includes("http"),
+    "シェア本文に正式URL"
   );
 
-  // 7. もう一度遊ぶ
   console.log("# もう一度遊ぶ");
   await page.click("#again-btn");
-  await page.waitForSelector("#screen-game.active");
-  ok(await page.isVisible("#screen-game"), "再プレイでゲーム画面へ");
+  await page.waitForSelector("#screen-countdown.active");
+  ok(await page.isVisible("#screen-countdown"), "再プレイもカウントダウンから開始");
+  await page.click("#countdown-cancel-btn");
 
-  // 8. エラーが出ていないこと
   console.log("# エラーチェック");
   ok(pageErrors.length === 0, `未捕捉エラーなし (${pageErrors.join("; ")})`);
-  // console.error はランキング失敗等で出る可能性があるが未設定時は出ない想定
   if (consoleErrors.length) console.log("  console.error:", consoleErrors);
 
   await browser.close();
@@ -246,7 +294,7 @@ async function main() {
   process.exit(fail === 0 ? 0 : 1);
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

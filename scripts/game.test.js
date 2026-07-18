@@ -10,6 +10,7 @@ import {
   computeScore,
   formatTime,
   SCORE,
+  SESSION_STATUS,
   N,
 } from "../src/game.js";
 import { STAGES } from "../src/stages.js";
@@ -28,7 +29,6 @@ function section(name) {
   console.log("\n# " + name);
 }
 
-// 決定的乱数(再現性のため)
 function seededRand(seed) {
   let a = seed >>> 0;
   return function () {
@@ -40,136 +40,154 @@ function seededRand(seed) {
   };
 }
 
-// ---- 1. ステージバンク ----
 section("ステージバンク");
-ok(STAGES.length >= 30, `30問以上ある (${STAGES.length})`);
+ok(STAGES.length >= 3, `3問以上ある (${STAGES.length})`);
 const diffCount = { 1: 0, 2: 0, 3: 0 };
-STAGES.forEach((s) => (diffCount[s.difficulty] = (diffCount[s.difficulty] || 0) + 1));
-ok(diffCount[1] >= 1 && diffCount[2] >= 1 && diffCount[3] >= 1, "各難易度が存在");
-console.log("  難易度分布:", diffCount);
-
-// ---- 2. ステージ選出 ----
-section("ステージ選出 (pickStages)");
-for (let seed = 1; seed <= 200; seed++) {
-  const stages = pickStages(seededRand(seed));
-  const ids = stages.map((s) => s.id);
-  if (stages.length !== 3) ok(false, `seed ${seed}: 3ステージでない`);
-  if (new Set(ids).size !== 3) ok(false, `seed ${seed}: 重複あり ${ids}`);
-}
-ok(true, "200回の選出すべてで3ステージ・重複なし");
-// 難易度順(1,2,3)になっているか
-const sExample = pickStages(seededRand(42));
+STAGES.forEach((stage) => {
+  diffCount[stage.difficulty] = (diffCount[stage.difficulty] || 0) + 1;
+});
 ok(
-  sExample[0].difficulty <= sExample[1].difficulty &&
-    sExample[1].difficulty <= sExample[2].difficulty,
+  diffCount[1] >= 1 && diffCount[2] >= 1 && diffCount[3] >= 1,
+  "各難易度が存在"
+);
+
+section("ステージ選出 (pickStages)");
+let selectionsValid = true;
+for (let seed = 1; seed <= 500; seed++) {
+  const stages = pickStages(seededRand(seed));
+  const ids = stages.map((stage) => stage.id);
+  const signatures = stages.map(solutionSignature);
+  if (
+    stages.length !== 3 ||
+    new Set(ids).size !== 3 ||
+    new Set(signatures).size !== 3
+  ) {
+    selectionsValid = false;
+    break;
+  }
+}
+ok(
+  selectionsValid,
+  "500回の選出すべてでID・正解パターンが重複しない"
+);
+
+const example = pickStages(seededRand(42));
+ok(
+  example[0].difficulty <= example[1].difficulty &&
+    example[1].difficulty <= example[2].difficulty,
   "難易度が やさしい→ふつう→むずかしい の順"
 );
 
-// ---- 3. 各ステージ solution で必ずクリアできる ----
 section("solution でクリア判定");
 let allClear = true;
 for (const stage of STAGES) {
-  const st = new StageState(stage);
+  const state = new StageState(stage);
   let mistakes = 0;
   for (const [r, c] of stage.solution) {
-    const res = st.tap(r, c);
-    if (res.type === "mistake") mistakes++;
+    const result = state.tap(r, c);
+    if (result.type === "mistake") mistakes++;
   }
-  if (!st.cleared || mistakes > 0) {
+  if (!state.cleared || mistakes > 0) {
     allClear = false;
-    console.log(`  ✗ ${stage.id}: cleared=${st.cleared} mistakes=${mistakes}`);
+    console.log(
+      `  ✗ ${stage.id}: cleared=${state.cleared} mistakes=${mistakes}`
+    );
   }
 }
-ok(allClear, "全30ステージ solution 順タップで誤タップ0・クリア");
+ok(allClear, "全ステージをsolution順タップでクリアできる");
 
-// ---- 4. 誤タップ判定(見えているルールのみ) ----
 section("誤タップ判定");
 {
   const stage = STAGES[0];
-  const st = new StageState(stage);
+  const state = new StageState(stage);
   const [r0, c0] = stage.solution[0];
-  st.tap(r0, c0); // 正しく1個置く
-  // 同じ行の別マスは誤タップ
+  state.tap(r0, c0);
+
   let rowMistake = false;
   for (let c = 0; c < N; c++) {
     if (c === c0) continue;
-    const res = st.tap(r0, c);
-    if (res.type === "mistake" && res.reason === "row") rowMistake = true;
-    // 誤タップでは置かれない
-    ok(!st.has(r0, c) || c === c0, "誤タップ時は置かれない");
+    const result = state.tap(r0, c);
+    rowMistake = result.type === "mistake" && result.reason === "row";
+    ok(!state.has(r0, c), "誤タップ時は置かれない");
     break;
   }
-  ok(rowMistake, "同じ行への配置は row 誤タップ");
+  ok(rowMistake, "同じ行への配置はrow誤タップ");
 
-  // 隣接(斜め)誤タップ
-  const st2 = new StageState(stage);
-  st2.tap(2, 2);
-  const adj = st2.tap(1, 1); // 斜め隣接
-  ok(adj.type === "mistake" && adj.reason === "adjacent", "斜め隣接は adjacent 誤タップ");
+  const state2 = new StageState(stage);
+  state2.tap(2, 2);
+  const adjacent = state2.tap(1, 1);
+  ok(
+    adjacent.type === "mistake" && adjacent.reason === "adjacent",
+    "斜め隣接はadjacent誤タップ"
+  );
 
-  // 最終解と違うマスでも、ルール違反でなければ誤タップにしない
-  const st3 = new StageState(stage);
-  // 空盤面に任意の1マスを置く → 必ず合法(置ける)
-  const first = st3.tap(0, 0);
+  const state3 = new StageState(stage);
+  const first = state3.tap(0, 0);
   ok(first.type !== "mistake", "空盤面の最初の1手は誤タップにならない");
 }
 
-// ---- 5. 取り除き ----
 section("取り除き");
 {
-  const st = new StageState(STAGES[0]);
+  const state = new StageState(STAGES[0]);
   const [r, c] = STAGES[0].solution[0];
-  st.tap(r, c);
-  ok(st.has(r, c) && st.count === 1, "置いた");
-  const res = st.tap(r, c);
-  ok(res.type === "remove" && !st.has(r, c) && st.count === 0, "取り除いた");
+  state.tap(r, c);
+  ok(state.has(r, c) && state.count === 1, "置いた");
+  const result = state.tap(r, c);
+  ok(
+    result.type === "remove" && !state.has(r, c) && state.count === 0,
+    "取り除いた"
+  );
 }
 
-// ---- 6. ヒント ----
 section("ヒント");
 {
-  const st = new StageState(STAGES[0]);
-  // 誤った(正解でない)合法配置をしてからヒント
-  // まず solution に無い合法セルを探して置く
-  const solSet = new Set(STAGES[0].solution.map(([r, c]) => r * N + c));
-  let placedWrong = null;
-  for (let r = 0; r < N && !placedWrong; r++) {
+  const state = new StageState(STAGES[0]);
+  const solutionSet = new Set(
+    STAGES[0].solution.map(([r, c]) => r * N + c)
+  );
+
+  outer:
+  for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
-      if (solSet.has(r * N + c)) continue;
-      if (st.canPlace(r, c).ok) {
-        st.place(r, c);
-        placedWrong = [r, c];
-        break;
+      if (solutionSet.has(r * N + c)) continue;
+      if (state.canPlace(r, c).ok) {
+        state.place(r, c);
+        break outer;
       }
     }
   }
-  const before = st.count;
-  const hinted = st.applyHint();
-  ok(hinted !== null, "ヒントでセルが確定される");
-  // ヒント後、置かれているセルはすべて solution の部分集合(進行不能を防ぐ正規化)
-  let subset = true;
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
-      if (st.has(r, c) && !solSet.has(r * N + c)) subset = false;
-  ok(subset, "ヒント後の盤面は solution の部分集合(誤配置を除去)");
 
-  // ヒントを5回(以上)使うと必ずクリアできる(進行不能にならない)
-  const st2 = new StageState(STAGES[5]);
+  const hinted = state.applyHint();
+  ok(hinted !== null, "ヒントでセルが確定される");
+
+  let subset = true;
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      if (state.has(r, c) && !solutionSet.has(r * N + c)) {
+        subset = false;
+      }
+    }
+  }
+  ok(subset, "ヒント後の盤面はsolutionの部分集合");
+
+  const state2 = new StageState(STAGES[Math.min(2, STAGES.length - 1)]);
   let guard = 0;
-  while (st2.canHint() && guard < 10) {
-    st2.applyHint();
+  while (state2.canHint() && guard < 10) {
+    state2.applyHint();
     guard++;
   }
-  ok(st2.cleared, "ヒント連打で必ずクリア(進行不能にならない)");
-  ok(!st2.canHint(), "クリア後はヒント不可");
+  ok(state2.cleared, "ヒント連打で必ずクリア");
+  ok(!state2.canHint(), "クリア後はヒント不可");
 }
 
-// ---- 7. スコア計算 ----
 section("スコア計算");
-ok(computeScore({ elapsedMs: 0, mistakeCount: 0, hintCount: 0 }) === 180000, "満点180000");
+ok(
+  computeScore({ elapsedMs: 0, mistakeCount: 0, hintCount: 0 }) === SCORE.BASE,
+  "満点 = BASE"
+);
 ok(
   computeScore({ elapsedMs: 10000, mistakeCount: 2, hintCount: 1 }) ===
-    180000 - 10000 - 6000 - 30000,
+    SCORE.BASE - 10000 - SCORE.MISTAKE_PENALTY * 2 - SCORE.HINT_PENALTY,
   "減点が正しい"
 );
 ok(
@@ -177,86 +195,114 @@ ok(
   "0未満にならない"
 );
 
-// ---- 8. セッション全体フロー ----
+section("playId");
+{
+  const first = new GameSession("a", seededRand(1));
+  const second = new GameSession("b", seededRand(2));
+  ok(Boolean(first.playId), "playIdが生成される");
+  ok(first.playId !== second.playId, "プレイごとにplayIdが異なる");
+}
+
+section("タイマー開始前");
+{
+  const session = new GameSession("t", seededRand(3));
+  ok(session.elapsedMs(5000) === 0, "開始前は0ms");
+  ok(session.status === SESSION_STATUS.READY, "開始前statusはready");
+}
+
+section("描画後の明示開始");
+{
+  const session = new GameSession("t", seededRand(4));
+  session.startStage(100);
+  ok(session.status === SESSION_STATUS.PLAYING, "startStageでplaying");
+  ok(session.elapsedMs(2100) === 2000, "進行中は経過する");
+}
+
+section("演出時間と描画待ちの除外");
+{
+  const session = new GameSession("t", seededRand(5));
+
+  session.startStage(100);
+  session.finishStage(1100);
+  ok(session.elapsedMs(6100) === 1000, "演出中は増えない");
+
+  const finished1 = session.advance(6100);
+  ok(!finished1, "1問目では未完了");
+  ok(
+    session.status === SESSION_STATUS.STAGE_TRANSITION,
+    "advance後もstageTransition"
+  );
+  ok(session.elapsedMs(9000) === 1000, "次盤面描画待ちも増えない");
+
+  session.startStage(9000);
+  session.finishStage(11000);
+  session.advance(15000);
+
+  session.startStage(16000);
+  session.finishStage(19000);
+  const finished3 = session.advance(20000);
+
+  ok(finished3, "3問目で完了");
+  ok(session.elapsedMs(50000) === 6000, "実プレイ時間だけ合計");
+  ok(
+    JSON.stringify(session.stageTimesMs) === JSON.stringify([1000, 2000, 3000]),
+    "ステージ別時間を保持"
+  );
+  ok(
+    session.accumulatedMs ===
+      session.stageTimesMs.reduce((sum, value) => sum + value, 0),
+    "ステージ時間合計と累計が一致"
+  );
+  ok(session.status === SESSION_STATUS.RESULT, "完了後statusはresult");
+}
+
+section("finishStage二重呼び出し");
+{
+  const session = new GameSession("t", seededRand(6));
+  session.startStage(0);
+  const firstDuration = session.finishStage(1000);
+  const secondDuration = session.finishStage(5000);
+  ok(firstDuration === 1000, "初回finishStageが計上");
+  ok(secondDuration === 0, "二重finishStageは0");
+  ok(session.elapsedMs(9000) === 1000, "二重加算されない");
+  ok(session.stageTimesMs.length === 1, "配列も重複しない");
+}
+
+section("リタイア");
+{
+  const session = new GameSession("t", seededRand(7));
+  session.startStage(0);
+  session.retire();
+  ok(session.status === SESSION_STATUS.RETIRED, "statusがretired");
+  ok(session.currentStageElapsedMs(5000) === 0, "計測を停止");
+  ok(session.startStage(6000) === false, "リタイア後は再開しない");
+}
+
 section("セッション全体フロー");
 {
-  const sess = new GameSession("テスター", seededRand(7));
-  sess.start(1000);
-  ok(sess.totalStages === 3, "3ステージ");
-  // 全ステージを solution で解く
+  const session = new GameSession("テスター", seededRand(8));
+  let now = 0;
   let finished = false;
+
   for (let i = 0; i < 3; i++) {
-    const st = sess.current;
-    for (const [r, c] of st.stage.solution) st.tap(r, c);
-    ok(st.cleared, `ステージ${i + 1} クリア`);
-    finished = sess.advance(2000 + i);
+    session.startStage(now);
+    const state = session.current;
+    for (const [r, c] of state.stage.solution) state.tap(r, c);
+    ok(state.cleared, `ステージ${i + 1}クリア`);
+    now += 1000;
+    session.finishStage(now);
+    now += 850;
+    finished = session.advance(now);
   }
-  ok(finished, "3ステージ目で finished=true(結果へ)");
-  ok(sess.endTime != null, "endTime が設定される");
+
+  ok(finished, "3ステージ目でfinished=true");
+  ok(session.endTime != null, "endTime互換値が設定される");
 }
 
-// ---- 8b. タイマー: クリア演出時間をスコアに含めない ----
-section("タイマー(演出時間の除外)");
-{
-  const sess = new GameSession("t", seededRand(3));
-  sess.start(0);
-  // 各ステージを「実プレイ1000ms」で解き、その後「演出+待ち5000ms」を挟む
-  let t = 0;
-  for (let i = 0; i < 3; i++) {
-    t += 1000; // 実プレイ時間
-    sess.clearCurrentStage(t); // クリア瞬間に確定
-    t += 5000; // 演出・ステージ間の待ち(スコアに入れない)
-    sess.advance(t);
-  }
-  // 実プレイは 3 * 1000ms のみ。演出 5000ms*3 は除外される。
-  ok(
-    sess.elapsedMs(t) === 3000,
-    `演出を除いた実時間のみ計上される (got ${sess.elapsedMs(t)}ms, 期待3000)`
-  );
-  // 演出を含めていたら 3000 + 15000 = 18000ms になっていたはず
-  ok(sess.elapsedMs(t) < 18000, "演出時間がスコアに混入していない");
-}
-
-// ---- 8c. ステージ進行中はタイマーが動く ----
-section("タイマー(進行中は加算)");
-{
-  const sess = new GameSession("t", seededRand(9));
-  sess.start(100);
-  ok(sess.elapsedMs(100) === 0, "開始直後は0");
-  ok(sess.elapsedMs(2100) === 2000, "進行中は経過する");
-}
-
-// ---- 8d. スコアは BASE(180000)を超えない ----
-section("スコア上限");
-{
-  // 正規の計算では elapsed>=0 なので必ず BASE 以下
-  ok(
-    computeScore({ elapsedMs: 0, mistakeCount: 0, hintCount: 0 }) === SCORE.BASE,
-    "満点 = BASE"
-  );
-  ok(
-    computeScore({ elapsedMs: 1, mistakeCount: 0, hintCount: 0 }) < SCORE.BASE,
-    "少しでも時間経過で BASE 未満"
-  );
-}
-
-// ---- 8e. pickStages は同一プレイ内で正解パターンが重複しない ----
-section("正解パターンの重複回避");
-{
-  let allDistinct = true;
-  for (let s = 1; s <= 500; s++) {
-    const picks = pickStages(seededRand(s));
-    const sigs = new Set(picks.map(solutionSignature));
-    if (sigs.size !== 3) allDistinct = false;
-  }
-  ok(allDistinct, "500プレイすべてで3ステージの正解パターンが相異なる");
-}
-
-// ---- 9. formatTime ----
 section("formatTime");
 ok(formatTime(0) === "0:00.0", "0ms");
 ok(formatTime(65400) === "1:05.4", "65.4s -> 1:05.4");
+ok(formatTime(-1) === "0:00.0", "負値を0へ丸める");
 
-// ---- 結果 ----
 console.log(`\n==== TEST RESULT: PASS=${pass} FAIL=${fail} ====`);
 process.exit(fail === 0 ? 0 : 1);

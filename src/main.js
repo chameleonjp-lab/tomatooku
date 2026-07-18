@@ -228,6 +228,13 @@ function clearAsyncWork() {
   clearCountdownWork();
   clearTransitionWork();
   stopTimer();
+
+  if (toastTimerId != null) {
+    clearTimeout(toastTimerId);
+    toastTimerId = null;
+  }
+  const toast = $("#toast");
+  if (toast) toast.classList.remove("show");
 }
 
 function cancelActivePlay({ goHome = true } = {}) {
@@ -305,6 +312,7 @@ function prepareFirstStage(playId) {
 
     session.startStage(monotonicNow());
     setPhase(PHASE.PLAYING);
+    setBoardInputEnabled(true);
     startTimer(playId);
     updateHud(monotonicNow());
   });

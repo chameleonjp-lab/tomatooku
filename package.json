@@ -6,7 +6,9 @@
   "scripts": {
     "gen": "node scripts/generate_stages.js",
     "verify": "node scripts/verify_stages.js",
-    "test": "node scripts/game.test.js",
+    "test": "node scripts/game.test.js && node scripts/ranking.test.js",
+    "test:game": "node scripts/game.test.js",
+    "test:ranking": "node scripts/ranking.test.js",
     "e2e": "node scripts/e2e.test.js",
     "serve": "python3 -m http.server 8080"
   },

@@ -41,7 +41,7 @@ function seededRand(seed) {
 }
 
 section("ステージバンク");
-ok(STAGES.length >= 3, `3問以上ある (${STAGES.length})`);
+ok(STAGES.length >= 30, `30問以上ある (${STAGES.length})`);
 const diffCount = { 1: 0, 2: 0, 3: 0 };
 STAGES.forEach((stage) => {
   diffCount[stage.difficulty] = (diffCount[stage.difficulty] || 0) + 1;

@@ -1,234 +1,202 @@
-# トマトオク Supabase セットアップ (SUPABASE_SETUP)
+# トマトオク Supabase連携
 
-ランキングは Supabase で連携する。クライアントは **公開 anon key のみ** を使う。
-**secret key(service_role key)は絶対にコードへ入れないこと。**
+この文書は、カメレオンJPの実験場で使用している**共有Supabase基盤への接続契約**を記録する。
 
-> 注意: chameleonjp-lab に既存ランキング基盤がある場合、本書は「トマトオク側で
-> 想定する RPC インターフェース」を示すもの。既存の関数名・引数名・テーブルが
-> 異なる場合は、本 SQL を流す代わりに `src/ranking.js` の `CONFIG`
-> (`submitRpc` / `rankingRpc`、および `submitScore` / `fetchRanking` 内の
-> `p_*` キー)を既存仕様に合わせること。ゲーム本体の改修は不要。
+> 旧版に記載していた独自`games` / `scores`テーブルやゲーム専用RPCの作成SQLは使用しない。共有Supabaseの`submit_score`を`create or replace`で置き換えてはいけない。
 
-## 1. クライアント設定
+## 1. 現在の状態
 
-`index.html` の `window.TOMATOKU_CONFIG` に公開値を設定:
+確認日: 2026-07-18
 
-```html
-<script>
-  window.TOMATOKU_CONFIG = {
-    supabaseUrl: "https://xxxxxxxx.supabase.co",
-    supabaseAnonKey: "eyJhbGciOi...(公開 anon key)",
-    gameSlug: "tomatoku",
-  };
-</script>
+- Supabaseプロジェクト: `chameleonJP-Lab`
+- プロジェクト参照ID: `mlpnjgezrnhdxsxolyzj`
+- `game_slug`: `tomatoku`
+- `tomatoku`の`public.games`登録: **未登録**
+- 実スコア送信: **未実施**
+- 共有RPC定義の読み取り確認: **完了**
+- クライアント単体テスト: **完了**
+
+本番ランキングを汚さないため、公式3問と補正タイムが実装されるまでスコアを書き込まない。
+
+## 2. クライアント設定
+
+ブラウザ公開可能な値は`src/ranking-config.js`へ集約する。
+
+```js
+export const RANKING_CONFIG = {
+  supabaseUrl: "公開Supabase URL",
+  supabasePublishableKey: "ブラウザ公開用Publishable key",
+  gameSlug: "tomatoku",
+  clientVersion: "tomatooku-web-2.0.0-ranking-v1",
+  timeoutMs: 8000,
+  submitRpc: "submit_score",
+  bestRankingRpc: "get_best_score_ranking",
+  firstRankingRpc: "get_first_try_ranking",
+};
 ```
 
-未設定でもゲームは動作し、ランキングのみ「未設定」表示になる。
+禁止事項:
 
-## 2. ゲーム登録メタデータ
+- secret key
+- service role key
+- `Authorization: Bearer {Publishable key}`
+- テーブルへの直接INSERT
+- ゲーム専用RPCの新設
+- 共有RPCの置き換え
+- キー実値をREADME、仕様書、PR本文、完了報告へ複製すること
 
-| key | value |
-| --- | --- |
-| game_slug | `tomatoku` |
-| title | トマトオク |
-| top_ranking_type | best |
-| score_order | desc |
-| score_unit | pt |
-| score_scale | 1 |
-| score_decimals | 0 |
-| score_label | スコア |
-| first_score_label | 初回スコア |
-| best_score_label | 最高スコア |
+Publishable keyは`apikey`ヘッダーだけに設定する。
 
-### 実験場(ゲーム一覧)への登録行
+## 3. スコア送信RPC
 
-**重要:** `game_slug` は **`tomatoku`**(据え置き)、`game_url` は **`tomatooku`**
-(リポジトリ改名後)で**混在する**。ここを取り違えるとランキングが別ゲーム扱いに
-なるため、登録時は必ず下記のとおり固定すること。
+実DBで確認した定義:
 
-```csv
-game_slug,title,game_url,description,is_active,release_date,top_ranking_type,score_order,score_unit,score_scale,score_decimals,score_label,first_score_label,best_score_label
-tomatoku,トマトオク,https://chameleonjp.codeberg.page/tomatooku/,5×5の畑に🍅を置く3ステージ・タイムパズル,true,2026-06-30,best,desc,pt,1,0,スコア,初回スコア,最高スコア
-```
-
-- 公開先が GitHub Pages の場合は `game_url` を
-  `https://chameleonjp-lab.github.io/tomatooku/` に置き換える(`game_slug` は変えない)。
-- `index.html` の `window.TOMATOKU_CONFIG.gameSlug` も **`tomatoku`** のまま
-  (上の登録行と一致させる)。
-
-## 3. スキーマ(新規に作る場合の参考 SQL)
-
-既存基盤が無い場合、最小構成は以下。**初回スコア**と**最高スコア**を
-プレイヤー単位で保持し、最高スコア降順でランキングする。
-
-```sql
--- ゲームマスタ
-create table if not exists public.games (
-  slug text primary key,
-  title text not null,
-  top_ranking_type text not null default 'best',
-  score_order text not null default 'desc',
-  score_unit text not null default 'pt',
-  score_scale int not null default 1,
-  score_decimals int not null default 0,
-  score_label text not null default 'スコア',
-  first_score_label text not null default '初回スコア',
-  best_score_label text not null default '最高スコア',
-  created_at timestamptz not null default now()
-);
-
-insert into public.games (slug, title) values ('tomatoku', 'トマトオク')
-on conflict (slug) do nothing;
-
--- プレイヤー別スコア(初回・最高を保持)
-create table if not exists public.scores (
-  id bigint generated always as identity primary key,
-  game_slug text not null references public.games(slug),
-  player_name text not null,
-  first_score int not null,
-  best_score int not null,
-  play_count int not null default 1,
-  updated_at timestamptz not null default now(),
-  unique (game_slug, player_name)
-);
-
-create index if not exists scores_rank_idx
-  on public.scores (game_slug, best_score desc);
-```
-
-## 4. RPC: スコア送信 `submit_score`
-
-初回は first/best とも登録、2回目以降は best を更新(高い方を保持)、first は据え置き。
-
-```sql
-create or replace function public.submit_score(
+```text
+submit_score(
+  p_display_name text,
   p_game_slug text,
-  p_player_name text,
-  p_score int
-) returns table (first_score int, best_score int, rank int)
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_first int;
-  v_best int;
-begin
-  -- 0〜180000(理論上の満点 BASE_SCORE)に必ず丸める。
-  -- ブラウザから直接 RPC を叩かれてもありえない点数を登録させない。
-  p_score := least(180000, greatest(0, coalesce(p_score, 0)));
-  p_player_name := left(coalesce(p_player_name, ''), 24);
-
-  insert into public.scores (game_slug, player_name, first_score, best_score, play_count)
-  values (p_game_slug, p_player_name, p_score, p_score, 1)
-  on conflict (game_slug, player_name) do update
-    set best_score = greatest(public.scores.best_score, excluded.best_score),
-        play_count = public.scores.play_count + 1,
-        updated_at = now();
-
-  select s.first_score, s.best_score into v_first, v_best
-  from public.scores s
-  where s.game_slug = p_game_slug and s.player_name = p_player_name;
-
-  return query
-  select v_first, v_best,
-    (select count(*)::int + 1 from public.scores s2
-       where s2.game_slug = p_game_slug and s2.best_score > v_best);
-end;
-$$;
+  p_score integer,
+  p_client_version text default ''
+)
 ```
 
-### (任意・より安全)サーバー側で再計算する強化版
+返却列:
 
-クライアントの `p_score` を信用せず、`elapsed_ms` / `mistake_count` / `hint_count`
-を受け取ってサーバーで再計算すれば、点数の改ざんをさらに防げる。採用する場合は
-RPC のシグネチャを変えるため、`src/ranking.js` の `submitScore` の送信 body にも
-同じキー(`p_elapsed_ms` / `p_mistake_count` / `p_hint_count`)を追加すること。
+```text
+accepted boolean
+result_normalized_name text
+result_display_name text
+result_first_score integer
+result_best_score integer
+result_play_count integer
+is_first_play boolean
+is_new_best boolean
+```
 
-```sql
-create or replace function public.submit_score(
+REST呼び出し:
+
+```text
+POST {SUPABASE_URL}/rest/v1/rpc/submit_score
+Content-Type: application/json
+apikey: {SUPABASE_PUBLISHABLE_KEY}
+```
+
+本文:
+
+```json
+{
+  "p_display_name": "表示名",
+  "p_game_slug": "tomatoku",
+  "p_score": 4835,
+  "p_client_version": "tomatooku-web-2.0.0-ranking-v1"
+}
+```
+
+送信条件:
+
+- `mode === "official"`
+- 空でないplay ID
+- 正規化後の表示名が空でない
+- `p_score`がPostgreSQL integer範囲内の有限な非負整数
+- 同一play IDは1回だけ
+
+現行v1はランダム3問であり、条件が揃わないため送信しない。
+
+## 4. ランキング取得RPC
+
+### 最高記録
+
+```text
+get_best_score_ranking(
   p_game_slug text,
-  p_player_name text,
-  p_elapsed_ms bigint,
-  p_mistake_count int,
-  p_hint_count int
-) returns table (first_score int, best_score int, rank int)
-language plpgsql security definer set search_path = public
-as $$
-declare
-  v_score int;
-begin
-  -- スコア式はクライアントと一致させる(BASE 180000 / 誤タップ3000 / ヒント30000)
-  v_score := 180000
-    - floor(greatest(0, coalesce(p_elapsed_ms, 0)))
-    - greatest(0, coalesce(p_mistake_count, 0)) * 3000
-    - greatest(0, coalesce(p_hint_count, 0)) * 30000;
-  v_score := least(180000, greatest(0, v_score));
-  -- 以降は基本版と同じ upsert / ランキング算出(p_score を v_score に置換)
-  -- ...(基本版の本体を参照)...
-end;
-$$;
+  p_limit integer default 100
+)
 ```
 
-> 既存ランキング基盤が 3 引数版 `submit_score(p_game_slug, p_player_name, p_score)` で
-> 固定なら、まずは基本版(0〜180000 clamp 済み)で運用すればよい。トマトオク側の
-> クライアントは現状 3 引数版に合わせて送信し、`p_score` を 0〜180000 に丸めている。
+### 初回記録
 
-## 5. RPC: ランキング取得 `get_ranking`
-
-```sql
-create or replace function public.get_ranking(
+```text
+get_first_try_ranking(
   p_game_slug text,
-  p_limit int default 10
-) returns table (player_name text, best_score int, first_score int, rank int)
-language sql
-stable
-set search_path = public
-as $$
-  select s.player_name, s.best_score, s.first_score,
-         (rank() over (order by s.best_score desc))::int as rank
-  from public.scores s
-  where s.game_slug = p_game_slug
-  order by s.best_score desc
-  limit greatest(1, coalesce(p_limit, 10));
-$$;
+  p_limit integer default 100
+)
 ```
 
-## 6. 権限 / RLS
+両関数の返却列:
 
-anon ロールから RPC のみ実行可能にする(テーブル直接書き込みは許可しない)。
-
-```sql
-alter table public.scores enable row level security;
-alter table public.games  enable row level security;
-
--- ランキング表示用に読み取りのみ許可(任意。RPC 経由なら不要)
-create policy "scores_read" on public.scores for select to anon using (true);
-create policy "games_read"  on public.games  for select to anon using (true);
-
--- RPC 実行権限
-grant execute on function public.submit_score(text, text, int) to anon;
-grant execute on function public.get_ranking(text, int) to anon;
+```text
+rank_no bigint
+display_name text
+first_score integer
+best_score integer
+play_count integer
+updated_at timestamptz
 ```
 
-`security definer` 関数なので、anon は RPC を通じてのみ書き込み可能。
-直接の INSERT/UPDATE は RLS で拒否される。
+本文:
 
-## 7. 動作確認(curl)
-
-```bash
-SUPA_URL=https://xxxx.supabase.co
-ANON=eyJ...   # 公開 anon key
-
-# 送信
-curl -s "$SUPA_URL/rest/v1/rpc/submit_score" \
-  -H "apikey: $ANON" -H "Authorization: Bearer $ANON" \
-  -H "Content-Type: application/json" \
-  -d '{"p_game_slug":"tomatoku","p_player_name":"テスト","p_score":123456}'
-
-# 取得
-curl -s "$SUPA_URL/rest/v1/rpc/get_ranking" \
-  -H "apikey: $ANON" -H "Authorization: Bearer $ANON" \
-  -H "Content-Type: application/json" \
-  -d '{"p_game_slug":"tomatoku","p_limit":10}'
+```json
+{
+  "p_game_slug": "tomatoku",
+  "p_limit": 10
+}
 ```
+
+クライアントは次を区別する。
+
+```text
+ok              1件以上
+empty           正常応答・0件
+error           HTTP、タイムアウト、JSON・形式不正
+not_configured  URLまたはPublishable key不足
+```
+
+通信タイムアウトは`AbortController`で実際のfetchを中止する。
+
+## 5. `public.games`登録
+
+2026-07-18時点で`tomatoku`は未登録。
+
+登録は、公式問題と補正タイムが実装され、次の値がコードと一致した後に行う。
+
+```text
+game_slug: tomatoku
+title: トマトオク
+game_url: https://chameleonjp.codeberg.page/tomatooku/
+top_ranking_type: best
+score_order: asc
+score_unit: 秒
+score_scale: 100
+score_decimals: 2
+score_label: 補正タイム
+first_score_label: 初回タイム
+best_score_label: ベストタイム
+```
+
+公開前にrelease date、display order、description、share textも確定する。
+
+## 6. 検証方針
+
+この段階ではモックによる単体テストだけを行う。
+
+確認済み:
+
+- 共通RPC名と引数
+- 返却列のマッピング
+- `apikey`のみを使用
+- 送信本文4項目
+- 公式モード以外は送信しない
+- play ID単位の二重送信防止
+- 初回・ベスト取得
+- 0件、HTTPエラー、形式不正、未設定、タイムアウト
+
+未確認:
+
+- 実ブラウザからのRPC疎通
+- 本番DBへのスコア保存
+- 初回・ベスト更新の実データ確認
+- `tomatoku`の`public.games`登録
+- 実験場トップ・詳細ランキングへの反映
+- iPhone実機通信
+
+実通信確認は、公式3問と補正タイムを実装し、テスト用表示名と削除手順を決めてから行う。

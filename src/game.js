@@ -1,22 +1,34 @@
 /**
  * トマトオク ゲームロジック (DOM 非依存)
  *
- * 盤面ルール (5x5):
- *   - 各行に🍅は1個 / 各列に🍅は1個 / 各エリアに🍅は1個
- *   - 🍅同士は上下左右斜めで隣接しない
- *
- * 1プレイ = ランダムな3ステージ(やさしい/ふつう/むずかしい 各1)。
+ * v2:
+ * - 公式: 固定3問を同じ順序で出題
+ * - 練習: 有効な難易度1/2/3の組からランダム出題
+ * - 記録値: 実時間 + 誤タップ3秒 + ヒント30秒（100分の1秒単位）
  */
 
 import { STAGES } from "./stages.js";
 
 export const N = 5;
 
-export const SCORE = {
+/** v1互換。v2画面では補正タイムを使用する。 */
+export const SCORE = Object.freeze({
   BASE: 180000,
   MISTAKE_PENALTY: 3000,
   HINT_PENALTY: 30000,
-};
+});
+
+export const GAME_MODE = Object.freeze({
+  OFFICIAL: "official",
+  PRACTICE: "practice",
+});
+
+export const OFFICIAL_STAGE_IDS = Object.freeze(["T001", "T011", "T021"]);
+
+export const ADJUSTED_TIME = Object.freeze({
+  MISTAKE_CENTISECONDS: 300,
+  HINT_CENTISECONDS: 3000,
+});
 
 export const SESSION_STATUS = Object.freeze({
   READY: "ready",
@@ -26,7 +38,6 @@ export const SESSION_STATUS = Object.freeze({
   RETIRED: "retired",
 });
 
-/** 単調増加時計。ブラウザ/Nodeの performance.now() を優先する。 */
 export function monotonicNow() {
   if (
     typeof globalThis !== "undefined" &&
@@ -48,67 +59,90 @@ function createPlayId() {
   return `play-${Date.now().toString(36)}-${random}`;
 }
 
-/** 8方向(上下左右斜め) */
 const DIRS8 = [
   [-1, -1], [-1, 0], [-1, 1],
   [0, -1], [0, 1],
   [1, -1], [1, 0], [1, 1],
 ];
 
-/** Fisher-Yates シャッフル(配列のコピーを返す) */
-function shuffled(arr, rand = Math.random) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/** ステージの正解パターン署名(行ごとの列番号)。重複検出に使う。 */
 export function solutionSignature(stage) {
-  return stage.solution.map((p) => p[1]).join(",");
+  return stage.solution.map((position) => position[1]).join(",");
 }
 
-/**
- * 難易度グループ(1/2/3)から1問ずつ選び、3ステージを返す。
- * 同一プレイ内ではステージIDと正解パターンの重複を避ける。
- */
-export function pickStages(rand = Math.random) {
+function stagesByDifficulty(stageBank = STAGES) {
   const groups = { 1: [], 2: [], 3: [] };
-  for (const st of STAGES) {
-    if (groups[st.difficulty]) groups[st.difficulty].push(st);
+  for (const stage of stageBank) {
+    if (groups[stage.difficulty]) groups[stage.difficulty].push(stage);
   }
-
-  const chosen = [];
-  const usedIds = new Set();
-  const usedSolutions = new Set();
-
-  for (const diff of [1, 2, 3]) {
-    const inGroup = groups[diff].filter((s) => !usedIds.has(s.id));
-    const source =
-      inGroup.length > 0
-        ? inGroup
-        : STAGES.filter((s) => !usedIds.has(s.id));
-    const shuffledSource = shuffled(source, rand);
-    const distinct = shuffledSource.filter(
-      (s) => !usedSolutions.has(solutionSignature(s))
-    );
-    const pick = (distinct.length > 0 ? distinct : shuffledSource)[0];
-
-    if (!pick) {
-      throw new Error(`difficulty ${diff} のステージを選出できません`);
-    }
-
-    usedIds.add(pick.id);
-    usedSolutions.add(solutionSignature(pick));
-    chosen.push(pick);
-  }
-
-  return chosen;
+  return groups;
 }
 
-/** regions 文字列配列を region id グリッド(row*N+col -> 0..4)に変換 */
+export function selectOfficialStages(
+  stageIds = OFFICIAL_STAGE_IDS,
+  stageBank = STAGES
+) {
+  if (!Array.isArray(stageIds) || stageIds.length !== 3) {
+    throw new Error("公式ステージIDは3件必要です");
+  }
+  if (new Set(stageIds).size !== 3) {
+    throw new Error("公式ステージIDが重複しています");
+  }
+
+  const byId = new Map(stageBank.map((stage) => [stage.id, stage]));
+  const selected = stageIds.map((id) => byId.get(id));
+  if (selected.some((stage) => !stage)) {
+    throw new Error("公式ステージがステージバンクに存在しません");
+  }
+
+  const difficulties = selected.map((stage) => stage.difficulty);
+  if (difficulties.join(",") !== "1,2,3") {
+    throw new Error("公式ステージは難易度1→2→3の順である必要があります");
+  }
+
+  const signatures = selected.map(solutionSignature);
+  if (new Set(signatures).size !== 3) {
+    throw new Error("公式ステージの正解配置が重複しています");
+  }
+
+  return selected;
+}
+
+export function buildPracticeStageSets(stageBank = STAGES) {
+  const groups = stagesByDifficulty(stageBank);
+  const sets = [];
+
+  for (const easy of groups[1]) {
+    for (const normal of groups[2]) {
+      for (const hard of groups[3]) {
+        const candidate = [easy, normal, hard];
+        if (new Set(candidate.map((stage) => stage.id)).size !== 3) continue;
+        if (new Set(candidate.map(solutionSignature)).size !== 3) continue;
+        sets.push(candidate);
+      }
+    }
+  }
+
+  if (!sets.length) {
+    throw new Error("有効な練習ステージ組を生成できません");
+  }
+  return sets;
+}
+
+const PRACTICE_STAGE_SETS = buildPracticeStageSets();
+
+export function selectPracticeStages(rand = Math.random) {
+  const value = Number(rand());
+  const normalized = Number.isFinite(value)
+    ? Math.min(0.999999999999, Math.max(0, value))
+    : 0;
+  return PRACTICE_STAGE_SETS[Math.floor(normalized * PRACTICE_STAGE_SETS.length)];
+}
+
+/** v1呼び出し名の互換。 */
+export function pickStages(rand = Math.random) {
+  return selectPracticeStages(rand);
+}
+
 export function buildRegionMap(regions) {
   const map = new Array(N * N);
   for (let r = 0; r < N; r++) {
@@ -119,7 +153,6 @@ export function buildRegionMap(regions) {
   return map;
 }
 
-/** 1ステージ分の盤面状態。 */
 export class StageState {
   constructor(stage) {
     this.stage = stage;
@@ -193,10 +226,8 @@ export class StageState {
       return { type: "remove" };
     }
 
-    const chk = this.canPlace(r, c);
-    if (!chk.ok) {
-      return { type: "mistake", reason: chk.reason };
-    }
+    const check = this.canPlace(r, c);
+    if (!check.ok) return { type: "mistake", reason: check.reason };
 
     this.place(r, c);
     if (this.checkCleared()) this.cleared = true;
@@ -208,7 +239,7 @@ export class StageState {
 
     const rows = new Array(N).fill(0);
     const cols = new Array(N).fill(0);
-    const regs = new Array(N).fill(0);
+    const regions = new Array(N).fill(0);
     const cells = [];
 
     for (let r = 0; r < N; r++) {
@@ -216,14 +247,14 @@ export class StageState {
         if (!this.placed[r][c]) continue;
         rows[r]++;
         cols[c]++;
-        regs[this.regionMap[r * N + c]]++;
+        regions[this.regionMap[r * N + c]]++;
         cells.push([r, c]);
       }
     }
 
-    if (rows.some((x) => x !== 1)) return false;
-    if (cols.some((x) => x !== 1)) return false;
-    if (regs.some((x) => x !== 1)) return false;
+    if (rows.some((value) => value !== 1)) return false;
+    if (cols.some((value) => value !== 1)) return false;
+    if (regions.some((value) => value !== 1)) return false;
 
     for (let i = 0; i < cells.length; i++) {
       for (let j = i + 1; j < cells.length; j++) {
@@ -242,25 +273,27 @@ export class StageState {
   applyHint() {
     if (this.cleared) return null;
 
-    const solSet = new Set(
+    const solutionSet = new Set(
       this.stage.solution.map(([r, c]) => r * N + c)
     );
+    const removed = [];
 
     for (let r = 0; r < N; r++) {
       for (let c = 0; c < N; c++) {
-        if (this.placed[r][c] && !solSet.has(r * N + c)) {
+        if (this.placed[r][c] && !solutionSet.has(r * N + c)) {
           this.remove(r, c);
+          removed.push([r, c]);
         }
       }
     }
 
     const remaining = this.remainingSolutionCells();
-    if (remaining.length === 0) return null;
+    if (!remaining.length) return { placed: null, removed };
 
     const [r, c] = remaining[0];
     this.place(r, c);
     if (this.checkCleared()) this.cleared = true;
-    return [r, c];
+    return { placed: [r, c], removed };
   }
 
   canHint() {
@@ -268,22 +301,24 @@ export class StageState {
   }
 }
 
-/**
- * プレイ全体の状態。
- *
- * タイマーはステージ開始/終了を明示的に呼ぶ。advance()は次ステージの
- * 計測を開始しないため、UIは盤面描画後に startStage() を呼ぶ。
- */
 export class GameSession {
   constructor(playerName, rand = Math.random, options = {}) {
     this.playerName = playerName;
     this.playId = String(options.playId || createPlayId());
-    this.mode = options.mode || "legacy";
-    this.stages = pickStages(rand);
+    this.mode =
+      options.mode === GAME_MODE.OFFICIAL
+        ? GAME_MODE.OFFICIAL
+        : GAME_MODE.PRACTICE;
+    this.stages =
+      this.mode === GAME_MODE.OFFICIAL
+        ? selectOfficialStages(options.officialStageIds)
+        : selectPracticeStages(rand);
     this.index = 0;
-    this.states = this.stages.map((s) => new StageState(s));
+    this.states = this.stages.map((stage) => new StageState(stage));
     this.mistakeCount = 0;
     this.hintCount = 0;
+    this.stageMistakeCounts = new Array(this.stages.length).fill(0);
+    this.stageHintCounts = new Array(this.stages.length).fill(0);
 
     this.stageTimesMs = [];
     this.accumulatedMs = 0;
@@ -383,6 +418,16 @@ export class GameSession {
     return this.accumulatedMs + this.currentStageElapsedMs(now);
   }
 
+  recordMistake() {
+    this.mistakeCount++;
+    this.stageMistakeCounts[this.index]++;
+  }
+
+  recordHint() {
+    this.hintCount++;
+    this.stageHintCounts[this.index]++;
+  }
+
   retire() {
     if (this.status === SESSION_STATUS.RESULT) return false;
     this.stageStartedAt = null;
@@ -391,15 +436,55 @@ export class GameSession {
     return true;
   }
 
-  score(now = monotonicNow()) {
-    return computeScore({
+  adjustedTime(now = monotonicNow()) {
+    return computeAdjustedTime({
       elapsedMs: this.elapsedMs(now),
       mistakeCount: this.mistakeCount,
       hintCount: this.hintCount,
     });
   }
+
+  score(now = monotonicNow()) {
+    return this.adjustedTime(now);
+  }
+
+  resultBreakdown(now = monotonicNow()) {
+    const elapsedMs = this.elapsedMs(now);
+    return {
+      mode: this.mode,
+      elapsedMs,
+      stageTimesMs: this.stageTimesMs.slice(),
+      stageMistakeCounts: this.stageMistakeCounts.slice(),
+      stageHintCounts: this.stageHintCounts.slice(),
+      mistakeCount: this.mistakeCount,
+      hintCount: this.hintCount,
+      mistakePenaltyCentiseconds:
+        this.mistakeCount * ADJUSTED_TIME.MISTAKE_CENTISECONDS,
+      hintPenaltyCentiseconds:
+        this.hintCount * ADJUSTED_TIME.HINT_CENTISECONDS,
+      adjustedTimeCentiseconds: computeAdjustedTime({
+        elapsedMs,
+        mistakeCount: this.mistakeCount,
+        hintCount: this.hintCount,
+      }),
+    };
+  }
 }
 
+export function computeAdjustedTime({ elapsedMs, mistakeCount, hintCount }) {
+  const baseCentiseconds = Math.floor(
+    Math.max(0, Number(elapsedMs) || 0) / 10
+  );
+  const mistakePenalty =
+    Math.max(0, Number(mistakeCount) || 0) *
+    ADJUSTED_TIME.MISTAKE_CENTISECONDS;
+  const hintPenalty =
+    Math.max(0, Number(hintCount) || 0) *
+    ADJUSTED_TIME.HINT_CENTISECONDS;
+  return Math.floor(baseCentiseconds + mistakePenalty + hintPenalty);
+}
+
+/** v1互換。新規ランキング値には使用しない。 */
 export function computeScore({ elapsedMs, mistakeCount, hintCount }) {
   const timePenalty = Math.floor(Math.max(0, Number(elapsedMs) || 0));
   const mistakePenalty =
@@ -415,8 +500,17 @@ export function computeScore({ elapsedMs, mistakeCount, hintCount }) {
 export function formatTime(ms) {
   const safeMs = Math.max(0, Number(ms) || 0);
   const totalSec = safeMs / 1000;
-  const m = Math.floor(totalSec / 60);
-  const s = Math.floor(totalSec % 60);
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = Math.floor(totalSec % 60);
   const tenth = Math.floor((safeMs % 1000) / 100);
-  return `${m}:${String(s).padStart(2, "0")}.${tenth}`;
+  return `${minutes}:${String(seconds).padStart(2, "0")}.${tenth}`;
+}
+
+export function formatCentiseconds(value) {
+  const safe = Math.max(0, Math.floor(Number(value) || 0));
+  return (safe / 100).toFixed(2);
+}
+
+export function formatAdjustedTime(value) {
+  return `${formatCentiseconds(value)}秒`;
 }

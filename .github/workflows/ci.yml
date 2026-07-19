@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Static and browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -35,6 +35,17 @@ jobs:
 
       - name: Run static and contract tests
         run: npm test
+
+      - name: Generate v2 candidate stage bank
+        run: npm run gen:v2:bank
+
+      - name: Upload v2 stage bank artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage-bank-v2
+          path: generated/stage-bank-v2.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

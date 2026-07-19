@@ -23,15 +23,17 @@ T021（むずかしい）
 + ヒント数 × 30秒
 ```
 
+公式3問の結果は、実験場の共通ランキングへ送信されます。同じプレイIDの送信は1回だけです。
+
 ### ランダム練習
 
 難易度1・2・3から有効な3問組をランダムに選びます。ステージIDと正解配置は同一プレイ内で重複しません。練習結果はランキングへ送信しません。
 
-## 現在のランキング状態
+## ランキング状態
 
-共有Supabase RPCへ接続するクライアントは実装済みです。ただし、`tomatoku`の`public.games`登録と本番疎通確認が完了するまで送信ゲートを閉じています。
+`tomatoku`は共有Supabaseの`public.games`へ登録済みです。2026年7月19日に、初回記録・ベスト更新・プレイ回数・初回ランキング・ベストランキングの疎通を確認し、確認用データを削除したうえで公式送信ゲートを有効化しました。
 
-- 公式3問: ランキング送信対象となる設計だが、現在は公開準備中
+- 公式3問: ランキング送信対象
 - ランダム練習: 常にランキング対象外
 - `game_slug`: `tomatoku`
 - 表示名・リポジトリ名・公開パス: `tomatooku`
@@ -39,6 +41,12 @@ T021（むずかしい）
 - `score_unit`: `秒`
 - `score_scale`: `100`
 - `score_decimals`: `2`
+- `score_label`: `補正タイム`
+
+公開導線:
+
+- [カメレオンJPの実験場](https://chameleonjp.codeberg.page/chameleonjp_lab/)
+- [トマトオク 詳細ランキング](https://chameleonjp.codeberg.page/chameleonjp_lab/ranking.html?game=tomatoku)
 
 ## ルール
 
@@ -67,6 +75,7 @@ home
 - 誤タップ数と加算秒
 - ヒント数と加算秒
 - ステージ別の実時間、誤タップ数、ヒント数
+- 公式ランキング送信状態
 
 ## ローカル実行
 
@@ -82,9 +91,10 @@ npm run serve
 ```bash
 npm run gen           # ステージを再生成
 npm run verify        # ステージ形式・一意解検証
-npm test              # ゲームロジック + ランキング契約
+npm test              # ゲーム + ランキング + 公開設定
 npm run test:game     # ゲームロジック
 npm run test:ranking  # ランキング契約
+npm run test:launch   # 本番送信ゲートと公開導線
 npm run e2e           # Playwrightブラウザテスト
 npm run serve         # ローカルHTTPサーバー
 ```
@@ -104,6 +114,7 @@ src/
 scripts/
   game.test.js
   ranking.test.js
+  launch-config.test.js
   e2e.test.js
 docs/
   REQUIREMENTS_v2.md
@@ -112,6 +123,7 @@ docs/
   RANKING_REVIEW_v2.md
   TIMER_REVIEW_v2.md
   MODE_SCORE_REVIEW_v2.md
+  RANKING_LAUNCH_v2.md
 ```
 
 ## セキュリティ

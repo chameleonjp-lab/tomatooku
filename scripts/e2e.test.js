@@ -1,6 +1,7 @@
 /**
- * トマトオク ブラウザE2E (Playwright)
- * iPhone SE相当で公式3問、補正タイム、練習モードを確認する。
+ * トマトオク ブラウザE2E（Playwright）
+ * iPhone SE相当で公式3問、補正タイム、ランキング送信、
+ * モーダルフォーカス、ルール理由表示、練習モードを確認する。
  */
 import http from "http";
 import fs from "fs";
@@ -48,6 +49,7 @@ function solveBoard(regionStrings) {
       region[r * N + c] = regionStrings[r].charCodeAt(c) - 65;
     }
   }
+
   const colUsed = Array(N).fill(false);
   const regionUsed = Array(N).fill(false);
   const placed = [];
@@ -58,11 +60,13 @@ function solveBoard(regionStrings) {
       solutions.push(placed.slice());
       return;
     }
+
     for (let c = 0; c < N; c++) {
       if (colUsed[c]) continue;
       const area = region[row * N + c];
       if (regionUsed[area]) continue;
       if (row > 0 && Math.abs(placed[row - 1] - c) < 2) continue;
+
       colUsed[c] = true;
       regionUsed[area] = true;
       placed[row] = c;
@@ -130,6 +134,13 @@ async function waitForPlaying(page) {
   );
 }
 
+function assertOfficialIds(ids) {
+  ok(
+    JSON.stringify(ids) === JSON.stringify(OFFICIAL_IDS),
+    `公式ID順序 ${JSON.stringify(ids)}`
+  );
+}
+
 async function main() {
   const server = await startServer();
   const browser = await launchBrowser();
@@ -142,6 +153,25 @@ async function main() {
   const page = await context.newPage();
 
   await page.route("**/rest/v1/rpc/**", async (route) => {
+    const url = route.request().url();
+    if (url.endsWith("/submit_score")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            accepted: true,
+            result_first_score: 4834,
+            result_best_score: 4500,
+            result_play_count: 2,
+            is_first_play: false,
+            is_new_best: true,
+          },
+        ]),
+      });
+      return;
+    }
+
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -153,15 +183,56 @@ async function main() {
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto(`http://localhost:${PORT}/`, { waitUntil: "networkidle" });
+
   ok(await page.isVisible("#screen-home"), "ホーム表示");
   ok(await page.isVisible("#start-official-btn"), "公式開始ボタン");
   ok(await page.isVisible("#start-practice-btn"), "練習開始ボタン");
+  ok(
+    (await page.textContent("#name-privacy")).includes("本名"),
+    "個人情報を入力しない注意"
+  );
+  ok(
+    (await page.getAttribute("#player-name", "aria-describedby")) === "name-privacy",
+    "名前欄と保存説明を関連付け"
+  );
+  ok(
+    (await page.getAttribute("#lab-link", "rel")).includes("noopener"),
+    "外部リンクnoopener"
+  );
   ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth
     ),
     "320pxで横スクロールなし"
   );
+
+  await page.click("#howto-btn");
+  await page.waitForSelector("#howto-modal.open");
+  ok(
+    await page.evaluate(() =>
+      document.querySelector("#howto-modal").contains(document.activeElement)
+    ),
+    "モーダル内へフォーカス移動"
+  );
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(
+    () => !document.querySelector("#howto-modal").classList.contains("open")
+  );
+  await page.waitForFunction(() => document.activeElement?.id === "howto-btn");
+  ok(true, "閉じた後に起点へフォーカス復帰");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.click("#howto-btn");
+  const animationDuration = await page.$eval(
+    "#howto-modal .modal-card",
+    (element) => getComputedStyle(element).animationDuration
+  );
+  ok(
+    Number.parseFloat(animationDuration) <= 0.001,
+    `動きを減らす設定 (${animationDuration})`
+  );
+  await page.keyboard.press("Escape");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
 
   await page.click("#start-official-btn");
   ok((await page.textContent("#name-error")).length > 0, "名前必須");
@@ -174,6 +245,17 @@ async function main() {
   ok(!(await page.isVisible("#screen-game")), "カウントダウン中は盤面非表示");
 
   await waitForPlaying(page);
+
+  const firstSolution = solveBoard(await getRegions(page))[0];
+  await clickCell(page, 0, firstSolution[0]);
+  const otherCol = firstSolution[0] === 0 ? 2 : 0;
+  await clickCell(page, 0, otherCol);
+  ok(
+    (await page.textContent("#game-status")).includes("同じ行"),
+    "誤タップ理由を表示"
+  );
+  await clickCell(page, 0, firstSolution[0]);
+
   const ids = [];
   for (let stageIndex = 0; stageIndex < 3; stageIndex++) {
     ids.push(await page.getAttribute("#board", "data-stage-id"));
@@ -188,9 +270,22 @@ async function main() {
 
   await page.waitForSelector("#screen-result.active", { timeout: 5000 });
   ok((await page.textContent("#result-mode")).includes("公式"), "公式結果表示");
-  ok(/^\d+\.\d{2}$/.test((await page.textContent("#result-score")).trim()), "補正タイム小数2桁");
-  ok((await page.textContent("#result-stage-times li")).length > 0, "ステージ別時間表示");
-  ok((await page.textContent("#submit-state")).includes("公開準備中"), "本番送信ゲートOFF");
+  ok(
+    /^\d+\.\d{2}$/.test((await page.textContent("#result-score")).trim()),
+    "補正タイム小数2桁"
+  );
+  ok(
+    (await page.locator("#result-stage-times li").count()) === 3,
+    "ステージ別時間3件"
+  );
+  await page.waitForFunction(() =>
+    document.querySelector("#submit-state").textContent.includes("ランキングへ登録")
+  );
+  ok(
+    (await page.textContent("#submit-state")).includes("ベスト 45.00秒"),
+    "ランキング送信成功表示"
+  );
+  ok(await page.isVisible("#result-detail-ranking-link"), "結果の詳細ランキング導線");
 
   await page.click("#home-btn");
   await page.waitForSelector("#screen-home.active");
@@ -198,7 +293,10 @@ async function main() {
   await page.waitForSelector("#screen-countdown.active");
   ok((await page.textContent("#countdown-mode")).includes("ランダム"), "練習表示");
   await waitForPlaying(page);
-  ok((await page.getAttribute("#board", "data-mode")) === "practice", "練習データ属性");
+  ok(
+    (await page.getAttribute("#board", "data-mode")) === "practice",
+    "練習データ属性"
+  );
 
   await page.evaluate(() => {
     window.confirm = () => true;
@@ -213,13 +311,6 @@ async function main() {
 
   console.log(`\n==== E2E RESULT: PASS=${pass} FAIL=${fail} ====`);
   process.exit(fail === 0 ? 0 : 1);
-}
-
-function assertOfficialIds(ids) {
-  ok(
-    JSON.stringify(ids) === JSON.stringify(OFFICIAL_IDS),
-    `公式ID順序 ${JSON.stringify(ids)}`
-  );
 }
 
 main().catch((error) => {

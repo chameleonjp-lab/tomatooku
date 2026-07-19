@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": "2.0.0-foundation.1",
+  "boardSize": 5,
+  "sourceSeed": "tomatooku-generator-v2-foundation",
+  "normalizedSeed": 910929191,
+  "patternCount": 14,
+  "symmetryClassCount": 3,
+  "patterns": [
+    {
+      "order": 1,
+      "patternId": "SP-eb0d0538",
+      "symmetryClassId": "SC-95390462",
+      "signature": "4,2,0,3,1",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [4, 2, 0, 3, 1],
+      "cells": [[0, 4], [1, 2], [2, 0], [3, 3], [4, 1]]
+    },
+    {
+      "order": 2,
+      "patternId": "SP-a6ee2d58",
+      "symmetryClassId": "SC-95390462",
+      "signature": "0,2,4,1,3",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [0, 2, 4, 1, 3],
+      "cells": [[0, 0], [1, 2], [2, 4], [3, 1], [4, 3]]
+    },
+    {
+      "order": 3,
+      "patternId": "SP-c90e2b08",
+      "symmetryClassId": "SC-95390462",
+      "signature": "2,4,1,3,0",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [2, 4, 1, 3, 0],
+      "cells": [[0, 2], [1, 4], [2, 1], [3, 3], [4, 0]]
+    },
+    {
+      "order": 4,
+      "patternId": "SP-2f1af7d8",
+      "symmetryClassId": "SC-95390462",
+      "signature": "0,3,1,4,2",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [0, 3, 1, 4, 2],
+      "cells": [[0, 0], [1, 3], [2, 1], [3, 4], [4, 2]]
+    },
+    {
+      "order": 5,
+      "patternId": "SP-382981c8",
+      "symmetryClassId": "SC-95390462",
+      "signature": "3,1,4,2,0",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [3, 1, 4, 2, 0],
+      "cells": [[0, 3], [1, 1], [2, 4], [3, 2], [4, 0]]
+    },
+    {
+      "order": 6,
+      "patternId": "SP-fb27ca08",
+      "symmetryClassId": "SC-95390462",
+      "signature": "1,3,0,2,4",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [1, 3, 0, 2, 4],
+      "cells": [[0, 1], [1, 3], [2, 0], [3, 2], [4, 4]]
+    },
+    {
+      "order": 7,
+      "patternId": "SP-5453e090",
+      "symmetryClassId": "SC-3a178cba",
+      "signature": "2,0,4,1,3",
+      "canonicalSignature": "1,3,0,4,2",
+      "orbitSize": 4,
+      "columns": [2, 0, 4, 1, 3],
+      "cells": [[0, 2], [1, 0], [2, 4], [3, 1], [4, 3]]
+    },
+    {
+      "order": 8,
+      "patternId": "SP-2f8439c8",
+      "symmetryClassId": "SC-95390462",
+      "signature": "2,0,3,1,4",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [2, 0, 3, 1, 4],
+      "cells": [[0, 2], [1, 0], [2, 3], [3, 1], [4, 4]]
+    },
+    {
+      "order": 9,
+      "patternId": "SP-034477b0",
+      "symmetryClassId": "SC-3a178cba",
+      "signature": "3,1,4,0,2",
+      "canonicalSignature": "1,3,0,4,2",
+      "orbitSize": 4,
+      "columns": [3, 1, 4, 0, 2],
+      "cells": [[0, 3], [1, 1], [2, 4], [3, 0], [4, 2]]
+    },
+    {
+      "order": 10,
+      "patternId": "SP-060f5160",
+      "symmetryClassId": "SC-be359992",
+      "signature": "1,4,2,0,3",
+      "canonicalSignature": "1,4,2,0,3",
+      "orbitSize": 2,
+      "columns": [1, 4, 2, 0, 3],
+      "cells": [[0, 1], [1, 4], [2, 2], [3, 0], [4, 3]]
+    },
+    {
+      "order": 11,
+      "patternId": "SP-f5f166b0",
+      "symmetryClassId": "SC-3a178cba",
+      "signature": "1,3,0,4,2",
+      "canonicalSignature": "1,3,0,4,2",
+      "orbitSize": 4,
+      "columns": [1, 3, 0, 4, 2],
+      "cells": [[0, 1], [1, 3], [2, 0], [3, 4], [4, 2]]
+    },
+    {
+      "order": 12,
+      "patternId": "SP-28046c00",
+      "symmetryClassId": "SC-be359992",
+      "signature": "3,0,2,4,1",
+      "canonicalSignature": "1,4,2,0,3",
+      "orbitSize": 2,
+      "columns": [3, 0, 2, 4, 1],
+      "cells": [[0, 3], [1, 0], [2, 2], [3, 4], [4, 1]]
+    },
+    {
+      "order": 13,
+      "patternId": "SP-5d6caa30",
+      "symmetryClassId": "SC-3a178cba",
+      "signature": "2,4,0,3,1",
+      "canonicalSignature": "1,3,0,4,2",
+      "orbitSize": 4,
+      "columns": [2, 4, 0, 3, 1],
+      "cells": [[0, 2], [1, 4], [2, 0], [3, 3], [4, 1]]
+    },
+    {
+      "order": 14,
+      "patternId": "SP-15e14ef8",
+      "symmetryClassId": "SC-95390462",
+      "signature": "4,1,3,0,2",
+      "canonicalSignature": "0,2,4,1,3",
+      "orbitSize": 8,
+      "columns": [4, 1, 3, 0, 2],
+      "cells": [[0, 4], [1, 1], [2, 3], [3, 0], [4, 2]]
+    }
+  ]
+}

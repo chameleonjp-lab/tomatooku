@@ -1,0 +1,71 @@
+import assert from "node:assert/strict";
+import {
+  REQUIRED_CANONICAL_TARGET,
+  buildStageBankFeasibilityManifest,
+  enumeratePatternFeasibility,
+} from "./feasibility.js";
+
+let pass = 0;
+function test(name, fn) {
+  fn();
+  pass++;
+  console.log(`✓ ${name}`);
+}
+
+const manifest = buildStageBankFeasibilityManifest();
+
+test("14種類の正解配置を全監査", () => {
+  assert.equal(manifest.patternCount, 14);
+  assert.equal(manifest.patterns.length, 14);
+});
+
+test("連結5マス×5領域の分割を21,452件列挙", () => {
+  assert.equal(manifest.connectedPartitionCount, 21452);
+});
+
+test("一意解付きラベル盤面は36件", () => {
+  assert.equal(manifest.uniqueSolutionCount, 36);
+});
+
+test("D4とエリア名正規化後の最大数は5", () => {
+  assert.equal(manifest.maximumCanonicalStageCount, 5);
+  assert.equal(manifest.canonicalStages.length, 5);
+  assert.equal(new Set(manifest.canonicalStages.map((stage) => stage.stageId)).size, 5);
+});
+
+test("84問目標は現契約では不成立", () => {
+  assert.equal(REQUIRED_CANONICAL_TARGET, 84);
+  assert.equal(manifest.targetFeasible, false);
+  assert.match(manifest.conclusion, /impossible/);
+});
+
+test("4配置には一意解盤面が存在しない", () => {
+  assert.equal(manifest.unsupportedPatternCount, 4);
+  assert.deepEqual(manifest.unsupportedPatternIds, [
+    "SP-034477b0",
+    "SP-5453e090",
+    "SP-5d6caa30",
+    "SP-f5f166b0",
+  ]);
+});
+
+test("各canonical盤面は一意解と安定IDを保持", () => {
+  for (const stage of manifest.canonicalStages) {
+    assert.match(stage.stageId, /^STG-[0-9a-f]{8}$/);
+    assert.equal(stage.regions.length, 5);
+    assert.equal(stage.solution.length, 5);
+    assert.ok(stage.supportingPatternIds.length >= 2);
+  }
+});
+
+test("単一配置監査も決定論的", () => {
+  const columns = [0, 2, 4, 1, 3];
+  const first = enumeratePatternFeasibility(columns);
+  const second = enumeratePatternFeasibility(columns);
+  assert.deepEqual(first, second);
+  assert.equal(first.connectedPartitionCount, 1421);
+  assert.equal(first.uniqueSolutionCount, 4);
+  assert.equal(first.canonicalStageCount, 4);
+});
+
+console.log(`\n==== GENERATOR V2 FEASIBILITY TEST: PASS=${pass} FAIL=0 ====`);

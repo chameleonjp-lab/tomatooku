@@ -1,0 +1,188 @@
+/* トマトオク アクセシビリティ・小型画面補助 ------------------------------ */
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+a.btn {
+  text-decoration: none;
+}
+
+button,
+a,
+input,
+[tabindex] {
+  scroll-margin: 16px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.cell:focus-visible {
+  outline-color: #ffffff;
+  box-shadow: 0 0 0 3px #20302a, 0 0 0 6px var(--accent);
+  z-index: 2;
+}
+
+.modal-open {
+  overflow: hidden;
+}
+
+.modal-card:focus {
+  outline: none;
+}
+
+.modal-footer-close.btn.ghost {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.screen-mode-title {
+  margin: 4px 0 8px;
+  color: #d7e6d7;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.mode-description {
+  margin: 0;
+  text-align: center;
+}
+
+.privacy-notice {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7df;
+  color: #66520e;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.privacy-notice strong {
+  color: #8a2e1c;
+}
+
+.game-status {
+  min-height: 2.8em;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.game-status[data-tone="error"] {
+  background: #fde6e2;
+  color: #9c2b1b;
+  font-weight: 700;
+}
+
+.stage-breakdown {
+  margin: 14px 0 0;
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+.link-row .btn {
+  min-width: 0;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud .stat {
+    padding: 7px 4px;
+  }
+
+  .game-status {
+    font-size: 0.78rem;
+  }
+
+  .link-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .result-grid .item .v {
+    font-size: 1.08rem;
+  }
+}
+
+@media (max-height: 620px) and (orientation: landscape) {
+  .app {
+    max-width: 760px;
+    padding-top: 8px;
+  }
+
+  .brand {
+    margin: 2px 0 8px;
+  }
+
+  .brand .logo {
+    font-size: 1.8rem;
+  }
+
+  .brand h1 {
+    font-size: 1.6rem;
+  }
+
+  .board {
+    width: min(66vh, 330px);
+  }
+
+  .modal-card {
+    max-height: calc(100dvh - 16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .cell:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .cell,
+  .card,
+  .hud .stat,
+  .game-status {
+    border: 1px solid CanvasText;
+  }
+
+  .cell.hinted,
+  .cell.mistake,
+  .board.cleared {
+    outline: 3px solid Highlight;
+  }
+}

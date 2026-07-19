@@ -57,7 +57,9 @@ T021（むずかしい）
 
 ## 生成器v2の状態
 
-生成器v2の基盤では、5×5ルールを満たす正解配置14種類を完全列挙し、回転・反転を含むD4対称変換で3クラスへ正規化します。
+### Slice 1：正解配置基盤
+
+5×5ルールを満たす正解配置14種類を完全列挙し、回転・反転を含むD4対称変換で3クラスへ正規化します。
 
 - 個別配置の安定`patternId`: 14件
 - 対称クラスの安定`symmetryClassId`: 3件
@@ -65,15 +67,36 @@ T021（むずかしい）
 - generator versionとseedを持つ固定manifest
 - 同一seedから同じmanifestを再生成
 
-既定manifest:
-
 ```text
 generated/solution-patterns-v2.json
 ```
 
-生成器v2はまだ現行の`src/stages.js`、公式3問、ランダム練習へ接続していません。領域生成、一意解検証、難易度、84問以上の新バンクは後続Sliceで追加します。
+### Slice 2：連結エリアと一意解候補
 
-詳細は`docs/GENERATOR_V2_FOUNDATION.md`を参照してください。
+正解セルを別エリアの種として、各5マス・4近傍連結のエリアへ成長させます。全探索ソルバで一意解を確認し、エリア名、回転、反転に依存しない安定`stageId`を生成します。
+
+既定seed・1配置1,500試行の固定probe:
+
+```text
+正解配置: 14
+候補生成成功: 10
+試行上限到達: 4
+対称重複除外後: 5盤面
+確認できた解配置対称クラス: 2 / 3
+```
+
+```text
+generated/stage-candidates-v2.json
+```
+
+試行上限へ到達した4配置は、現行探索条件では候補を確認できなかった配置です。生成不可能であることの証明ではありません。
+
+生成器v2はまだ現行の`src/stages.js`、公式3問、ランダム練習へ接続していません。難易度、近似盤面除外、84問以上の新バンク、切替契約は後続Sliceで追加します。
+
+詳細:
+
+- `docs/GENERATOR_V2_FOUNDATION.md`
+- `docs/GENERATOR_V2_REGIONS.md`
 
 ## 画面フロー
 
@@ -139,17 +162,21 @@ npm run serve
 ## 開発コマンド
 
 ```bash
-npm run gen                # 現行30問バンクを再生成
-npm run gen:v2             # v2正解配置manifestを既定seedで再生成
-npm run verify             # 現行ステージ形式・一意解検証
-npm test                   # 全静的・契約テスト
-npm run test:game          # ゲームロジック
-npm run test:ranking       # ランキング契約
-npm run test:launch        # 本番送信ゲートと公開導線
-npm run test:accessibility # UIアクセシビリティ契約
-npm run test:generator-v2  # v2列挙・対称性・seed・ID契約
-npm run e2e                # Playwrightブラウザテスト
-npm run serve              # ローカルHTTPサーバー
+npm run gen                          # 現行30問バンクを再生成
+npm run gen:v2                       # v2配置manifestと候補probeを再生成
+npm run gen:v2:patterns              # v2正解配置manifestを再生成
+npm run gen:v2:candidates            # v2連結エリア候補manifestを再生成
+npm run verify                       # 現行ステージ形式・一意解検証
+npm test                             # 全静的・契約テスト
+npm run test:game                    # ゲームロジック
+npm run test:ranking                 # ランキング契約
+npm run test:launch                  # 本番送信ゲートと公開導線
+npm run test:accessibility           # UIアクセシビリティ契約
+npm run test:generator-v2            # v2生成器の全契約
+npm run test:generator-v2:foundation # v2列挙・対称性・seed・ID契約
+npm run test:generator-v2:regions    # v2連結エリア・一意解・盤面ID契約
+npm run e2e                          # Playwrightブラウザテスト
+npm run serve                        # ローカルHTTPサーバー
 ```
 
 ## 構成
@@ -157,6 +184,7 @@ npm run serve              # ローカルHTTPサーバー
 ```text
 generated/
   solution-patterns-v2.json
+  stage-candidates-v2.json
 index.html
 src/
   accessibility.css
@@ -172,9 +200,12 @@ scripts/
   generator-v2/
     core.js
     core.test.js
+    regions.js
+    regions.test.js
   accessibility.test.js
   generate_stages.js
   generate_stages_v2.js
+  generate_stage_candidates_v2.js
   game.test.js
   ranking.test.js
   launch-config.test.js
@@ -189,6 +220,7 @@ docs/
   RANKING_LAUNCH_v2.md
   ACCESSIBILITY_REVIEW_v2.md
   GENERATOR_V2_FOUNDATION.md
+  GENERATOR_V2_REGIONS.md
 ```
 
 ## セキュリティ

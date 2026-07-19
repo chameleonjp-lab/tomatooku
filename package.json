@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "gen": "node scripts/generate_stages.js",
+    "gen:v2": "node scripts/generate_stages_v2.js",
     "verify": "node scripts/verify_stages.js",
-    "test": "node scripts/game.test.js && node scripts/ranking.test.js && node scripts/launch-config.test.js && node scripts/accessibility.test.js",
+    "test": "node scripts/game.test.js && node scripts/ranking.test.js && node scripts/launch-config.test.js && node scripts/accessibility.test.js && node scripts/generator-v2/core.test.js",
     "test:game": "node scripts/game.test.js",
     "test:ranking": "node scripts/ranking.test.js",
     "test:launch": "node scripts/launch-config.test.js",
     "test:accessibility": "node scripts/accessibility.test.js",
+    "test:generator-v2": "node scripts/generator-v2/core.test.js",
     "e2e": "node scripts/e2e.test.js",
     "serve": "python3 -m http.server 8080"
   },

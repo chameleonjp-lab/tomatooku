@@ -147,6 +147,37 @@ function announceGameStatus(message, tone = "info") {
   status.dataset.tone = tone;
 }
 
+function initBoardKeyboard() {
+  const board = document.querySelector("#board");
+  if (!board) return;
+
+  const movement = {
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1],
+  };
+
+  board.addEventListener("keydown", (event) => {
+    const delta = movement[event.key];
+    if (!delta) return;
+
+    const cell = event.target.closest(".cell");
+    if (!cell || !board.contains(cell)) return;
+
+    const position = cellPosition(board, cell);
+    if (!position) return;
+
+    const nextRow = Math.max(0, Math.min(4, position.row + delta[0]));
+    const nextCol = Math.max(0, Math.min(4, position.col + delta[1]));
+    const next = position.cells[nextRow * 5 + nextCol];
+    if (!next || next.disabled) return;
+
+    event.preventDefault();
+    next.focus({ preventScroll: true });
+  });
+}
+
 function initBoardAnnouncements() {
   const board = document.querySelector("#board");
   if (!board) return;
@@ -213,6 +244,7 @@ function initTutorialProgress() {
 
 function init() {
   initModalAccessibility();
+  initBoardKeyboard();
   initBoardAnnouncements();
   initExternalLinkLabels();
   initTutorialProgress();

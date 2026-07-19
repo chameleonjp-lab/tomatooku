@@ -77,6 +77,36 @@ home
 - ステージ別の実時間、誤タップ数、ヒント数
 - 公式ランキング送信状態
 
+## アクセシビリティ
+
+- モーダルを開いたときにフォーカスを内部へ移動
+- `Tab`キーをモーダル内へ閉じ込める
+- 閉じたときに起点のボタンへフォーカスを戻す
+- 盤面を操作グループとして説明
+- 配置・取り除き・誤タップ理由をライブ領域で通知
+- キーボードフォーカスを明確に表示
+- `prefers-reduced-motion`に対応
+- 強制カラーモード用の輪郭を追加
+- 320px幅ではHUDを2列へ組み替え
+- 外部リンクが新しいタブで開くことを読み上げへ追加
+- チュートリアル進行度を`progressbar`として提供
+
+## プレイヤー名と保存内容
+
+ブラウザ内の`localStorage`にはプレイヤー名だけを保存します。
+
+```text
+localStorage["tomatoku.playerName"]
+```
+
+公式プレイでは、次の情報が公開ランキングへ保存されます。
+
+- プレイヤー名
+- 補正タイム
+- プレイ回数
+
+ランダム練習の結果は送信しません。本名、メールアドレス、電話番号を入力しない案内を画面に表示します。
+
 ## ローカル実行
 
 ES Modulesを使うため、HTTPで配信してください。
@@ -89,14 +119,15 @@ npm run serve
 ## 開発コマンド
 
 ```bash
-npm run gen           # ステージを再生成
-npm run verify        # ステージ形式・一意解検証
-npm test              # ゲーム + ランキング + 公開設定
-npm run test:game     # ゲームロジック
-npm run test:ranking  # ランキング契約
-npm run test:launch   # 本番送信ゲートと公開導線
-npm run e2e           # Playwrightブラウザテスト
-npm run serve         # ローカルHTTPサーバー
+npm run gen                # ステージを再生成
+npm run verify             # ステージ形式・一意解検証
+npm test                   # ゲーム + ランキング + 公開設定 + アクセシビリティ契約
+npm run test:game          # ゲームロジック
+npm run test:ranking       # ランキング契約
+npm run test:launch        # 本番送信ゲートと公開導線
+npm run test:accessibility # UIアクセシビリティ契約
+npm run e2e                # Playwrightブラウザテスト
+npm run serve              # ローカルHTTPサーバー
 ```
 
 ## 構成
@@ -104,6 +135,8 @@ npm run serve         # ローカルHTTPサーバー
 ```text
 index.html
 src/
+  accessibility.css
+  accessibility.js
   game.js
   main.js
   ranking-config.js
@@ -112,6 +145,7 @@ src/
   styles.css
   tutorial.js
 scripts/
+  accessibility.test.js
   game.test.js
   ranking.test.js
   launch-config.test.js
@@ -124,16 +158,9 @@ docs/
   TIMER_REVIEW_v2.md
   MODE_SCORE_REVIEW_v2.md
   RANKING_LAUNCH_v2.md
+  ACCESSIBILITY_REVIEW_v2.md
 ```
 
 ## セキュリティ
 
 ブラウザにはPublishable keyだけを置きます。secret key、service role key、`Authorization: Bearer`は使用しません。共有Supabaseの関数やテーブルを、このリポジトリのSQLで置き換えないでください。
-
-## 保存
-
-ブラウザに保存する情報はプレイヤー名だけです。
-
-```text
-localStorage["tomatoku.playerName"]
-```

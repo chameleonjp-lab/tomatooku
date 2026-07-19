@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   BOARD_SIZE,
@@ -132,6 +133,25 @@ test("commit済みmanifestは既定seedの生成結果と一致", () => {
     readFileSync(resolve(ROOT, "generated/solution-patterns-v2.json"), "utf8")
   );
   assert.deepEqual(committed, buildSolutionPatternManifest(DEFAULT_GENERATOR_SEED));
+});
+
+test("CLIのstdoutは純粋関数のmanifestと一致", () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      resolve(ROOT, "scripts/generate_stages_v2.js"),
+      "--seed",
+      DEFAULT_GENERATOR_SEED,
+      "--stdout",
+    ],
+    { cwd: ROOT, encoding: "utf8" }
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(
+    JSON.parse(result.stdout),
+    buildSolutionPatternManifest(DEFAULT_GENERATOR_SEED)
+  );
+  assert.match(result.stderr, /patterns=14 symmetryClasses=3/);
 });
 
 test("不正な配置とseedを拒否", () => {

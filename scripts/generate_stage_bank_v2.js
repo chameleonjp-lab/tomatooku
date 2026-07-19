@@ -9,7 +9,7 @@ import {
   DEFAULT_STAGE_BANK_TARGET,
   buildStageBankManifest,
   validateStageBankManifest,
-} from "./generator-v2/bank-batch.js";
+} from "./generator-v2/bank-diverse.js";
 
 function readOption(name, fallback) {
   const direct = process.argv.find((value) => value.startsWith(`--${name}=`));

@@ -8,7 +8,7 @@
     "gen:v2": "npm run gen:v2:patterns && npm run gen:v2:candidates && npm run gen:v2:bank",
     "gen:v2:patterns": "node scripts/generate_stages_v2.js",
     "gen:v2:candidates": "node scripts/generate_stage_candidates_v2.js",
-    "gen:v2:bank": "node scripts/generate_stage_bank_v2.js",
+    "gen:v2:bank": "node scripts/generate_stage_bank_v2.js --pool 120 --rounds 24 --attempts 6",
     "verify": "node scripts/verify_stages.js",
     "test": "node scripts/game.test.js && node scripts/ranking.test.js && node scripts/launch-config.test.js && node scripts/accessibility.test.js && npm run test:generator-v2",
     "test:game": "node scripts/game.test.js",

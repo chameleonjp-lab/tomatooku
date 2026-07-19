@@ -376,8 +376,8 @@ export function selectBalancedStageBank(
       .filter((other) => other.stageId !== candidate.stageId)
       .map((other) => minimumSymmetricRegionDistance(candidate.regions, other.regions));
     return {
-      order: index + 1,
       ...candidate,
+      order: index + 1,
       difficulty: difficultyById.get(candidate.stageId),
       nearestRegionDistance: distances.length ? Math.min(...distances) : BOARD_SIZE * BOARD_SIZE,
     };

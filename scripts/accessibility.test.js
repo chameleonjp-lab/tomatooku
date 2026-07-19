@@ -32,6 +32,7 @@ assert.match(css, /forced-colors:\s*active/);
 assert.match(js, /MutationObserver/);
 assert.match(js, /event\.key !== "Tab"/);
 assert.match(js, /previousFocusByModal/);
+assert.match(js, /ArrowRight/);
 assert.match(js, /同じ行には/);
 assert.match(js, /新しいタブで開きます/);
 

@@ -55,6 +55,26 @@ T021（むずかしい）
 - 各エリアに🍅は1個
 - 🍅同士は上下左右斜めで隣り合わない
 
+## 生成器v2の状態
+
+生成器v2の基盤では、5×5ルールを満たす正解配置14種類を完全列挙し、回転・反転を含むD4対称変換で3クラスへ正規化します。
+
+- 個別配置の安定`patternId`: 14件
+- 対称クラスの安定`symmetryClassId`: 3件
+- seed付きMulberry32と非破壊Fisher–Yates shuffle
+- generator versionとseedを持つ固定manifest
+- 同一seedから同じmanifestを再生成
+
+既定manifest:
+
+```text
+generated/solution-patterns-v2.json
+```
+
+生成器v2はまだ現行の`src/stages.js`、公式3問、ランダム練習へ接続していません。領域生成、一意解検証、難易度、84問以上の新バンクは後続Sliceで追加します。
+
+詳細は`docs/GENERATOR_V2_FOUNDATION.md`を参照してください。
+
 ## 画面フロー
 
 ```text
@@ -119,13 +139,15 @@ npm run serve
 ## 開発コマンド
 
 ```bash
-npm run gen                # ステージを再生成
-npm run verify             # ステージ形式・一意解検証
-npm test                   # ゲーム + ランキング + 公開設定 + アクセシビリティ契約
+npm run gen                # 現行30問バンクを再生成
+npm run gen:v2             # v2正解配置manifestを既定seedで再生成
+npm run verify             # 現行ステージ形式・一意解検証
+npm test                   # 全静的・契約テスト
 npm run test:game          # ゲームロジック
 npm run test:ranking       # ランキング契約
 npm run test:launch        # 本番送信ゲートと公開導線
 npm run test:accessibility # UIアクセシビリティ契約
+npm run test:generator-v2  # v2列挙・対称性・seed・ID契約
 npm run e2e                # Playwrightブラウザテスト
 npm run serve              # ローカルHTTPサーバー
 ```
@@ -133,6 +155,8 @@ npm run serve              # ローカルHTTPサーバー
 ## 構成
 
 ```text
+generated/
+  solution-patterns-v2.json
 index.html
 src/
   accessibility.css
@@ -145,7 +169,12 @@ src/
   styles.css
   tutorial.js
 scripts/
+  generator-v2/
+    core.js
+    core.test.js
   accessibility.test.js
+  generate_stages.js
+  generate_stages_v2.js
   game.test.js
   ranking.test.js
   launch-config.test.js
@@ -159,6 +188,7 @@ docs/
   MODE_SCORE_REVIEW_v2.md
   RANKING_LAUNCH_v2.md
   ACCESSIBILITY_REVIEW_v2.md
+  GENERATOR_V2_FOUNDATION.md
 ```
 
 ## セキュリティ

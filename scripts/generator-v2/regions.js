@@ -416,7 +416,7 @@ export function buildStageCandidateProbeManifest(
 
   for (const columns of patterns) {
     const patternId = stablePatternId(columns);
-    const candidate = generateStageCandidate(columns, `${seed}:${patternId}`, {
+    const candidate = generateStageCandidate(columns, seed, {
       maxAttempts: maxAttemptsPerPattern,
     });
     if (candidate.stageId) {

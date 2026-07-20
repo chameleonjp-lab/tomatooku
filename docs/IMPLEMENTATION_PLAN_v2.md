@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／生成器v2 Slice 3は制約上BLOCKED
+- 現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／仕様承認待ち
 
 ## 1. 運用ルール
 
@@ -14,8 +14,8 @@
 - CI失敗中に別PRへ逃げない
 - 公式3問、ランキング、Supabaseを生成器作業へ混在させない
 - Draft解除、マージ、候補バンク有効化は明示的な人間判断を必要とする
-- secret key、service role keyをブラウザへ置かない
 - 現行30問とロールバック可能性を維持する
+- 成立性確認と仕様採用を分離する
 
 ## 2. 現行の正式仕様
 
@@ -23,6 +23,7 @@
 
 - 5×5盤面
 - 5エリア
+- 現行ステージでは各エリア5マス
 - 各行・各列・各エリアに🍅1個
 - 🍅同士は上下左右・斜めで隣接禁止
 - 3ステージ
@@ -57,8 +58,6 @@
 
 状態: **completed**
 
-成果物:
-
 - `docs/REQUIREMENTS_v2.md`
 - `docs/SPEC_v2.md`
 - 本計画書
@@ -66,8 +65,6 @@
 ### 3-2. 共通ランキング連携
 
 状態: **completed**
-
-実装:
 
 - 共有RPC契約
 - タイムアウト
@@ -79,19 +76,14 @@
 
 状態: **completed**
 
-実装:
-
 - `performance.now()`
-- countdownを計測から除外
-- ステージ間演出を計測から除外
+- countdownとステージ間演出を計測から除外
 - 古い非同期処理の無効化
 - ステージ別時間
 
 ### 3-4. 公式3問・練習・補正タイム
 
 状態: **completed**
-
-実装:
 
 - 公式と練習の分離
 - 公式問題固定
@@ -102,8 +94,6 @@
 ### 3-5. UI・アクセシビリティ
 
 状態: **completed**
-
-実装:
 
 - iPhone SE相当320px対応
 - モーダルフォーカス管理
@@ -116,8 +106,6 @@
 ### 3-6. 公式ランキング公開
 
 状態: **completed**
-
-実施:
 
 - `public.games`へ登録
 - `anon` SELECT権限とRLS確認
@@ -132,8 +120,10 @@
 GitHub Actionsで次を自動実行する。
 
 - `npm ci`
-- `npm test`
-- 生成器成立性監査
+- 全静的・契約テスト
+- 固定5マス成立性監査
+- 可変4〜6マス成立性監査
+- manifest再生成差分0
 - Chromium導入
 - iPhone SE相当Playwright E2E
 
@@ -142,8 +132,6 @@ GitHub Actionsで次を自動実行する。
 ### 4-1. Slice 1：正解配置基盤
 
 状態: **completed**
-
-実装:
 
 - 正解配置14種類の完全列挙
 - D4の8変換
@@ -158,11 +146,9 @@ GitHub Actionsで次を自動実行する。
 generated/solution-patterns-v2.json
 ```
 
-### 4-2. Slice 2：連結エリア候補
+### 4-2. Slice 2：固定5マス連結エリア候補
 
 状態: **completed**
-
-実装:
 
 - 正解セルを種とした領域成長
 - 各エリア5マス
@@ -178,16 +164,9 @@ generated/solution-patterns-v2.json
 generated/stage-candidates-v2.json
 ```
 
-### 4-3. Slice 3：84問候補バンク
+### 4-3. Slice 3：固定5マス84問成立性監査
 
-状態: **BLOCKED BY CONSTRAINTS**
-
-当初計画:
-
-- 対称形を除外
-- 近似盤面を除外
-- 最低84問
-- 各エリア5マス
+状態: **completed / BLOCKED BY CONSTRAINTS**
 
 全探索結果:
 
@@ -200,6 +179,12 @@ D4・エリア名正規化後               5
 成立                              false
 ```
 
+結論:
+
+- 固定5マス契約での理論上限は5canonical問
+- 現行30問も同じ正規化では5型
+- `candidate-v2`の有効化は禁止
+
 固定成果物:
 
 ```text
@@ -207,25 +192,75 @@ generated/stage-bank-feasibility-v2.json
 docs/GENERATOR_V2_BANK_FEASIBILITY.md
 ```
 
+### 4-4. Slice 4：可変4〜6マス成立性監査
+
+状態: **completed / FEASIBLE / CONTRACT APPROVAL PENDING**
+
+監査契約:
+
+```text
+盤面                         5×5
+エリア数                     5
+エリアサイズ                 4〜6マス
+合計                         25マス
+各エリア                     4近傍連結
+各行・各列・各エリア         🍅1個
+隣接禁止                     上下左右・斜め
+一意解                       必須
+重複除外                     D4＋エリア名正規化
+必要canonical盤面            84
+```
+
+threshold-witness監査結果:
+
+```text
+確認canonical盤面                    84
+目標成立                              true
+処理した正解配置                      1 / 14
+訪問した連結完全分割                  9,524
+一意解として確認した分割              84
+```
+
+サイズ分布:
+
+```text
+4-4-5-6-6    65問
+4-5-5-5-6    19問
+```
+
 結論:
 
-- 試行回数を増やしても84canonical問にはならない
-- 現仕様での理論上限は5canonical問
-- 現行30問も同じ正規化では5型
-- `candidate-v2`の有効化は禁止
+- `3〜7マス`まで広げる必要はない
+- 最小緩和`4〜6マス`だけで84問が成立する
+- 本監査は最大数ではなく84問の存在証明
+- 仕様採用とゲーム接続はまだ行わない
+
+固定成果物:
+
+```text
+generated/stage-bank-variable-feasibility-v2.json
+docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
+```
 
 ## 5. 現在のバンク契約
 
 ```text
 ACTIVE_STAGE_BANK_ID = legacy-v1
+
+legacy-v1.status = active
 legacy-v1.runtimeEnabled = true
 legacy-v1.rankingEligible = true
+
+candidate-v2.status = blocked-by-constraints
 candidate-v2.runtimeEnabled = false
 candidate-v2.rankingEligible = false
-candidate-v2.status = blocked-by-constraints
+
+candidate-v2-variable-4-6.status = feasible-pending-contract-approval
+candidate-v2-variable-4-6.runtimeEnabled = false
+candidate-v2-variable-4-6.rankingEligible = false
 ```
 
-生成器v2作業によって次を変更してはいけない。
+生成器作業によって次を変更してはいけない。
 
 - `src/stages.js`
 - 公式`T001 / T011 / T021`
@@ -233,89 +268,76 @@ candidate-v2.status = blocked-by-constraints
 - 本番ランキング
 - Supabaseデータ
 
-## 6. 必須の人間判断ゲート
+## 6. 現在の人間判断ゲート
 
-次のいずれかを正式決定するまで、84問バンク実装を再開しない。
+次を正式決定するまで可変サイズ候補バンクの実装・接続を開始しない。
 
-### A. 対称形を別問題として許容
+### 決定1：可変サイズ契約の採用
 
-- ルール変更なし
-- 実装容易
-- 実質構造は5型
-- 「対称形除外」を撤回する必要あり
-
-### B. 各エリア5マス固定を緩和
-
-例:
+推奨:
 
 ```text
 エリア数: 5
-各エリア: 3〜7マス
+各エリア: 4〜6マス
 合計: 25マス
-各エリアは4近傍連結
+各エリア: 4近傍連結
 ```
 
-- 中心ルールを維持しやすい
-- canonical多様性増加が期待できる
-- 新契約の全探索監査が必要
+理由:
 
-**推奨案: B**
+- 84問成立を実証済み
+- 3マス以下の小領域を避けられる
+- 7マス以上の大領域を避けられる
+- 5×5、5エリア、隣接禁止を維持できる
 
-### C. 盤面サイズまたは隣接ルールを変更
+### 決定2：適用範囲
 
-- 6×6化
-- 斜め隣接禁止の変更
-- エリア数変更
+推奨:
 
-ゲーム性とUIへの影響が大きい。
+- ランダム練習のみ先行採用
+- 公式3問は変更しない
+- ランキング契約は変更しない
 
-### D. 84問目標を撤回
+### 決定3：84問の選別基準
 
-- 現行30問を維持
-- 5canonical型を許容
-- 新バンクを作らない
+監査manifestの84問は存在証拠であり、完成バンクではない。次の選別が必要。
 
-## 7. 推奨する次work package
+- 人間向け難易度
+- 近似盤面距離
+- 正解配置分布
+- サイズプロファイル分布
+- iPhoneでの色境界識別性
 
-人間判断でBが採用された場合、次の順で進める。
+## 7. 契約承認後の次work package
 
-### 7-1. 可変エリア契約比較
+### 7-1. 可変サイズstage schema
 
-候補:
-
-```text
-3〜7マス
-2〜8マス
-最小3マス・最大値のみ制限
-```
-
-各候補について全探索または完全性を説明できる列挙を実行する。
-
-合格条件:
-
-- 84canonical問以上の存在を実装前に確認
-- 5エリア・合計25マス
-- 全エリア連結
-- 一意解
-- 小さすぎるエリアによる視認性問題なし
-
-### 7-2. 新validator
-
-- 可変サイズ範囲
+- `regionSizeRange: [4, 6]`
 - A〜E
 - 合計25マス
 - 4近傍連結
 - 一意解
 - 安定ID
 - D4重複なし
+- schema versionとgenerator version
 
-### 7-3. 候補バンク生成
+### 7-2. 候補プール生成
 
-- 84問以上
-- 人間向け難易度指標
-- 配置・エリアサイズ分布制御
-- 近似盤面距離
+- 84問より多い候補を生成
+- 14正解配置を可能な範囲で利用
 - seed再現性
+- 生成上限
+- 独立validator
+
+### 7-3. 難易度・近似選別
+
+- 候補削除
+- 強制配置
+- 隣接禁止による確定
+- 仮定回数
+- 先読み深さ
+- 盤面境界距離
+- サイズプロファイル分布
 
 ### 7-4. 人間レビュー
 
@@ -325,18 +347,17 @@ candidate-v2.status = blocked-by-constraints
 - エリア識別性
 - 似た盤面の体感
 
-### 7-5. バンク切替
+### 7-5. 練習モード先行切替
 
 人間承認後のみ:
 
-- `candidate-v2.runtimeEnabled=true`
-- 練習モードだけ先行切替
-- 公式3問は変更しない
-- ランキング契約は変更しない
+- 可変サイズvalidatorをゲームへ接続
+- 練習用バンクを切替
+- 公式3問は維持
+- ランキングは維持
+- 即時ロールバック可能にする
 
-## 8. 公開・実機の残確認
-
-コード上の公開準備は完了しているが、次は継続確認対象とする。
+## 8. 公開・実機の継続確認
 
 - Codeberg Pages反映
 - 実験場カード
@@ -357,7 +378,8 @@ candidate-v2.status = blocked-by-constraints
 - CI成功
 - 主保証端末で操作不能なし
 - 実験場と詳細ランキングへ接続
-- 生成器v2の新契約が成立性監査済み
-- 候補バンク有効化が人間承認済み
+- 可変サイズ契約が人間承認済み
+- 候補バンクが独立検証済み
+- 練習モード切替が人間承認済み
 
-現時点では、ゲーム公開部分は完成状態、生成器v2拡張は仕様判断待ちです。
+現時点では、ゲーム公開部分は完成状態です。生成器v2は可変4〜6マスで84問成立まで確認済みですが、仕様採用とゲーム接続は未承認です。

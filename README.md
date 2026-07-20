@@ -89,14 +89,42 @@ generated/solution-patterns-v2.json
 generated/stage-candidates-v2.json
 ```
 
-試行上限へ到達した4配置は、現行探索条件では候補を確認できなかった配置です。生成不可能であることの証明ではありません。
+### Slice 3：84問候補バンク成立性監査
 
-生成器v2はまだ現行の`src/stages.js`、公式3問、ランダム練習へ接続していません。難易度、近似盤面除外、84問以上の新バンク、切替契約は後続Sliceで追加します。
+ランダム試行だけでは生成不可能か判断できないため、現在の盤面契約を固定して全探索しました。
+
+```text
+正解配置                     14
+連結5マス×5領域の完全分割    21,452
+一意解付きラベル盤面          36
+D4・エリア名正規化後           5
+要求されたcanonical盤面       84
+目標成立                      false
+```
+
+現契約では、対称形を除外した84問バンクは構築できません。最大数は5問です。
+
+```text
+generated/stage-bank-feasibility-v2.json
+```
+
+`candidate-v2`は次の状態で固定されています。
+
+```text
+runtimeEnabled = false
+rankingEligible = false
+status = blocked-by-constraints
+```
+
+現行30問、公式3問、ランダム練習には接続していません。
+
+推奨する次の検討は、5エリアと連結性を維持したまま「各エリアちょうど5マス」を可変サイズへ緩和し、新契約を再び全探索監査することです。
 
 詳細:
 
 - `docs/GENERATOR_V2_FOUNDATION.md`
 - `docs/GENERATOR_V2_REGIONS.md`
+- `docs/GENERATOR_V2_BANK_FEASIBILITY.md`
 
 ## 画面フロー
 
@@ -162,21 +190,24 @@ npm run serve
 ## 開発コマンド
 
 ```bash
-npm run gen                          # 現行30問バンクを再生成
-npm run gen:v2                       # v2配置manifestと候補probeを再生成
-npm run gen:v2:patterns              # v2正解配置manifestを再生成
-npm run gen:v2:candidates            # v2連結エリア候補manifestを再生成
-npm run verify                       # 現行ステージ形式・一意解検証
-npm test                             # 全静的・契約テスト
-npm run test:game                    # ゲームロジック
-npm run test:ranking                 # ランキング契約
-npm run test:launch                  # 本番送信ゲートと公開導線
-npm run test:accessibility           # UIアクセシビリティ契約
-npm run test:generator-v2            # v2生成器の全契約
-npm run test:generator-v2:foundation # v2列挙・対称性・seed・ID契約
-npm run test:generator-v2:regions    # v2連結エリア・一意解・盤面ID契約
-npm run e2e                          # Playwrightブラウザテスト
-npm run serve                        # ローカルHTTPサーバー
+npm run gen                            # 現行30問バンクを再生成
+npm run gen:v2                         # v2配置manifestと候補probeを再生成
+npm run gen:v2:patterns                # v2正解配置manifestを再生成
+npm run gen:v2:candidates              # v2連結エリア候補manifestを再生成
+npm run audit:v2:bank                  # 84問候補バンクの成立性を全探索監査
+npm run verify                         # 現行ステージ形式・一意解検証
+npm test                               # 全静的・契約テスト
+npm run test:game                      # ゲームロジック
+npm run test:ranking                   # ランキング契約
+npm run test:launch                    # 本番送信ゲートと公開導線
+npm run test:accessibility             # UIアクセシビリティ契約
+npm run test:generator-v2              # v2生成器の全契約
+npm run test:generator-v2:foundation   # v2列挙・対称性・seed・ID契約
+npm run test:generator-v2:regions      # v2連結エリア・一意解・盤面ID契約
+npm run test:generator-v2:bank         # 距離・難易度・バンク停止契約
+npm run test:generator-v2:feasibility  # 21,452分割の全探索監査
+npm run e2e                            # Playwrightブラウザテスト
+npm run serve                          # ローカルHTTPサーバー
 ```
 
 ## 構成
@@ -185,6 +216,7 @@ npm run serve                        # ローカルHTTPサーバー
 generated/
   solution-patterns-v2.json
   stage-candidates-v2.json
+  stage-bank-feasibility-v2.json
 index.html
 src/
   accessibility.css
@@ -193,16 +225,22 @@ src/
   main.js
   ranking-config.js
   ranking.js
+  stage-bank-config.js
   stages.js
   styles.css
   tutorial.js
 scripts/
   generator-v2/
+    bank.js
+    bank.test.js
     core.js
     core.test.js
+    feasibility.js
+    feasibility.test.js
     regions.js
     regions.test.js
   accessibility.test.js
+  audit_stage_bank_v2.js
   generate_stages.js
   generate_stages_v2.js
   generate_stage_candidates_v2.js
@@ -221,6 +259,7 @@ docs/
   ACCESSIBILITY_REVIEW_v2.md
   GENERATOR_V2_FOUNDATION.md
   GENERATOR_V2_REGIONS.md
+  GENERATOR_V2_BANK_FEASIBILITY.md
 ```
 
 ## セキュリティ

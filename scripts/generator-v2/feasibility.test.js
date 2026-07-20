@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   REQUIRED_CANONICAL_TARGET,
   buildStageBankFeasibilityManifest,
   enumeratePatternFeasibility,
 } from "./feasibility.js";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(__dirname, "../..");
 let pass = 0;
 function test(name, fn) {
   fn();
@@ -66,6 +71,13 @@ test("単一配置監査も決定論的", () => {
   assert.equal(first.connectedPartitionCount, 1421);
   assert.equal(first.uniqueSolutionCount, 4);
   assert.equal(first.canonicalStageCount, 4);
+});
+
+test("コミット済みmanifestは全探索結果と完全一致", () => {
+  const committed = JSON.parse(
+    readFileSync(resolve(ROOT, "generated/stage-bank-feasibility-v2.json"), "utf8")
+  );
+  assert.deepEqual(committed, manifest);
 });
 
 console.log(`\n==== GENERATOR V2 FEASIBILITY TEST: PASS=${pass} FAIL=0 ====`);

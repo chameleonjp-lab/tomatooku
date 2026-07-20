@@ -14,8 +14,9 @@ import {
 export const VARIABLE_POOL_SCHEMA_VERSION = 1;
 export const VARIABLE_POOL_GENERATOR_VERSION = "2.6.0-variable-pool.1";
 export const DEFAULT_RAW_TARGET_PER_CLASS = 84;
-export const DEFAULT_SELECTED_TARGET_PER_CLASS = 36;
-export const DEFAULT_MAX_PARTITIONS_PER_CLASS = 250000;
+export const DEFAULT_SELECTED_TARGET_TOTAL = 108;
+export const DEFAULT_MINIMUM_SELECTED_PER_CLASS = 17;
+export const DEFAULT_MAX_PARTITIONS_PER_CLASS = 1000000;
 export const DEFAULT_MIN_REGION_SIZE = 4;
 export const DEFAULT_MAX_REGION_SIZE = 6;
 
@@ -609,43 +610,110 @@ function distribution(values) {
   return result;
 }
 
+function allocateClassSelectionTargets(
+  classAudits,
+  selectedTargetTotal,
+  minimumSelectedPerClass
+) {
+  if (minimumSelectedPerClass * classAudits.length > selectedTargetTotal) {
+    throw new RangeError(
+      "minimumSelectedPerClass cannot fit within selectedTargetTotal"
+    );
+  }
+  const totalCapacity = classAudits.reduce(
+    (sum, audit) => sum + audit.stages.length,
+    0
+  );
+  if (selectedTargetTotal > totalCapacity) {
+    throw new RangeError(
+      `selectedTargetTotal exceeds raw capacity: ${selectedTargetTotal} > ${totalCapacity}`
+    );
+  }
+
+  const targets = Object.fromEntries(
+    classAudits.map((audit) => [
+      audit.representative.symmetryClassId,
+      Math.min(minimumSelectedPerClass, audit.stages.length),
+    ])
+  );
+  for (const audit of classAudits) {
+    if (audit.stages.length < minimumSelectedPerClass) {
+      throw new Error(
+        `minimum class representation not reached for ` +
+          `${audit.representative.symmetryClassId}: ` +
+          `${audit.stages.length}/${minimumSelectedPerClass}`
+      );
+    }
+  }
+
+  let assigned = Object.values(targets).reduce((sum, value) => sum + value, 0);
+  while (assigned < selectedTargetTotal) {
+    const candidates = classAudits
+      .filter(
+        (audit) =>
+          targets[audit.representative.symmetryClassId] < audit.stages.length
+      )
+      .sort((left, right) => {
+        const leftRemaining =
+          left.stages.length - targets[left.representative.symmetryClassId];
+        const rightRemaining =
+          right.stages.length - targets[right.representative.symmetryClassId];
+        return (
+          rightRemaining - leftRemaining ||
+          left.representative.symmetryClassId.localeCompare(
+            right.representative.symmetryClassId
+          )
+        );
+      });
+    if (!candidates.length) {
+      throw new Error("could not allocate selected target across classes");
+    }
+    targets[candidates[0].representative.symmetryClassId]++;
+    assigned++;
+  }
+  return targets;
+}
+
 export function buildVariableStageCandidatePool({
   rawTargetPerClass = DEFAULT_RAW_TARGET_PER_CLASS,
-  selectedTargetPerClass = DEFAULT_SELECTED_TARGET_PER_CLASS,
+  selectedTargetTotal = DEFAULT_SELECTED_TARGET_TOTAL,
+  minimumSelectedPerClass = DEFAULT_MINIMUM_SELECTED_PER_CLASS,
   maxPartitionsPerClass = DEFAULT_MAX_PARTITIONS_PER_CLASS,
   minRegionSize = DEFAULT_MIN_REGION_SIZE,
   maxRegionSize = DEFAULT_MAX_REGION_SIZE,
 } = {}) {
   for (const [name, value] of Object.entries({
     rawTargetPerClass,
-    selectedTargetPerClass,
+    selectedTargetTotal,
+    minimumSelectedPerClass,
     maxPartitionsPerClass,
   })) {
     if (!Number.isInteger(value) || value < 1) {
       throw new TypeError(`${name} must be a positive integer`);
     }
   }
-  if (selectedTargetPerClass > rawTargetPerClass) {
-    throw new RangeError("selectedTargetPerClass cannot exceed rawTargetPerClass");
-  }
 
-  const classAudits = [];
-  const selectedStages = [];
-  const metadata = {};
-  for (const representative of representativePatternsByClass()) {
-    const audit = enumerateRawClassCandidates(representative, {
+  const rawClassAudits = representativePatternsByClass().map((representative) =>
+    enumerateRawClassCandidates(representative, {
       rawTarget: rawTargetPerClass,
       maxPartitions: maxPartitionsPerClass,
       minRegionSize,
       maxRegionSize,
-    });
-    if (!audit.rawTargetReached) {
-      throw new Error(
-        `raw target not reached for ${representative.symmetryClassId}: ` +
-          `${audit.stages.length}/${rawTargetPerClass}`
-      );
-    }
-    const selection = selectDiverseClassStages(audit.stages, selectedTargetPerClass);
+    })
+  );
+  const selectionTargets = allocateClassSelectionTargets(
+    rawClassAudits,
+    selectedTargetTotal,
+    minimumSelectedPerClass
+  );
+
+  const classAudits = [];
+  const selectedStages = [];
+  const metadata = {};
+  for (const audit of rawClassAudits) {
+    const representative = audit.representative;
+    const selectedTarget = selectionTargets[representative.symmetryClassId];
+    const selection = selectDiverseClassStages(audit.stages, selectedTarget);
     for (const stage of selection.selected) {
       selectedStages.push(stage);
       metadata[stage.id] = {
@@ -665,16 +733,17 @@ export function buildVariableStageCandidatePool({
       uniqueSolutionsVisited: audit.uniqueSolutionsVisited,
       partitionLimitReached: audit.partitionLimitReached,
       rawTarget: rawTargetPerClass,
+      rawTargetReached: audit.rawTargetReached,
       rawCount: audit.stages.length,
-      selectedTarget: selectedTargetPerClass,
+      selectedTarget,
       selectedCount: selection.selected.length,
       profileQuotas: selection.quotas,
       profileCounts: selection.counts,
     });
   }
 
-  const withDifficulty = assignDifficulty(selectedStages, metadata).sort((left, right) =>
-    left.id.localeCompare(right.id)
+  const withDifficulty = assignDifficulty(selectedStages, metadata).sort(
+    (left, right) => left.id.localeCompare(right.id)
   );
   for (const stage of withDifficulty) {
     metadata[stage.id].difficultyLevel = stage.difficulty;
@@ -710,21 +779,33 @@ export function buildVariableStageCandidatePool({
       maxRegionSize,
       regionsMustBeFourNeighborConnected: true,
       uniqueSolutionRequired: true,
-      deduplication: "D4 transforms plus first-seen region-label normalization",
+      deduplication:
+        "D4 transforms plus first-seen region-label normalization",
     },
     rawTargetPerClass,
-    selectedTargetPerClass,
+    selectedTargetTotal,
+    minimumSelectedPerClass,
     symmetryClassCount: classAudits.length,
-    rawStageCount: classAudits.reduce((sum, audit) => sum + audit.rawCount, 0),
+    rawStageCount: classAudits.reduce(
+      (sum, audit) => sum + audit.rawCount,
+      0
+    ),
     stageCount: withDifficulty.length,
-    minimumPairDistance,
+    minimumParrPairDistance,
+    allocationStrategy:
+      "retain the minimum from every class, then fill by remaining raw capacity",
+    capacityLimitedClasses: classAudits
+      .filter((audit) => !audit.rawTargetReached)
+      .map((audit) => audit.symmetryClassId),
     symmetryClassDistribution: distribution(
       withDifficulty.map((stage) => metadata[stage.id].symmetryClassId)
     ),
     profileDistribution: distribution(
       withDifficulty.map((stage) => metadata[stage.id].regionProfile)
     ),
-    difficultyDistribution: distribution(withDifficulty.map((stage) => stage.difficulty)),
+    difficultyDistribution: distribution(
+      withDifficulty.map((stage) => stage.difficulty)
+    ),
     nearestDistanceDistribution,
     classAudits,
     stages: withDifficulty,

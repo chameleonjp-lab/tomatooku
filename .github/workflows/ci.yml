@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: tomatooku-ci-${{ github.workflow }}-${{ github.ref }}
@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,37 +39,14 @@ jobs:
       - name: Run exhaustive fixed-size feasibility audit
         run: npm run audit:v2:bank
 
-      - name: Upload fixed-size feasibility manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage-bank-feasibility-v2
-          path: generated/stage-bank-feasibility-v2.json
-          if-no-files-found: error
-          retention-days: 7
+      - name: Verify fixed-size manifest is reproducible
+        run: git diff --exit-code -- generated/stage-bank-feasibility-v2.json
 
       - name: Run variable-region threshold feasibility audit
         run: npm run audit:v2:variable-regions
 
-      - name: Commit variable-region manifest to PR branch
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          if [ -z "$(git status --porcelain -- generated/stage-bank-variable-feasibility-v2.json)" ]; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add generated/stage-bank-variable-feasibility-v2.json
-          git commit -m "test: fix variable-region feasibility manifest"
-          git push origin HEAD:${{ github.head_ref }}
-
-      - name: Upload variable-region feasibility manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage-bank-variable-feasibility-v2
-          path: generated/stage-bank-variable-feasibility-v2.json
-          if-no-files-found: error
-          retention-days: 7
+      - name: Verify variable-region manifest is reproducible
+        run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

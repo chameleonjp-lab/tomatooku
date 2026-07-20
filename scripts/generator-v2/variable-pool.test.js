@@ -14,7 +14,8 @@ function test(name, fn) {
 
 const small = buildVariableStageCandidatePool({
   rawTargetPerClass: 4,
-  selectedTargetPerClass: 2,
+  selectedTargetTotal: 6,
+  minimumSelectedPerClass: 2,
   maxPartitionsPerClass: 100000,
 });
 
@@ -55,7 +56,8 @@ test("同じ入力から同じ候補プールを再現", () => {
   assert.deepEqual(
     buildVariableStageCandidatePool({
       rawTargetPerClass: 4,
-      selectedTargetPerClass: 2,
+      selectedTargetTotal: 6,
+      minimumSelectedPerClass: 2,
       maxPartitionsPerClass: 100000,
     }),
     small
@@ -74,9 +76,10 @@ test("不正なtarget設定を拒否", () => {
     () =>
       buildVariableStageCandidatePool({
         rawTargetPerClass: 2,
-        selectedTargetPerClass: 3,
+        selectedTargetTotal: 7,
+        minimumSelectedPerClass: 1,
       }),
-    /cannot exceed/
+    /exceeds raw capacity/
   );
 });
 

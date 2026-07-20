@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "manifestGeneratorVersion": "2.6.0-variable-pool.1",
+  "exportedAt": "2026-07-20T07:10:19Z",
+  "stageCount": 108,
+  "decisions": {
+    "STG-01bd306d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0385e52f": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-05388253": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-05453ba1": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-1e3f1e3cを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-07455e25": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0868fad9": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-6168b936を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0a930c10": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0b14368d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0b2e4fff": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0e1026c7": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0ee6ca8d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-0f378577": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-11b0d0ab": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-13fc715e": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-14696f34": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-158d53a5": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-19aa2ed1": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-82b47f4fを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-1bf62619": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-1dc27319": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-1e3f1e3c": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-20357d3a": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-20431284": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-20ebf5b8": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-210399ce": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-21d3b7b3": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-224ae596": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-23a5d49f": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-246317db": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-2580944b": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-27c59f21": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-283aea60": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-2857ff8d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-293dd948": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-2dfb34ab": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-a53237c1を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-2f78a997": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-13fc715eを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-30cd98cb": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-34ba9d68": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-36cdac4d": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-8a377eb4を代表として残す。比較変換=mirrorUpDown。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-38da58ee": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-397ca53d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-39ba6d43": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-3bb4740f": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-3f8c1d3f": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-423cb2b0": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-43d3c2c1": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-4c7c450d": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-4dc01b9a": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-a27903afを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-52abd430": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-f8f2d8e6を代表として残す。比較変換=rotate270。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-551b81c7": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離2の近似候補。STG-2580944bを代表として残す。比較変換=identity。 84問の難易度・対称クラス・サイズ分布を維持するため除外。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-587cd483": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-5aed412d": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-5e04e56a": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-5ee3f6de": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-2857ff8dを代表として残す。比較変換=rotate180。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-6168b936": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-6319808f": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-697800f8": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-6c245710": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-70140499": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-736d5a60": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-73718467": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-01bd306dを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-75e7cc16": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-77567d8e": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-423cb2b0を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-77f0d4b9": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-79279693": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-7dfeb90a": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-817148dd": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-d50fa544を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-82b47f4f": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-8a377eb4": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-8c4df48e": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-8e3e7a46": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-94ef9261": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-98aee138": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-01bd306dを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a27903af": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a3883006": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-2580944bを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a53237c1": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a6649fc6": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a6de5d4e": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-a75c43f5": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-aa32f47e": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-d6eb37e7を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-aaee755b": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-afea47be": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-1dc27319を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-b0ff7699": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-b5dc2753": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-b90b2bf2": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-ba446d6d": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-bb3d9d29": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-bda38a0d": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-c551c232": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-c6d111cc": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-c8be2e53": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d0df3056": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-8a377eb4を代表として残す。比較変換=mirrorAntiDiagonal。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d14a7bfa": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d2426d16": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-1bf62619を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d4c697b7": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d50fa544": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-d6eb37e7": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-e035bb47": {
+      "status": "keep",
+      "reason": "",
+      "note": "構造距離が十分にあり、難易度・サイズ分布を維持する候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-e391ea85": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-d50fa544を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-e48d77b6": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-eb49788f": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-20357d3aを代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-ec909e3f": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-0a930c10を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-edb742a5": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-ee9efd5b": {
+      "status": "keep",
+      "reason": "",
+      "note": "希少対称クラス17問を維持するため採用。距離1の近似関係は完成バンク監査で明示的に許容。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-f523e201": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-f8f2d8e6": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-fad5b9d3": {
+      "status": "keep",
+      "reason": "",
+      "note": "近似クラスタ内の代表候補として採用。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-fb23ec63": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離1の近似候補。STG-697800f8を代表として残す。比較変換=identity。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    },
+    "STG-fce49b7e": {
+      "status": "reject",
+      "reason": "near-duplicate",
+      "note": "構造距離2の近似候補。STG-283aea60を代表として残す。比較変換=identity。 84問の難易度・対称クラス・サイズ分布を維持するため除外。",
+      "reviewedAt": "2026-07-20T07:10:19Z"
+    }
+  }
+}

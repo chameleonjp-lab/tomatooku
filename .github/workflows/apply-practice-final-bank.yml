@@ -1,15 +1,17 @@
 name: Apply practice final bank connection
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/tomatooku-practice-final-bank
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   apply:
+    if: github.head_ref == 'agent/tomatooku-practice-final-bank' || github.ref_name == 'agent/tomatooku-practice-final-bank'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -49,5 +51,8 @@ jobs:
             scripts/practice-stage-bank.test.js scripts/practice-stage-bank.e2e.js
           git rm scripts/apply_practice_final_bank_connection.py \
             .github/workflows/apply-practice-final-bank.yml
+          if [ -f review/.practice-final-bank-trigger ]; then
+            git rm review/.practice-final-bank-trigger
+          fi
           git commit -m "feat: connect final bank to random practice"
           git push origin HEAD:agent/tomatooku-practice-final-bank

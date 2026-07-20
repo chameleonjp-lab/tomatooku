@@ -12,11 +12,10 @@ export const PRACTICE_STAGE_BANK_URL = new URL(
   "../generated/variable-stage-bank-v2.json",
   import.meta.url
 ).href;
+export const PRACTICE_STAGE_BANK_TIMEOUT_MS = 8000;
 
-function fallbackResult(reason) {
-  const descriptor = getStageBankDescriptor(
-    PRACTICE_STAGE_BANK_FEATURE.fallbackBankId
-  );
+function fallbackResult(reason, feature = PRACTICE_STAGE_BANK_FEATURE) {
+  const descriptor = getStageBankDescriptor(feature.fallbackBankId);
   return {
     bankId: descriptor.id,
     stages: STAGES,
@@ -25,10 +24,11 @@ function fallbackResult(reason) {
   };
 }
 
-export function validatePracticeStageBankPayload(bank) {
-  const descriptor = getStageBankDescriptor(
-    PRACTICE_STAGE_BANK_FEATURE.primaryBankId
-  );
+export function validatePracticeStageBankPayload(
+  bank,
+  feature = PRACTICE_STAGE_BANK_FEATURE
+) {
+  const descriptor = getStageBankDescriptor(feature.primaryBankId);
   const problems = [];
 
   if (!bank || typeof bank !== "object" || Array.isArray(bank)) {
@@ -73,25 +73,89 @@ export async function loadPracticeStageBank({
   fetchImpl = globalThis.fetch,
   feature = PRACTICE_STAGE_BANK_FEATURE,
   url = PRACTICE_STAGE_BANK_URL,
+  timeoutMs = PRACTICE_STAGE_BANK_TIMEOUT_MS,
 } = {}) {
-  if (!feature.enabled) return fallbackResult("feature-disabled");
-  if (typeof fetchImpl !== "function") return fallbackResult("fetch-unavailable");
+  if (!feature.enabled) return fallbackResult("feature-disabled", feature);
+  if (typeof fetchImpl !== "function") {
+    return fallbackResult("fetch-unavailable", feature);
+  }
+
+  const parsedTimeoutMs = Number(timeoutMs);
+  const safeTimeoutMs =
+    Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
+      ? parsedTimeoutMs
+      : PRACTICE_STAGE_BANK_TIMEOUT_MS;
+  const controller =
+    typeof globalThis.AbortController === "function"
+      ? new globalThis.AbortController()
+      : null;
+  let timeoutId = null;
+
+  const timeout = new Promise((resolve) => {
+    timeoutId = setTimeout(() => {
+      if (controller) controller.abort();
+      resolve({ type: "timeout" });
+    }, safeTimeoutMs);
+  });
+  const request = Promise.resolve()
+    .then(async () => {
+      const response = await fetchImpl(url, {
+        cache: "no-store",
+        ...(controller ? { signal: controller.signal } : {}),
+      });
+      if (!response || !response.ok) return { type: "http-error" };
+      return { type: "bank", bank: await response.json() };
+    })
+    .catch(() => ({ type: "network-error" }));
 
   try {
-    const response = await fetchImpl(url, { cache: "no-store" });
-    if (!response || !response.ok) return fallbackResult("http-error");
+    const outcome = await Promise.race([request, timeout]);
+    if (outcome.type !== "bank") {
+      return fallbackResult(outcome.type, feature);
+    }
 
-    const bank = await response.json();
-    const validation = validatePracticeStageBankPayload(bank);
-    if (!validation.valid) return fallbackResult("invalid-bank");
+    const validation = validatePracticeStageBankPayload(outcome.bank, feature);
+    if (!validation.valid) return fallbackResult("invalid-bank", feature);
 
     return {
-      bankId: bank.id,
-      stages: bank.stages,
+      bankId: outcome.bank.id,
+      stages: outcome.bank.stages,
       fallback: false,
       fallbackReason: null,
     };
-  } catch (_) {
-    return fallbackResult("network-error");
+  } finally {
+    if (timeoutId != null) clearTimeout(timeoutId);
   }
+}
+
+export function createPracticeStageBankLoader({
+  load = loadPracticeStageBank,
+} = {}) {
+  if (typeof load !== "function") {
+    throw new TypeError("practice stage bank loader must be a function");
+  }
+
+  let cachedPromise = null;
+  return function ensurePracticeStageBank() {
+    if (!cachedPromise) {
+      cachedPromise = Promise.resolve()
+        .then(() => load())
+        .then(
+          (result) => {
+            if (
+              result?.fallback &&
+              result.fallbackReason !== "feature-disabled"
+            ) {
+              cachedPromise = null;
+            }
+            return result;
+          },
+          (error) => {
+            cachedPromise = null;
+            throw error;
+          }
+        );
+    }
+    return cachedPromise;
+  };
 }

@@ -791,7 +791,7 @@ export function buildVariableStageCandidatePool({
       0
     ),
     stageCount: withDifficulty.length,
-    minimumParrPairDistance,
+    minimumPairDistance,
     allocationStrategy:
       "retain the minimum from every class, then fill by remaining raw capacity",
     capacityLimitedClasses: classAudits

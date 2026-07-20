@@ -35,7 +35,23 @@ export const STAGE_BANK_CATALOG = Object.freeze({
     rankingEligible: false,
     status: "contract-proposed-pending-approval",
     requiresHumanDecision: true,
-    description: "エリアサイズ4〜6マスの独立schema契約を提案済みの未承認候補",
+    description: "エリアサイズ4〜6マスの独立schema契約を提案済みの候補",
+  }),
+  "candidate-v2-variable-4-6-pool": Object.freeze({
+    id: "candidate-v2-variable-4-6-pool",
+    source: "generated/variable-stage-candidate-pool-v2.json",
+    contract: "docs/VARIABLE_REGION_STAGE_CONTRACT.md",
+    stageSchemaVersion: 2,
+    bankSchemaVersion: 1,
+    rawStageCount: 185,
+    stageCount: 108,
+    minRegionSize: 4,
+    maxRegionSize: 6,
+    runtimeEnabled: false,
+    rankingEligible: false,
+    status: "candidate-pool-ready-for-review",
+    requiresHumanDecision: true,
+    description: "難易度・構造距離・対称クラス分布を付与したレビュー用108問候補プール",
   }),
 });
 
@@ -48,7 +64,8 @@ export function getStageBankDescriptor(bankId = ACTIVE_STAGE_BANK_ID) {
 export function assertCandidateBankRemainsInactive() {
   const fixed = getStageBankDescriptor("candidate-v2");
   const variable = getStageBankDescriptor("candidate-v2-variable-4-6");
-  for (const candidate of [fixed, variable]) {
+  const pool = getStageBankDescriptor("candidate-v2-variable-4-6-pool");
+  for (const candidate of [fixed, variable, pool]) {
     if (candidate.runtimeEnabled || candidate.rankingEligible) {
       throw new Error(`${candidate.id} must remain inactive before explicit approval`);
     }
@@ -57,7 +74,10 @@ export function assertCandidateBankRemainsInactive() {
     throw new Error("candidate-v2 must remain blocked under the fixed-size contract");
   }
   if (variable.status !== "contract-proposed-pending-approval") {
-    throw new Error("variable-region candidate must remain pending contract approval");
+    throw new Error("variable-region contract candidate must remain pending approval");
+  }
+  if (pool.status !== "candidate-pool-ready-for-review") {
+    throw new Error("variable-region candidate pool must remain review-only");
   }
   return true;
 }

@@ -4,8 +4,8 @@
 - 対象モード: ランダム練習のみ
 - 練習バンク: `candidate-v2-variable-4-6-final`
 - fallbackバンク: `legacy-v1`
-- 状態: implemented / review pending
-- 更新日: 2026-07-20
+- 状態: implemented / release pending
+- 更新日: 2026-07-21
 
 ## 1. 目的
 
@@ -73,7 +73,7 @@ generated/variable-stage-bank-v2.json
 取得オプション:
 
 ```js
-fetch(url, { cache: "no-store" })
+fetch(url, { cache: "no-store", signal })
 ```
 
 完成バンクpayloadに対して次を検証する。
@@ -100,6 +100,7 @@ fetch-unavailable
 http-error
 invalid-bank
 network-error
+timeout
 ```
 
 fallback結果:
@@ -116,6 +117,8 @@ fallback結果:
 プレイヤーには「従来の練習問題で開始します」と通知する。
 
 fallbackでもランダム練習のランキング対象外契約を維持する。
+
+読み込みは8秒で時間切れとし、開始ボタンが無期限に停止しないようにする。一時的なHTTP・通信・検証・時間切れfallbackはページ内へ固定せず、次の練習開始時に完成バンクを再取得する。完成バンクの取得成功と`feature-disabled`だけはページ内で再利用する。
 
 ## 6. 読み込みタイミング
 
@@ -211,7 +214,7 @@ data-stage-bank-fallback
 - 公式再プレイ: 固定3問
 - 練習再プレイ: 練習loader経由
 
-ページ内では有効な練習bank取得結果を再利用できる。ただしページ再読み込み後は再検証する。
+ページ内では有効な練習bank取得結果を再利用する。ただし、一時fallbackは再利用せず、次の練習開始時に再試行する。ページ再読み込み後は、成功済みの完成bankも再取得・再検証する。
 
 ## 11. 自動テスト
 
@@ -224,11 +227,13 @@ npm run test:practice-stage-bank
 確認内容:
 
 - 公式active IDと練習active IDの分離
-- feature gate有効
+- feature gate有効・無効のactive ID解決
+- 1行のgate無効化後も契約テストが成立
 - 完成bank payload検証
 - 完成84問の取得成功
 - feature gate無効時にfetchしない
-- HTTP失敗・不正bank・通信例外のfallback
+- HTTP失敗・不正bank・通信例外・時間切れのfallback
+- 一時fallback後の再試行と成功bankの再利用
 - 注入した練習セッションが難易度1→2→3
 - 公式セッションが注入bankを無視
 - 練習bankがruntime有効・ranking無効
@@ -273,6 +278,8 @@ npm run e2e:practice-bank
 - 練習: 旧30問へ戻る
 - ランキング: 変更なし
 - 完成manifest: リポジトリには保持
+
+この1行変更だけで静的テストとE2Eの期待値もfallback側へ切り替わる。緊急停止のためにテストファイルを同時編集しない。
 
 ### コードロールバック
 

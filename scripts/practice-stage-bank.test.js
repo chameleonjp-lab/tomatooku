@@ -7,6 +7,7 @@ import {
   PRACTICE_STAGE_BANK_FEATURE,
   assertPracticeStageBankRouting,
   getStageBankDescriptor,
+  resolveActivePracticeStageBankId,
 } from "../src/stage-bank-config.js";
 import {
   GAME_MODE,
@@ -15,6 +16,8 @@ import {
   solutionSignature,
 } from "../src/game.js";
 import {
+  PRACTICE_STAGE_BANK_TIMEOUT_MS,
+  createPracticeStageBankLoader,
   loadPracticeStageBank,
   validatePracticeStageBankPayload,
 } from "../src/practice-stage-bank.js";
@@ -28,6 +31,15 @@ const finalBank = JSON.parse(
     "utf8"
   )
 );
+
+const ENABLED_PRACTICE_FEATURE = Object.freeze({
+  ...PRACTICE_STAGE_BANK_FEATURE,
+  enabled: true,
+});
+const DISABLED_PRACTICE_FEATURE = Object.freeze({
+  ...PRACTICE_STAGE_BANK_FEATURE,
+  enabled: false,
+});
 
 let pass = 0;
 async function test(name, fn) {
@@ -49,9 +61,16 @@ await test("公式バンクと練習バンクのactive IDを分離", async () =>
   assert.equal(ACTIVE_STAGE_BANK_ID, "legacy-v1");
   assert.equal(
     ACTIVE_PRACTICE_STAGE_BANK_ID,
-    "candidate-v2-variable-4-6-final"
+    resolveActivePracticeStageBankId()
   );
-  assert.equal(PRACTICE_STAGE_BANK_FEATURE.enabled, true);
+  assert.equal(
+    resolveActivePracticeStageBankId(ENABLED_PRACTICE_FEATURE),
+    PRACTICE_STAGE_BANK_FEATURE.primaryBankId
+  );
+  assert.equal(
+    resolveActivePracticeStageBankId(DISABLED_PRACTICE_FEATURE),
+    PRACTICE_STAGE_BANK_FEATURE.fallbackBankId
+  );
   assert.equal(PRACTICE_STAGE_BANK_FEATURE.fallbackBankId, "legacy-v1");
   assert.equal(assertPracticeStageBankRouting(), true);
 });
@@ -67,9 +86,10 @@ await test("完成バンクpayloadは練習専用runtime契約へ合格", async 
 
 await test("成功時は完成84問を返す", async () => {
   const result = await loadPracticeStageBank({
+    feature: ENABLED_PRACTICE_FEATURE,
     fetchImpl: async () => response(finalBank),
   });
-  assert.equal(result.bankId, ACTIVE_PRACTICE_STAGE_BANK_ID);
+  assert.equal(result.bankId, ENABLED_PRACTICE_FEATURE.primaryBankId);
   assert.equal(result.fallback, false);
   assert.equal(result.fallbackReason, null);
   assert.equal(result.stages.length, 84);
@@ -79,7 +99,7 @@ await test("成功時は完成84問を返す", async () => {
 await test("feature gate無効時はfetchせず旧30問へ戻る", async () => {
   let fetchCount = 0;
   const result = await loadPracticeStageBank({
-    feature: { ...PRACTICE_STAGE_BANK_FEATURE, enabled: false },
+    feature: DISABLED_PRACTICE_FEATURE,
     fetchImpl: async () => {
       fetchCount++;
       return response(finalBank);
@@ -99,12 +119,86 @@ await test("HTTP失敗・不正bank・通信例外は旧30問へフォールバ�
     [async () => { throw new Error("offline"); }, "network-error"],
   ];
   for (const [fetchImpl, reason] of cases) {
-    const result = await loadPracticeStageBank({ fetchImpl });
+    const result = await loadPracticeStageBank({
+      feature: ENABLED_PRACTICE_FEATURE,
+      fetchImpl,
+    });
     assert.equal(result.bankId, "legacy-v1");
     assert.equal(result.fallback, true);
     assert.equal(result.fallbackReason, reason);
     assert.equal(result.stages, STAGES);
   }
+});
+
+await test("応答が停止しても時間切れで旧30問へ戻る", async () => {
+  const result = await loadPracticeStageBank({
+    feature: ENABLED_PRACTICE_FEATURE,
+    timeoutMs: 5,
+    fetchImpl: async (_url, { signal }) =>
+      new Promise((_, reject) => {
+        signal?.addEventListener(
+          "abort",
+          () => reject(new Error("aborted")),
+          { once: true }
+        );
+      }),
+  });
+  assert.equal(PRACTICE_STAGE_BANK_TIMEOUT_MS, 8000);
+  assert.equal(result.bankId, "legacy-v1");
+  assert.equal(result.fallback, true);
+  assert.equal(result.fallbackReason, "timeout");
+});
+
+await test("一時fallbackは次回再試行し、有効bankだけを再利用", async () => {
+  let loadCount = 0;
+  const validResult = {
+    bankId: finalBank.id,
+    stages: finalBank.stages,
+    fallback: false,
+    fallbackReason: null,
+  };
+  const ensure = createPracticeStageBankLoader({
+    load: async () => {
+      loadCount++;
+      if (loadCount === 1) {
+        return {
+          bankId: "legacy-v1",
+          stages: STAGES,
+          fallback: true,
+          fallbackReason: "network-error",
+        };
+      }
+      return validResult;
+    },
+  });
+
+  const first = await ensure();
+  const second = await ensure();
+  const third = await ensure();
+  assert.equal(first.fallbackReason, "network-error");
+  assert.equal(second, validResult);
+  assert.equal(third, validResult);
+  assert.equal(loadCount, 2);
+});
+
+await test("feature-disabled fallbackはページ内で再利用", async () => {
+  let loadCount = 0;
+  const disabledResult = {
+    bankId: "legacy-v1",
+    stages: STAGES,
+    fallback: true,
+    fallbackReason: "feature-disabled",
+  };
+  const ensure = createPracticeStageBankLoader({
+    load: async () => {
+      loadCount++;
+      return disabledResult;
+    },
+  });
+
+  assert.equal(await ensure(), disabledResult);
+  assert.equal(await ensure(), disabledResult);
+  assert.equal(loadCount, 1);
 });
 
 await test("完成bankを注入した練習セッションは難易度1→2→3", async () => {
@@ -135,7 +229,9 @@ await test("公式セッションは練習bankを渡しても固定3問", async 
 });
 
 await test("完成bank descriptorは練習runtimeのみ有効", async () => {
-  const descriptor = getStageBankDescriptor(ACTIVE_PRACTICE_STAGE_BANK_ID);
+  const descriptor = getStageBankDescriptor(
+    PRACTICE_STAGE_BANK_FEATURE.primaryBankId
+  );
   assert.equal(descriptor.runtimeEnabled, true);
   assert.equal(descriptor.rankingEligible, false);
   assert.equal(descriptor.status, "active-practice-only");

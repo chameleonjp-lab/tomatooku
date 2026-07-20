@@ -21,7 +21,7 @@ import {
   isSubmissionEnabled,
 } from "./ranking.js";
 import { playTutorial, stopTutorial } from "./tutorial.js";
-import { loadPracticeStageBank } from "./practice-stage-bank.js";
+import { createPracticeStageBankLoader } from "./practice-stage-bank.js";
 
 const PLAYER_KEY = "tomatoku.playerName";
 const GAME_URL = "https://chameleonjp.codeberg.page/tomatooku/";
@@ -53,7 +53,7 @@ let countdownTimerIds = [];
 let transitionTimerId = null;
 let toastTimerId = null;
 let lastHudPaintAt = 0;
-let practiceStageBankPromise = null;
+const ensurePracticeStageBank = createPracticeStageBankLoader();
 let startInFlight = false;
 
 function gameUrl() {
@@ -201,13 +201,6 @@ function setStartButtonsDisabled(disabled) {
   const practice = $("#start-practice-btn");
   if (official) official.disabled = disabled;
   if (practice) practice.disabled = disabled;
-}
-
-function ensurePracticeStageBank() {
-  if (!practiceStageBankPromise) {
-    practiceStageBankPromise = loadPracticeStageBank();
-  }
-  return practiceStageBankPromise;
 }
 
 async function startNamedGame(name, mode) {

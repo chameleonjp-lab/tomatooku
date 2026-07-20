@@ -4,9 +4,11 @@ import { fileURLToPath } from "node:url";
 import {
   ACTIVE_PRACTICE_STAGE_BANK_ID,
   ACTIVE_STAGE_BANK_ID,
+  PRACTICE_STAGE_BANK_FEATURE,
   assertCandidateBankRemainsInactive,
   assertPracticeStageBankRouting,
   getStageBankDescriptor,
+  resolveActivePracticeStageBankId,
 } from "../src/stage-bank-config.js";
 import {
   assertVariableStageFinalBank,
@@ -152,7 +154,10 @@ test("同じ入力からコミット済みmanifestを完全再現", () => {
 
 test("bank catalogは完成バンクを練習専用runtimeとして登録", () => {
   assert.equal(ACTIVE_STAGE_BANK_ID, "legacy-v1");
-  assert.equal(ACTIVE_PRACTICE_STAGE_BANK_ID, VARIABLE_FINAL_BANK_ID);
+  assert.equal(
+    ACTIVE_PRACTICE_STAGE_BANK_ID,
+    resolveActivePracticeStageBankId(PRACTICE_STAGE_BANK_FEATURE)
+  );
   const descriptor = getStageBankDescriptor(VARIABLE_FINAL_BANK_ID);
   assert.equal(descriptor.source, "generated/variable-stage-bank-v2.json");
   assert.equal(descriptor.stageCount, 84);

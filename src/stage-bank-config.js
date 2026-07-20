@@ -6,9 +6,14 @@ export const PRACTICE_STAGE_BANK_FEATURE = Object.freeze({
   fallbackBankId: "legacy-v1",
 });
 
-export const ACTIVE_PRACTICE_STAGE_BANK_ID = PRACTICE_STAGE_BANK_FEATURE.enabled
-  ? PRACTICE_STAGE_BANK_FEATURE.primaryBankId
-  : PRACTICE_STAGE_BANK_FEATURE.fallbackBankId;
+export function resolveActivePracticeStageBankId(
+  feature = PRACTICE_STAGE_BANK_FEATURE
+) {
+  return feature.enabled ? feature.primaryBankId : feature.fallbackBankId;
+}
+
+export const ACTIVE_PRACTICE_STAGE_BANK_ID =
+  resolveActivePracticeStageBankId();
 
 export const STAGE_BANK_CATALOG = Object.freeze({
   "legacy-v1": Object.freeze({
@@ -124,8 +129,16 @@ export function assertPracticeStageBankRouting() {
   if (ACTIVE_STAGE_BANK_ID !== "legacy-v1") {
     throw new Error("official active bank must remain legacy-v1");
   }
-  if (ACTIVE_PRACTICE_STAGE_BANK_ID !== primary.id) {
-    throw new Error("practice active bank must follow the enabled feature gate");
+  const expectedActiveId = resolveActivePracticeStageBankId();
+  if (ACTIVE_PRACTICE_STAGE_BANK_ID !== expectedActiveId) {
+    throw new Error("practice active bank must follow the feature gate");
+  }
+  if (
+    PRACTICE_STAGE_BANK_FEATURE.enabled
+      ? ACTIVE_PRACTICE_STAGE_BANK_ID !== primary.id
+      : ACTIVE_PRACTICE_STAGE_BANK_ID !== fallback.id
+  ) {
+    throw new Error("practice active bank does not match the selected route");
   }
   if (!primary.runtimeEnabled || primary.rankingEligible) {
     throw new Error("practice final bank must be runtime enabled and ranking ineligible");

@@ -26,28 +26,209 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Correct adjacent-only fixture
+      - name: Finalize contract documentation and restore CI
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('scripts/variable-stage-contract.test.js')
-          text = path.read_text()
-          old = '    [3, 0],'
-          new = '    [3, 4],'
-          if old in text:
-              path.write_text(text.replace(old, new, 1))
-          elif new not in text:
-              raise SystemExit('adjacent fixture target not found')
+
+          readme_path = Path('README.md')
+          readme = readme_path.read_text()
+          readme = readme.replace(
+              'candidate-v2-variable-4-6.status = feasible-pending-contract-approval',
+              'candidate-v2-variable-4-6.status = contract-proposed-pending-approval',
+          )
+          readme_anchor = '''成立確認は仕様採用を意味しません。現行30問、公式3問、ランダム練習には接続していません。
+
+詳細:'''
+          readme_insert = '''### Slice 5：可変エリア Stage Schema v2
+
+生成器から独立したvalidator契約を追加しました。
+
+```text
+schemaVersion = 2
+盤面 = 5×5
+エリア = A〜E
+各エリア = 4〜6マス・4近傍連結
+solution = 行順の[row, col]×5
+一意解 = 必須
+stable id = canonical盤面由来
+```
+
+84問の成立性manifestをschema v2へ変換し、全件を独立validatorで検証します。候補bankは84問以上、ID重複なし、D4重複なし、runtime・ranking無効を必須とします。
+
+```text
+src/variable-stage-contract.js
+docs/VARIABLE_REGION_STAGE_CONTRACT.md
+```
+
+成立確認と契約定義は仕様採用を意味しません。現行30問、公式3問、ランダム練習には接続していません。
+
+詳細:'''
+          if readme_anchor not in readme:
+              raise SystemExit('README Slice 5 insertion anchor not found')
+          readme = readme.replace(readme_anchor, readme_insert, 1)
+          readme = readme.replace(
+              '- `docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md`',
+              '- `docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md`\n- `docs/VARIABLE_REGION_STAGE_CONTRACT.md`',
+              1,
+          )
+          readme = readme.replace(
+              'npm run test:generator-v2:variable-regions # 可変4〜6マス成立性契約',
+              'npm run test:generator-v2:variable-regions # 可変4〜6マス成立性契約\nnpm run test:variable-stage-contract      # 独立stage schema v2・bank契約',
+              1,
+          )
+          readme = readme.replace(
+              '  stage-bank-config.js\n  stages.js',
+              '  stage-bank-config.js\n  variable-stage-contract.js\n  stages.js',
+              1,
+          )
+          readme = readme.replace(
+              '  audit_variable_region_sizes_v2.js\n  generate_stages.js',
+              '  audit_variable_region_sizes_v2.js\n  variable-stage-contract.test.js\n  generate_stages.js',
+              1,
+          )
+          readme = readme.replace(
+              '  GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md\n```',
+              '  GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md\n  VARIABLE_REGION_STAGE_CONTRACT.md\n```',
+              1,
+          )
+          readme_path.write_text(readme)
+
+          plan_path = Path('docs/IMPLEMENTATION_PLAN_v2.md')
+          plan = plan_path.read_text()
+          plan = plan.replace(
+              '現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／仕様承認待ち',
+              '現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／stage schema v2提案済み／契約承認待ち',
+              1,
+          )
+          plan = plan.replace(
+              '状態: **completed / FEASIBLE / CONTRACT APPROVAL PENDING**',
+              '状態: **completed / FEASIBLE**',
+              1,
+          )
+          plan_anchor = '''generated/stage-bank-variable-feasibility-v2.json
+docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
+```
+
+## 5. 現在のバンク契約'''
+          plan_insert = '''generated/stage-bank-variable-feasibility-v2.json
+docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
+```
+
+### 4-5. Slice 5：可変エリア Stage Schema v2
+
+状態: **completed / CONTRACT PROPOSED / APPROVAL PENDING**
+
+実装:
+
+- schema version 2
+- 5×5、A〜E、各4〜6マス
+- 4近傍連結
+- 行順solution・列重複禁止
+- 各エリア1個・隣接禁止
+- 独立ソルバによる一意解確認
+- D4・エリア名canonical化
+- content-derived安定ID
+- 84問以上のcandidate bank validator
+- runtime・ranking有効化拒否
+
+固定成果物:
+
+```text
+src/variable-stage-contract.js
+scripts/variable-stage-contract.test.js
+docs/VARIABLE_REGION_STAGE_CONTRACT.md
+```
+
+84問成立性manifestの全ステージは独立validatorへ合格する。生成器コードはvalidatorからimportしない。
+
+## 5. 現在のバンク契約'''
+          if plan_anchor not in plan:
+              raise SystemExit('implementation plan Slice 5 insertion anchor not found')
+          plan = plan.replace(plan_anchor, plan_insert, 1)
+          plan = plan.replace(
+              'candidate-v2-variable-4-6.status = feasible-pending-contract-approval',
+              'candidate-v2-variable-4-6.status = contract-proposed-pending-approval',
+              1,
+          )
+          plan = plan.replace(
+              '次を正式決定するまで可変サイズ候補バンクの実装・接続を開始しない。',
+              '次を正式決定するまで可変サイズ候補プールの生成・選別・ゲーム接続を開始しない。',
+              1,
+          )
+          plan = plan.replace(
+              '### 7-1. 可変サイズstage schema\n\n- `regionSizeRange: [4, 6]`',
+              '### 7-1. 可変サイズstage schema（completed）\n\n- `regionSizeRange: [4, 6]`',
+              1,
+          )
+          plan = plan.replace(
+              '- schema versionとgenerator version\n\n### 7-2. 候補プール生成',
+              '- schema versionとgenerator version\n\n固定成果物:\n\n```text\nsrc/variable-stage-contract.js\ndocs/VARIABLE_REGION_STAGE_CONTRACT.md\n```\n\n### 7-2. 候補プール生成',
+              1,
+          )
+          plan_path.write_text(plan)
+
+          Path('.github/workflows/ci.yml').write_text('''name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tomatooku-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Static and browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run static and contract tests
+        run: npm test
+
+      - name: Run exhaustive fixed-size feasibility audit
+        run: npm run audit:v2:bank
+
+      - name: Run variable-region threshold feasibility audit
+        run: npm run audit:v2:variable-regions
+
+      - name: Verify variable-region manifest is reproducible
+        run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run iPhone SE browser E2E
+        run: npm run e2e
+''')
           PY
-          if [ -n "$(git status --porcelain -- scripts/variable-stage-contract.test.js)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add scripts/variable-stage-contract.test.js
-            git commit -m "test: isolate adjacent solution violation"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/IMPLEMENTATION_PLAN_v2.md .github/workflows/ci.yml
+          git commit -m "docs: finalize variable-stage contract package"
+          git push origin HEAD:${{ github.head_ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

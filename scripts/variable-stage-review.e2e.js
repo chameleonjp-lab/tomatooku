@@ -115,12 +115,32 @@ async function main() {
     await page.click('[data-decision="hold"]');
     ok((await page.textContent("#current-decision")) === "保留", "保留判断を保存");
 
-    const downloadPromise = page.waitForEvent("download");
+    await page.evaluate(() => {
+      const capture = {
+        blob: null,
+        clicked: false,
+        filename: "",
+      };
+      window.__reviewExportCapture = capture;
+      const createObjectURL = URL.createObjectURL.bind(URL);
+      URL.createObjectURL = (blob) => {
+        capture.blob = blob;
+        return createObjectURL(blob);
+      };
+      HTMLAnchorElement.prototype.click = function captureAnchorClick() {
+        capture.clicked = true;
+        capture.filename = this.download;
+      };
+    });
     await page.click("#export-review");
-    const download = await downloadPromise;
-    ok(download.suggestedFilename().startsWith("tomatooku-variable-review-"), "レビューJSONのファイル名を設定");
-    const exportPath = await download.path();
-    const exported = JSON.parse(fs.readFileSync(exportPath, "utf8"));
+    const exportCapture = await page.evaluate(async () => ({
+      clicked: window.__reviewExportCapture.clicked,
+      filename: window.__reviewExportCapture.filename,
+      body: await window.__reviewExportCapture.blob.text(),
+    }));
+    ok(exportCapture.clicked, "レビューJSONのダウンロード操作を実行");
+    ok(exportCapture.filename.startsWith("tomatooku-variable-review-"), "レビューJSONのファイル名を設定");
+    const exported = JSON.parse(exportCapture.body);
     ok(exported.decisions[currentId].status === "keep", "書き出しJSONへ採用判断を含む");
     ok(exported.decisions[secondId].status === "hold", "書き出しJSONへ保留判断を含む");
 

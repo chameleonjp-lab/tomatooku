@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Static and browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -44,6 +44,17 @@ jobs:
 
       - name: Verify variable-region manifest is reproducible
         run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
+
+      - name: Generate balanced variable candidate pool
+        run: npm run gen:v2:variable-pool
+
+      - name: Upload variable candidate pool artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: variable-stage-candidate-pool-v2
+          path: generated/variable-stage-candidate-pool-v2.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

@@ -188,6 +188,32 @@ candidate-v2-variable-4-6-pool.runtimeEnabled = false
 candidate-v2-variable-4-6-pool.rankingEligible = false
 ```
 
+### Slice 7：人間レビュー基盤
+
+108問候補プールを1組ずつ最近傍と比較し、採用・除外・保留を記録できる開発専用ページを追加しました。
+
+```text
+review/variable-stage-review.html
+```
+
+主な機能:
+
+- D4整列後の最近傍盤面比較
+- 差分セル強調
+- 正解表示切替
+- 難易度・対称クラス・サイズ・分岐指標
+- 判断・距離・難易度・クラス・サイズ・IDフィルター
+- 採用・除外・保留・理由・メモ
+- `localStorage["tomatooku.variableStageReview.v1"]`へ中断状態を保存
+- レビューJSONの書き出し・読み込み
+- iPhone SE相当320px対応
+
+```text
+http://localhost:8080/review/variable-stage-review.html
+```
+
+レビュー画面は公開ゲームの`index.html`からリンクせず、Supabase・ランキングへ送信しません。実レビューと完成バンク選別は未完了です。
+
 現行30問、公式3問、ランダム練習には接続していません。
 
 詳細:
@@ -198,6 +224,7 @@ candidate-v2-variable-4-6-pool.rankingEligible = false
 - `docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md`
 - `docs/VARIABLE_REGION_STAGE_CONTRACT.md`
 - `docs/VARIABLE_STAGE_CANDIDATE_POOL.md`
+- `docs/VARIABLE_STAGE_REVIEW_TOOL.md`
 
 ## 画面フロー
 
@@ -283,7 +310,9 @@ npm run test:generator-v2:feasibility    # 固定5マス全探索・停止契約
 npm run test:generator-v2:variable-regions # 可変4〜6マス成立性契約
 npm run test:generator-v2:variable-pool  # 108問候補プール・分布・距離契約
 npm run test:variable-stage-contract      # 独立stage schema v2・bank契約
-npm run e2e                              # Playwrightブラウザテスト
+npm run test:variable-stage-review        # レビュー画面・108問距離再計算契約
+npm run e2e                              # 公開ゲームPlaywrightブラウザテスト
+npm run e2e:review                       # レビュー画面iPhone SE相当E2E
 npm run serve                            # ローカルHTTPサーバー
 ```
 
@@ -296,6 +325,10 @@ generated/
   stage-bank-feasibility-v2.json
   stage-bank-variable-feasibility-v2.json
   variable-stage-candidate-pool-v2.json
+review/
+  variable-stage-review.html
+  variable-stage-review.css
+  variable-stage-review.js
 index.html
 src/
   accessibility.css
@@ -325,6 +358,8 @@ scripts/
   audit_stage_bank_v2.js
   audit_variable_region_sizes_v2.js
   variable-stage-contract.test.js
+  variable-stage-review.test.js
+  variable-stage-review.e2e.js
   generate_stages.js
   generate_stages_v2.js
   generate_stage_candidates_v2.js
@@ -348,6 +383,7 @@ docs/
   GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
   VARIABLE_REGION_STAGE_CONTRACT.md
   VARIABLE_STAGE_CANDIDATE_POOL.md
+  VARIABLE_STAGE_REVIEW_TOOL.md
 ```
 
 ## セキュリティ

@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／レビュー用108問候補プール生成済み／完成バンク選別待ち
+- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／108問候補プール生成済み／人間レビュー基盤実装済み／レビュー実施・完成バンク選別待ち
 
 ## 1. 運用ルール
 
@@ -306,6 +306,37 @@ scripts/generator-v2/variable-pool.test.js
 docs/VARIABLE_STAGE_CANDIDATE_POOL.md
 ```
 
+### 4-7. Slice 7：人間レビュー基盤
+
+状態: **completed / REVIEW EXECUTION PENDING**
+
+実装:
+
+- 候補と最近傍のD4整列比較
+- 差分セル強調
+- 正解表示切替
+- 108問最近傍距離の独立再計算
+- 判断・距離・難易度・クラス・サイズ・IDフィルター
+- 採用・除外・保留・理由・メモ
+- localStorageによる中断・再開
+- JSON書き出し・読み込み
+- URLによるStage ID直接指定
+- iPhone SE相当320px対応
+- Supabase・ランキング通信なし
+
+固定成果物:
+
+```text
+review/variable-stage-review.html
+review/variable-stage-review.css
+review/variable-stage-review.js
+scripts/variable-stage-review.test.js
+scripts/variable-stage-review.e2e.js
+docs/VARIABLE_STAGE_REVIEW_TOOL.md
+```
+
+レビュー基盤の実装完了は、108問の採否レビュー完了を意味しない。完成バンク選別はレビューJSONを取得した後の別work packageとする。
+
 ## 5. 現在のバンク契約
 
 ```text
@@ -338,7 +369,7 @@ candidate-v2-variable-4-6-pool.rankingEligible = false
 
 ## 6. 現在の人間判断ゲート
 
-次を正式決定するまで108問候補プールから完成バンクを選別・ゲーム接続しない。
+108問の人間レビュー結果を確定し、完成バンクを別PRで固定するまでゲーム接続しない。
 
 ### 決定1：可変サイズ契約の採用（resolved）
 
@@ -405,7 +436,7 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 - 独立validator全件合格
 - runtime・ranking無効
 
-### 7-3. 難易度・近似選別
+### 7-3. 難易度・近似選別（自動指標completed / 人間判断pending）
 
 - 候補削除
 - 強制配置
@@ -415,15 +446,39 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 - 盤面境界距離
 - サイズプロファイル分布
 
-### 7-4. 人間レビュー
+### 7-4. 人間レビュー（基盤completed / 実施pending）
+
+レビュー画面:
+
+```text
+review/variable-stage-review.html
+```
+
+レビュー順:
+
+- 距離1の59問
+- 距離2の33問
+- 距離3以上の16問
+
+確認端末・観点:
 
 - iPhone SE
 - iPhone 17 Pro
 - 難易度分布
 - エリア識別性
 - 似た盤面の体感
+- レビューJSONの保存
+- 採用84問以上の確保
 
-### 7-5. 練習モード先行切替
+### 7-5. 完成バンク固定（pending）
+
+- レビューJSONを入力として採用Stage IDを固定
+- 未判断を自動採用しない
+- 採用84問未満なら生成・選別条件を再検討
+- 完成バンクを独立validatorへ再投入
+- runtime・rankingは引き続き無効
+
+### 7-6. 練習モード先行切替
 
 人間承認後のみ:
 
@@ -458,4 +513,4 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 - 候補バンクが独立検証済み
 - 練習モード切替が人間承認済み
 
-現時点では、ゲーム公開部分は完成状態です。生成器v2は可変4〜6マスで84問成立まで確認済みですが、仕様採用とゲーム接続は未承認です。
+現時点では、ゲーム公開部分、可変4〜6マス契約、108問候補プール、人間レビュー基盤まで完成しています。残工程は108問の実レビュー、完成バンク固定、人間承認後のランダム練習先行切替です。

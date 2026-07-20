@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { STAGES } from "../../src/stages.js";
+import { canonicalizeRegionGrid } from "./regions.js";
 import {
   REQUIRED_CANONICAL_TARGET,
   buildStageBankFeasibilityManifest,
@@ -71,6 +73,17 @@ test("単一配置監査も決定論的", () => {
   assert.equal(first.connectedPartitionCount, 1421);
   assert.equal(first.uniqueSolutionCount, 4);
   assert.equal(first.canonicalStageCount, 4);
+});
+
+test("現行30問も同じcanonical 5型へ集約", () => {
+  const counts = new Map();
+  for (const stage of STAGES) {
+    const signature = canonicalizeRegionGrid(stage.regions);
+    counts.set(signature, (counts.get(signature) || 0) + 1);
+  }
+  assert.equal(STAGES.length, 30);
+  assert.equal(counts.size, 5);
+  assert.deepEqual([...counts.values()].sort((left, right) => right - left), [8, 7, 6, 6, 3]);
 });
 
 test("コミット済みmanifestは全探索結果と完全一致", () => {

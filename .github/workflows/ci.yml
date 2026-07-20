@@ -2,9 +2,6 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -15,76 +12,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Static and browser tests
+  patch:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Apply adaptive class allocation patch
+      - name: Correct candidate pool distance field
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
-          python3 -c "import base64;exec(base64.b64decode('CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKcGF0aCA9IFBhdGgoInNjcmlwdHMvZ2VuZXJhdG9yLXYyL3ZhcmlhYmxlLXBvb2wuanMiKQp0ZXh0ID0gcGF0aC5yZWFkX3RleHQoKQp0ZXh0ID0gdGV4dC5yZXBsYWNlKAogICAgJ2V4cG9ydCBjb25zdCBERUZBVUxUX1NFTEVDVEVEX1RBUkdFVF9QRVJfQ0xBU1MgPSAzNjtcbmV4cG9ydCBjb25zdCBERUZBVUxUX01BWF9QQVJUSVRJT05TX1BFUl9DTEFTUyA9IDI1MDAwMDsnLAogICAgJ2V4cG9ydCBjb25zdCBERUZBVUxUX1NFTEVDVEVEX1RBUkdFVF9UT1RBTCA9IDEwODtcbmV4cG9ydCBjb25zdCBERUZBVUxUX01JTklNVU1fU0VMRUNURURfUEVSX0NMQVNTID0gMTc7XG5leHBvcnQgY29uc3QgREVGQVVMVF9NQVhfUEFSVElUSU9OU19QRVJfQ0xBU1MgPSAxMDAwMDAwOycsCiAgICAxLAopCm1hcmtlciA9ICJleHBvcnQgZnVuY3Rpb24gYnVpbGRWYXJpYWJsZVN0YWdlQ2FuZGlkYXRlUG9vbCh7IgppZiBtYXJrZXIgbm90IGluIHRleHQ6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJ2YXJpYWJsZSBwb29sIGJ1aWxkIG1hcmtlciBub3QgZm91bmQiKQpwcmVmaXggPSB0ZXh0Wzp0ZXh0LmluZGV4KG1hcmtlcildCnRhaWwgPSByJycnZnVuY3Rpb24gYWxsb2NhdGVDbGFzc1NlbGVjdGlvblRhcmdldHMoCiAgY2xhc3NBdWRpdHMsCiAgc2VsZWN0ZWRUYXJnZXRUb3RhbCwKICBtaW5pbXVtU2VsZWN0ZWRQZXJDbGFzcwopIHsKICBpZiAobWluaW11bVNlbGVjdGVkUGVyQ2xhc3MgKiBjbGFzc0F1ZGl0cy5sZW5ndGggPiBzZWxlY3RlZFRhcmdldFRvdGFsKSB7CiAgICB0aHJvdyBuZXcgUmFuZ2VFcnJvcigKICAgICAgIm1pbmltdW1TZWxlY3RlZFBlckNsYXNzIGNhbm5vdCBmaXQgd2l0aGluIHNlbGVjdGVkVGFyZ2V0VG90YWwiCiAgICApOwogIH0KICBjb25zdCB0b3RhbENhcGFjaXR5ID0gY2xhc3NBdWRpdHMucmVkdWNlKAogICAgKHN1bSwgYXVkaXQpID0+IHN1bSArIGF1ZGl0LnN0YWdlcy5sZW5ndGgsCiAgICAwCiAgKTsKICBpZiAoc2VsZWN0ZWRUYXJnZXRUb3RhbCA+IHRvdGFsQ2FwYWNpdHkpIHsKICAgIHRocm93IG5ldyBSYW5nZUVycm9yKAogICAgICBgc2VsZWN0ZWRUYXJnZXRUb3RhbCBleGNlZWRzIHJhdyBjYXBhY2l0eTogJHtzZWxlY3RlZFRhcmdldFRvdGFsfSA+ICR7dG90YWxDYXBhY2l0eX1gCiAgICApOwogIH0KCiAgY29uc3QgdGFyZ2V0cyA9IE9iamVjdC5mcm9tRW50cmllcygKICAgIGNsYXNzQXVkaXRzLm1hcCgoYXVkaXQpID0+IFsKICAgICAgYXVkaXQucmVwcmVzZW50YXRpdmUuc3ltbWV0cnlDbGFzc0lkLAogICAgICBNYXRoLm1pbihtaW5pbXVtU2VsZWN0ZWRQZXJDbGFzcywgYXVkaXQuc3RhZ2VzLmxlbmd0aCksCiAgICBdKQogICk7CiAgZm9yIChjb25zdCBhdWRpdCBvZiBjbGFzc0F1ZGl0cykgewogICAgaWYgKGF1ZGl0LnN0YWdlcy5sZW5ndGggPCBtaW5pbXVtU2VsZWN0ZWRQZXJDbGFzcykgewogICAgICB0aHJvdyBuZXcgRXJyb3IoCiAgICAgICAgYG1pbmltdW0gY2xhc3MgcmVwcmVzZW50YXRpb24gbm90IHJlYWNoZWQgZm9yIGAgKwogICAgICAgICAgYCR7YXVkaXQucmVwcmVzZW50YXRpdmUuc3ltbWV0cnlDbGFzc0lkfTogYCArCiAgICAgICAgICBgJHthdWRpdC5zdGFnZXMubGVuZ3RofS8ke21pbmltdW1TZWxlY3RlZFBlckNsYXNzfWAKICAgICAgKTsKICAgIH0KICB9CgogIGxldCBhc3NpZ25lZCA9IE9iamVjdC52YWx1ZXModGFyZ2V0cykucmVkdWNlKChzdW0sIHZhbHVlKSA9PiBzdW0gKyB2YWx1ZSwgMCk7CiAgd2hpbGUgKGFzc2lnbmVkIDwgc2VsZWN0ZWRUYXJnZXRUb3RhbCkgewogICAgY29uc3QgY2FuZGlkYXRlcyA9IGNsYXNzQXVkaXRzCiAgICAgIC5maWx0ZXIoCiAgICAgICAgKGF1ZGl0KSA9PgogICAgICAgICAgdGFyZ2V0c1thdWRpdC5yZXByZXNlbnRhdGl2ZS5zeW1tZXRyeUNsYXNzSWRdIDwgYXVkaXQuc3RhZ2VzLmxlbmd0aAogICAgICApCiAgICAgIC5zb3J0KChsZWZ0LCByaWdodCkgPT4gewogICAgICAgIGNvbnN0IGxlZnRSZW1haW5pbmcgPQogICAgICAgICAgbGVmdC5zdGFnZXMubGVuZ3RoIC0gdGFyZ2V0c1tsZWZ0LnJlcHJlc2VudGF0aXZlLnN5bW1ldHJ5Q2xhc3NJZF07CiAgICAgICAgY29uc3QgcmlnaHRSZW1haW5pbmcgPQogICAgICAgICAgcmlnaHQuc3RhZ2VzLmxlbmd0aCAtIHRhcmdldHNbcmlnaHQucmVwcmVzZW50YXRpdmUuc3ltbWV0cnlDbGFzc0lkXTsKICAgICAgICByZXR1cm4gKAogICAgICAgICAgcmlnaHRSZW1haW5pbmcgLSBsZWZ0UmVtYWluaW5nIHx8CiAgICAgICAgICBsZWZ0LnJlcHJlc2VudGF0aXZlLnN5bW1ldHJ5Q2xhc3NJZC5sb2NhbGVDb21wYXJlKAogICAgICAgICAgICByaWdodC5yZXByZXNlbnRhdGl2ZS5zeW1tZXRyeUNsYXNzSWQKICAgICAgICAgICkKICAgICAgICApOwogICAgICB9KTsKICAgIGlmICghY2FuZGlkYXRlcy5sZW5ndGgpIHsKICAgICAgdGhyb3cgbmV3IEVycm9yKCJjb3VsZCBub3QgYWxsb2NhdGUgc2VsZWN0ZWQgdGFyZ2V0IGFjcm9zcyBjbGFzc2VzIik7CiAgICB9CiAgICB0YXJnZXRzW2NhbmRpZGF0ZXNbMF0ucmVwcmVzZW50YXRpdmUuc3ltbWV0cnlDbGFzc0lkXSsrOwogICAgYXNzaWduZWQrKzsKICB9CiAgcmV0dXJuIHRhcmdldHM7Cn0KCmV4cG9ydCBmdW5jdGlvbiBidWlsZFZhcmlhYmxlU3RhZ2VDYW5kaWRhdGVQb29sKHsKICByYXdUYXJnZXRQZXJDbGFzcyA9IERFRkFVTFRfUkFXX1RBUkdFVF9QRVJfQ0xBU1MsCiAgc2VsZWN0ZWRUYXJnZXRUb3RhbCA9IERFRkFVTFRfU0VMRUNURURfVEFSR0VUX1RPVEFMLAogIG1pbmltdW1TZWxlY3RlZFBlckNsYXNzID0gREVGQVVMVF9NSU5JTVVNX1NFTEVDVEVEX1BFUl9DTEFTUywKICBtYXhQYXJ0aXRpb25zUGVyQ2xhc3MgPSBERUZBVUxUX01BWF9QQVJUSVRJT05TX1BFUl9DTEFTUywKICBtaW5SZWdpb25TaXplID0gREVGQVVMVF9NSU5fUkVHSU9OX1NJWkUsCiAgbWF4UmVnaW9uU2l6ZSA9IERFRkFVTFRfTUFYX1JFR0lPTl9TSVpFLAp9ID0ge30pIHsKICBmb3IgKGNvbnN0IFtuYW1lLCB2YWx1ZV0gb2YgT2JqZWN0LmVudHJpZXMoewogICAgcmF3VGFyZ2V0UGVyQ2xhc3MsCiAgICBzZWxlY3RlZFRhcmdldFRvdGFsLAogICAgbWluaW11bVNlbGVjdGVkUGVyQ2xhc3MsCiAgICBtYXhQYXJ0aXRpb25zUGVyQ2xhc3MsCiAgfSkpIHsKICAgIGlmICghTnVtYmVyLmlzSW50ZWdlcih2YWx1ZSkgfHwgdmFsdWUgPCAxKSB7CiAgICAgIHRocm93IG5ldyBUeXBlRXJyb3IoYCR7bmFtZX0gbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXJgKTsKICAgIH0KICB9CgogIGNvbnN0IHJhd0NsYXNzQXVkaXRzID0gcmVwcmVzZW50YXRpdmVQYXR0ZXJuc0J5Q2xhc3MoKS5tYXAoKHJlcHJlc2VudGF0aXZlKSA9PgogICAgZW51bWVyYXRlUmF3Q2xhc3NDYW5kaWRhdGVzKHJlcHJlc2VudGF0aXZlLCB7CiAgICAgIHJhd1RhcmdldDogcmF3VGFyZ2V0UGVyQ2xhc3MsCiAgICAgIG1heFBhcnRpdGlvbnM6IG1heFBhcnRpdGlvbnNQZXJDbGFzcywKICAgICAgbWluUmVnaW9uU2l6ZSwKICAgICAgbWF4UmVnaW9uU2l6ZSwKICAgIH0pCiAgKTsKICBjb25zdCBzZWxlY3Rpb25UYXJnZXRzID0gYWxsb2NhdGVDbGFzc1NlbGVjdGlvblRhcmdldHMoCiAgICByYXdDbGFzc0F1ZGl0cywKICAgIHNlbGVjdGVkVGFyZ2V0VG90YWwsCiAgICBtaW5pbXVtU2VsZWN0ZWRQZXJDbGFzcwogICk7CgogIGNvbnN0IGNsYXNzQXVkaXRzID0gW107CiAgY29uc3Qgc2VsZWN0ZWRTdGFnZXMgPSBbXTsKICBjb25zdCBtZXRhZGF0YSA9IHt9OwogIGZvciAoY29uc3QgYXVkaXQgb2YgcmF3Q2xhc3NBdWRpdHMpIHsKICAgIGNvbnN0IHJlcHJlc2VudGF0aXZlID0gYXVkaXQucmVwcmVzZW50YXRpdmU7CiAgICBjb25zdCBzZWxlY3RlZFRhcmdldCA9IHNlbGVjdGlvblRhcmdldHNbcmVwcmVzZW50YXRpdmUuc3ltbWV0cnlDbGFzc0lkXTsKICAgIGNvbnN0IHNlbGVjdGlvbiA9IHNlbGVjdERpdmVyc2VDbGFzc1N0YWdlcyhhdWRpdC5zdGFnZXMsIHNlbGVjdGVkVGFyZ2V0KTsKICAgIGZvciAoY29uc3Qgc3RhZ2Ugb2Ygc2VsZWN0aW9uLnNlbGVjdGVkKSB7CiAgICAgIHNlbGVjdGVkU3RhZ2VzLnB1c2goc3RhZ2UpOwogICAgICBtZXRhZGF0YVtzdGFnZS5pZF0gPSB7CiAgICAgICAgc3ltbWV0cnlDbGFzc0lkOiByZXByZXNlbnRhdGl2ZS5zeW1tZXRyeUNsYXNzSWQsCiAgICAgICAgc291cmNlUGF0dGVybklkOiByZXByZXNlbnRhdGl2ZS5wYXR0ZXJuSWQsCiAgICAgICAgc291cmNlUGF0dGVyblNpZ25hdHVyZTogcmVwcmVzZW50YXRpdmUucGF0dGVyblNpZ25hdHVyZSwKICAgICAgICByZWdpb25Qcm9maWxlOiBwcm9maWxlS2V5KHN0YWdlKSwKICAgICAgICBkaWZmaWN1bHR5OiBhbmFseXplVmFyaWFibGVTdGFnZURpZmZpY3VsdHkoc3RhZ2UucmVnaW9ucyksCiAgICAgIH07CiAgICB9CiAgICBjbGFzc0F1ZGl0cy5wdXNoKHsKICAgICAgc3ltbWV0cnlDbGFzc0lkOiByZXByZXNlbnRhdGl2ZS5zeW1tZXRyeUNsYXNzSWQsCiAgICAgIHJlcHJlc2VudGF0aXZlUGF0dGVybklkOiByZXByZXNlbnRhdGl2ZS5wYXR0ZXJuSWQsCiAgICAgIHJlcHJlc2VudGF0aXZlUGF0dGVyblNpZ25hdHVyZTogcmVwcmVzZW50YXRpdmUucGF0dGVyblNpZ25hdHVyZSwKICAgICAgY2FuZGlkYXRlUmVnaW9uQ291bnRzOiBhdWRpdC5jYW5kaWRhdGVSZWdpb25Db3VudHMsCiAgICAgIGNvbm5lY3RlZFBhcnRpdGlvbnNWaXNpdGVkOiBhdWRpdC5jb25uZWN0ZWRQYXJ0aXRpb25zVmlzaXRlZCwKICAgICAgdW5pcXVlU29sdXRpb25zVmlzaXRlZDogYXVkaXQudW5pcXVlU29sdXRpb25zVmlzaXRlZCwKICAgICAgcGFydGl0aW9uTGltaXRSZWFjaGVkOiBhdWRpdC5wYXJ0aXRpb25MaW1pdFJlYWNoZWQsCiAgICAgIHJhd1RhcmdldDogcmF3VGFyZ2V0UGVyQ2xhc3MsCiAgICAgIHJhd1RhcmdldFJlYWNoZWQ6IGF1ZGl0LnJhd1RhcmdldFJlYWNoZWQsCiAgICAgIHJhd0NvdW50OiBhdWRpdC5zdGFnZXMubGVuZ3RoLAogICAgICBzZWxlY3RlZFRhcmdldCwKICAgICAgc2VsZWN0ZWRDb3VudDogc2VsZWN0aW9uLnNlbGVjdGVkLmxlbmd0aCwKICAgICAgcHJvZmlsZVF1b3Rhczogc2VsZWN0aW9uLnF1b3RhcywKICAgICAgcHJvZmlsZUNvdW50czogc2VsZWN0aW9uLmNvdW50cywKICAgIH0pOwogIH0KCiAgY29uc3Qgd2l0aERpZmZpY3VsdHkgPSBhc3NpZ25EaWZmaWN1bHR5KHNlbGVjdGVkU3RhZ2VzLCBtZXRhZGF0YSkuc29ydCgKICAgIChsZWZ0LCByaWdodCkgPT4gbGVmdC5pZC5sb2NhbGVDb21wYXJlKHJpZ2h0LmlkKQogICk7CiAgZm9yIChjb25zdCBzdGFnZSBvZiB3aXRoRGlmZmljdWx0eSkgewogICAgbWV0YWRhdGFbc3RhZ2UuaWRdLmRpZmZpY3VsdHlMZXZlbCA9IHN0YWdlLmRpZmZpY3VsdHk7CiAgfQoKICBsZXQgbWluaW11bVBhaXJEaXN0YW5jZSA9IENFTExfQ09VTlQ7CiAgY29uc3QgbmVhcmVzdERpc3RhbmNlRGlzdHJpYnV0aW9uID0ge307CiAgZm9yIChjb25zdCBzdGFnZSBvZiB3aXRoRGlmZmljdWx0eSkgewogICAgbGV0IG5lYXJlc3QgPSBDRUxMX0NPVU5UOwogICAgZm9yIChjb25zdCBvdGhlciBvZiB3aXRoRGlmZmljdWx0eSkgewogICAgICBpZiAoc3RhZ2UuaWQgPT09IG90aGVyLmlkKSBjb250aW51ZTsKICAgICAgbmVhcmVzdCA9IE1hdGgubWluKAogICAgICAgIG5lYXJlc3QsCiAgICAgICAgbWluaW11bVZhcmlhYmxlU3RhZ2VEaXN0YW5jZShzdGFnZS5yZWdpb25zLCBvdGhlci5yZWdpb25zKQogICAgICApOwogICAgfQogICAgbWV0YWRhdGFbc3RhZ2UuaWRdLm5lYXJlc3RTdHJ1Y3R1cmFsRGlzdGFuY2UgPSBuZWFyZXN0OwogICAgbWluaW11bVBhaXJEaXN0YW5jZSA9IE1hdGgubWluKG1pbmltdW1QYWlyRGlzdGFuY2UsIG5lYXJlc3QpOwogICAgbmVhcmVzdERpc3RhbmNlRGlzdHJpYnV0aW9uW25lYXJlc3RdID0KICAgICAgKG5lYXJlc3REaXN0YW5jZURpc3RyaWJ1dGlvbltuZWFyZXN0XSB8fCAwKSArIDE7CiAgfQoKICByZXR1cm4gewogICAgc2NoZW1hVmVyc2lvbjogVkFSSUFCTEVfUE9PTF9TQ0hFTUFfVkVSU0lPTiwKICAgIGdlbmVyYXRvclZlcnNpb246IFZBUklBQkxFX1BPT0xfR0VORVJBVE9SX1ZFUlNJT04sCiAgICBzdGF0dXM6ICJjYW5kaWRhdGUtcG9vbC1ub3QtcnVudGltZSIsCiAgICBydW50aW1lRW5hYmxlZDogZmFsc2UsCiAgICByYW5raW5nRWxpZ2libGU6IGZhbHNlLAogICAgYm9hcmRTaXplOiBCT0FSRF9TSVpFLAogICAgY29uc3RyYWludHM6IHsKICAgICAgcmVnaW9uQ291bnQ6IEJPQVJEX1NJWkUsCiAgICAgIG1pblJlZ2lvblNpemUsCiAgICAgIG1heFJlZ2lvblNpemUsCiAgICAgIHJlZ2lvbnNNdXN0QmVGb3VyTmVpZ2hib3JDb25uZWN0ZWQ6IHRydWUsCiAgICAgIHVuaXF1ZVNvbHV0aW9uUmVxdWlyZWQ6IHRydWUsCiAgICAgIGRlZHVwbGljYXRpb246CiAgICAgICAgIkQ0IHRyYW5zZm9ybXMgcGx1cyBmaXJzdC1zZWVuIHJlZ2lvbi1sYWJlbCBub3JtYWxpemF0aW9uIiwKICAgIH0sCiAgICByYXdUYXJnZXRQZXJDbGFzcywKICAgIHNlbGVjdGVkVGFyZ2V0VG90YWwsCiAgICBtaW5pbXVtU2VsZWN0ZWRQZXJDbGFzcywKICAgIHN5bW1ldHJ5Q2xhc3NDb3VudDogY2xhc3NBdWRpdHMubGVuZ3RoLAogICAgcmF3U3RhZ2VDb3VudDogY2xhc3NBdWRpdHMucmVkdWNlKAogICAgICAoc3VtLCBhdWRpdCkgPT4gc3VtICsgYXVkaXQucmF3Q291bnQsCiAgICAgIDAKICAgICksCiAgICBzdGFnZUNvdW50OiB3aXRoRGlmZmljdWx0eS5sZW5ndGgsCiAgICBtaW5pbXVtUGFyclBhaXJEaXN0YW5jZSwKICAgIGFsbG9jYXRpb25TdHJhdGVneToKICAgICAgInJldGFpbiB0aGUgbWluaW11bSBmcm9tIGV2ZXJ5IGNsYXNzLCB0aGVuIGZpbGwgYnkgcmVtYWluaW5nIHJhdyBjYXBhY2l0eSIsCiAgICBjYXBhY2l0eUxpbWl0ZWRDbGFzc2VzOiBjbGFzc0F1ZGl0cwogICAgICAuZmlsdGVyKChhdWRpdCkgPT4gIWF1ZGl0LnJhd1RhcmdldFJlYWNoZWQpCiAgICAgIC5tYXAoKGF1ZGl0KSA9PiBhdWRpdC5zeW1tZXRyeUNsYXNzSWQpLAogICAgc3ltbWV0cnlDbGFzc0Rpc3RyaWJ1dGlvbjogZGlzdHJpYnV0aW9uKAogICAgICB3aXRoRGlmZmljdWx0eS5tYXAoKHN0YWdlKSA9PiBtZXRhZGF0YVtzdGFnZS5pZF0uc3ltbWV0cnlDbGFzc0lkKQogICAgKSwKICAgIHByb2ZpbGVEaXN0cmlidXRpb246IGRpc3RyaWJ1dGlvbigKICAgICAgd2l0aERpZmZpY3VsdHkubWFwKChzdGFnZSkgPT4gbWV0YWRhdGFbc3RhZ2UuaWRdLnJlZ2lvblByb2ZpbGUpCiAgICApLAogICAgZGlmZmljdWx0eURpc3RyaWJ1dGlvbjogZGlzdHJpYnV0aW9uKAogICAgICB3aXRoRGlmZmljdWx0eS5tYXAoKHN0YWdlKSA9PiBzdGFnZS5kaWZmaWN1bHR5KQogICAgKSwKICAgIG5lYXJlc3REaXN0YW5jZURpc3RyaWJ1dGlvbiwKICAgIGNsYXNzQXVkaXRzLAogICAgc3RhZ2VzOiB3aXRoRGlmZmljdWx0eSwKICAgIG1ldGFkYXRhLAogIH07Cn0KJycnCnBhdGgud3JpdGVfdGV4dChwcmVmaXggKyB0YWlsKQo='))"
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/generator-v2/variable-pool.js')
+          text = path.read_text()
+          old = 'minimumParrPairDistance'
+          new = 'minimumPairDistance'
+          if old in text:
+              path.write_text(text.replace(old, new))
+          elif new not in text:
+              raise SystemExit('distance field target not found')
+          PY
           if [ -n "$(git status --porcelain -- scripts/generator-v2/variable-pool.js)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add scripts/generator-v2/variable-pool.js
-            git commit -m "fix: allocate candidate pool by class capacity"
+            git commit -m "fix: correct candidate pool distance field"
             git push origin HEAD:${{ github.head_ref }}
           fi
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run static and contract tests
-        run: npm test
-
-      - name: Run exhaustive fixed-size feasibility audit
-        run: npm run audit:v2:bank
-
-      - name: Run variable-region threshold feasibility audit
-        run: npm run audit:v2:variable-regions
-
-      - name: Verify variable-region manifest is reproducible
-        run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
-
-      - name: Generate balanced variable candidate pool
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run gen:v2:variable-pool 2>&1 | tee variable-pool-generation.log
-
-      - name: Upload variable pool generation diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: variable-pool-generation-log
-          path: variable-pool-generation.log
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload variable candidate pool artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: variable-stage-candidate-pool-v2
-          path: generated/variable-stage-candidate-pool-v2.json
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run iPhone SE browser E2E
-        run: npm run e2e

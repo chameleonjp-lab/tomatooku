@@ -50,6 +50,14 @@ jobs:
       - name: Run variable-region threshold feasibility audit
         run: npm run audit:v2:variable-regions
 
+      - name: Emit compressed variable-region manifest diagnostic
+        shell: bash
+        run: |
+          echo VARIABLE_MANIFEST_GZIP_BASE64_BEGIN
+          gzip -c generated/stage-bank-variable-feasibility-v2.json | base64 -w0
+          echo
+          echo VARIABLE_MANIFEST_GZIP_BASE64_END
+
       - name: Upload variable-region feasibility manifest
         uses: actions/upload-artifact@v4
         with:

@@ -34,25 +34,20 @@ jobs:
           from pathlib import Path
           path = Path('scripts/variable-stage-contract.test.js')
           text = path.read_text()
-          old = '''    [3, 0],
-            [4, 2],
-          ];
-          assert.match(
-            validateVariableStage'''
-          new = '''    [3, 4],
-            [4, 2],
-          ];
-          assert.match(
-            validateVariableStage'''
-          if old not in text:
+          old = '    [3, 0],'
+          new = '    [3, 4],'
+          if old in text:
+              path.write_text(text.replace(old, new, 1))
+          elif new not in text:
               raise SystemExit('adjacent fixture target not found')
-          path.write_text(text.replace(old, new, 1))
           PY
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/variable-stage-contract.test.js
-          git commit -m "test: isolate adjacent solution violation"
-          git push origin HEAD:${{ github.head_ref }}
+          if [ -n "$(git status --porcelain -- scripts/variable-stage-contract.test.js)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add scripts/variable-stage-contract.test.js
+            git commit -m "test: isolate adjacent solution violation"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -1,5 +1,15 @@
 export const ACTIVE_STAGE_BANK_ID = "legacy-v1";
 
+export const PRACTICE_STAGE_BANK_FEATURE = Object.freeze({
+  enabled: true,
+  primaryBankId: "candidate-v2-variable-4-6-final",
+  fallbackBankId: "legacy-v1",
+});
+
+export const ACTIVE_PRACTICE_STAGE_BANK_ID = PRACTICE_STAGE_BANK_FEATURE.enabled
+  ? PRACTICE_STAGE_BANK_FEATURE.primaryBankId
+  : PRACTICE_STAGE_BANK_FEATURE.fallbackBankId;
+
 export const STAGE_BANK_CATALOG = Object.freeze({
   "legacy-v1": Object.freeze({
     id: "legacy-v1",
@@ -8,7 +18,7 @@ export const STAGE_BANK_CATALOG = Object.freeze({
     runtimeEnabled: true,
     rankingEligible: true,
     status: "active",
-    description: "現在の公式3問とランダム練習が利用する既存30問バンク",
+    description: "現在の公式3問と練習fallbackが利用する既存30問バンク",
   }),
   "candidate-v2": Object.freeze({
     id: "candidate-v2",
@@ -69,11 +79,11 @@ export const STAGE_BANK_CATALOG = Object.freeze({
       "SC-3a178cba": 17,
     }),
     difficultyDistribution: Object.freeze({ 1: 28, 2: 28, 3: 28 }),
-    runtimeEnabled: false,
+    runtimeEnabled: true,
     rankingEligible: false,
-    status: "completed-bank-pending-runtime-approval",
-    requiresHumanDecision: true,
-    description: "承認済みレビューkeep 84問から生成した完成バンク。ゲーム接続は未承認",
+    status: "active-practice-only",
+    requiresHumanDecision: false,
+    description: "承認済み84問をランダム練習だけで利用する完成バンク",
   }),
 });
 
@@ -87,8 +97,7 @@ export function assertCandidateBankRemainsInactive() {
   const fixed = getStageBankDescriptor("candidate-v2");
   const variable = getStageBankDescriptor("candidate-v2-variable-4-6");
   const pool = getStageBankDescriptor("candidate-v2-variable-4-6-pool");
-  const finalBank = getStageBankDescriptor("candidate-v2-variable-4-6-final");
-  for (const candidate of [fixed, variable, pool, finalBank]) {
+  for (const candidate of [fixed, variable, pool]) {
     if (candidate.runtimeEnabled || candidate.rankingEligible) {
       throw new Error(`${candidate.id} must remain inactive before explicit approval`);
     }
@@ -102,8 +111,30 @@ export function assertCandidateBankRemainsInactive() {
   if (pool.status !== "candidate-pool-ready-for-review") {
     throw new Error("variable-region candidate pool must remain review-only");
   }
-  if (finalBank.status !== "completed-bank-pending-runtime-approval") {
-    throw new Error("completed variable-region bank must remain pending runtime approval");
+  return true;
+}
+
+export function assertPracticeStageBankRouting() {
+  const primary = getStageBankDescriptor(
+    PRACTICE_STAGE_BANK_FEATURE.primaryBankId
+  );
+  const fallback = getStageBankDescriptor(
+    PRACTICE_STAGE_BANK_FEATURE.fallbackBankId
+  );
+  if (ACTIVE_STAGE_BANK_ID !== "legacy-v1") {
+    throw new Error("official active bank must remain legacy-v1");
+  }
+  if (ACTIVE_PRACTICE_STAGE_BANK_ID !== primary.id) {
+    throw new Error("practice active bank must follow the enabled feature gate");
+  }
+  if (!primary.runtimeEnabled || primary.rankingEligible) {
+    throw new Error("practice final bank must be runtime enabled and ranking ineligible");
+  }
+  if (primary.status !== "active-practice-only") {
+    throw new Error("practice final bank status must be active-practice-only");
+  }
+  if (!fallback.runtimeEnabled || fallback.id !== "legacy-v1") {
+    throw new Error("practice fallback must be legacy-v1");
   }
   return true;
 }

@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
+  ACTIVE_PRACTICE_STAGE_BANK_ID,
   ACTIVE_STAGE_BANK_ID,
   assertCandidateBankRemainsInactive,
+  assertPracticeStageBankRouting,
   getStageBankDescriptor,
 } from "../src/stage-bank-config.js";
 import {
@@ -83,7 +85,7 @@ test("完成バンク状態と生成器versionを固定", () => {
   assert.equal(committed.id, VARIABLE_FINAL_BANK_ID);
   assert.equal(committed.status, VARIABLE_FINAL_BANK_STATUS);
   assert.equal(committed.generatorVersion, VARIABLE_FINAL_BANK_GENERATOR_VERSION);
-  assert.equal(committed.runtimeEnabled, false);
+  assert.equal(committed.runtimeEnabled, true);
   assert.equal(committed.rankingEligible, false);
   assert.equal(committed.stageSchemaVersion, 2);
 });
@@ -148,15 +150,17 @@ test("同じ入力からコミット済みmanifestを完全再現", () => {
   );
 });
 
-test("bank catalogは完成バンクを非稼働で登録", () => {
+test("bank catalogは完成バンクを練習専用runtimeとして登録", () => {
   assert.equal(ACTIVE_STAGE_BANK_ID, "legacy-v1");
+  assert.equal(ACTIVE_PRACTICE_STAGE_BANK_ID, VARIABLE_FINAL_BANK_ID);
   const descriptor = getStageBankDescriptor(VARIABLE_FINAL_BANK_ID);
   assert.equal(descriptor.source, "generated/variable-stage-bank-v2.json");
   assert.equal(descriptor.stageCount, 84);
   assert.equal(descriptor.status, VARIABLE_FINAL_BANK_STATUS);
-  assert.equal(descriptor.runtimeEnabled, false);
+  assert.equal(descriptor.runtimeEnabled, true);
   assert.equal(descriptor.rankingEligible, false);
   assert.equal(assertCandidateBankRemainsInactive(), true);
+  assert.equal(assertPracticeStageBankRouting(), true);
 });
 
 console.log(`\n==== VARIABLE FINAL BANK TEST: PASS=${pass} FAIL=0 ====`);

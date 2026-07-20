@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "candidate-v2-variable-4-6-final",
-  "status": "completed-bank-pending-runtime-approval",
-  "runtimeEnabled": false,
+  "status": "active-practice-only",
+  "runtimeEnabled": true,
   "rankingEligible": false,
   "stageSchemaVersion": 2,
-  "generatorVersion": "2.7.0-variable-final-bank.1",
+  "generatorVersion": "2.8.0-variable-final-bank.2",
   "sourceCandidatePool": {
     "path": "generated/variable-stage-candidate-pool-v2.json",
     "generatorVersion": "2.6.0-variable-pool.1",

@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  ACTIVE_STAGE_BANK_ID,
+  STAGE_BANK_CATALOG,
+  assertCandidateBankRemainsInactive,
+  getStageBankDescriptor,
+} from "../../src/stage-bank-config.js";
 import { STAGES } from "../../src/stages.js";
 import { canonicalizeRegionGrid } from "./regions.js";
 import {
@@ -84,6 +90,20 @@ test("現行30問も同じcanonical 5型へ集約", () => {
   assert.equal(STAGES.length, 30);
   assert.equal(counts.size, 5);
   assert.deepEqual([...counts.values()].sort((left, right) => right - left), [8, 7, 6, 6, 3]);
+});
+
+test("現行バンクだけが有効でcandidate-v2はBLOCKED", () => {
+  const legacy = getStageBankDescriptor();
+  const candidate = STAGE_BANK_CATALOG["candidate-v2"];
+  assert.equal(ACTIVE_STAGE_BANK_ID, "legacy-v1");
+  assert.equal(legacy.runtimeEnabled, true);
+  assert.equal(legacy.rankingEligible, true);
+  assert.equal(candidate.runtimeEnabled, false);
+  assert.equal(candidate.rankingEligible, false);
+  assert.equal(candidate.status, "blocked-by-constraints");
+  assert.equal(candidate.requiredCanonicalStageCount, 84);
+  assert.equal(candidate.auditedMaximumCanonicalStageCount, 5);
+  assert.equal(assertCandidateBankRemainsInactive(), true);
 });
 
 test("コミット済みmanifestは全探索結果と完全一致", () => {

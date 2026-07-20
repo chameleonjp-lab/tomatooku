@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／stage schema v2提案済み／契約承認待ち
+- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／レビュー用108問候補プール生成済み／完成バンク選別待ち
 
 ## 1. 運用ルール
 
@@ -244,7 +244,7 @@ docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
 
 ### 4-5. Slice 5：可変エリア Stage Schema v2
 
-状態: **completed / CONTRACT PROPOSED / APPROVAL PENDING**
+状態: **completed / CONTRACT APPROVED**
 
 実装:
 
@@ -269,6 +269,43 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 
 84問成立性manifestの全ステージは独立validatorへ合格する。生成器コードはvalidatorからimportしない。
 
+### 4-6. Slice 6：可変エリア候補プール
+
+状態: **completed / CANDIDATE POOL READY FOR REVIEW**
+
+実装:
+
+- 3つのD4正解配置クラスを対象化
+- クラスごとのraw候補生成
+- 独立Stage Schema v2 validator
+- エリアサイズプロファイルquota
+- farthest-first構造距離選出
+- 伝播・分岐による自動難易度
+- 難易度1〜3の均等割当
+- 決定論的再生成
+
+実測結果:
+
+```text
+raw候補                      185
+選出候補                     108
+対称クラス分布               46 / 45 / 17
+サイズ分布                   73 / 35
+難易度分布                   36 / 36 / 36
+最短構造距離                 1
+```
+
+希少クラス`SC-3a178cba`はraw候補17問をすべて保持した。最短距離1が59問あるため、候補プールは完成バンクとして利用しない。
+
+固定成果物:
+
+```text
+generated/variable-stage-candidate-pool-v2.json
+scripts/generator-v2/variable-pool.js
+scripts/generator-v2/variable-pool.test.js
+docs/VARIABLE_STAGE_CANDIDATE_POOL.md
+```
+
 ## 5. 現在のバンク契約
 
 ```text
@@ -285,6 +322,10 @@ candidate-v2.rankingEligible = false
 candidate-v2-variable-4-6.status = contract-proposed-pending-approval
 candidate-v2-variable-4-6.runtimeEnabled = false
 candidate-v2-variable-4-6.rankingEligible = false
+
+candidate-v2-variable-4-6-pool.status = candidate-pool-ready-for-review
+candidate-v2-variable-4-6-pool.runtimeEnabled = false
+candidate-v2-variable-4-6-pool.rankingEligible = false
 ```
 
 生成器作業によって次を変更してはいけない。
@@ -297,9 +338,9 @@ candidate-v2-variable-4-6.rankingEligible = false
 
 ## 6. 現在の人間判断ゲート
 
-次を正式決定するまで可変サイズ候補プールの生成・選別・ゲーム接続を開始しない。
+次を正式決定するまで108問候補プールから完成バンクを選別・ゲーム接続しない。
 
-### 決定1：可変サイズ契約の採用
+### 決定1：可変サイズ契約の採用（resolved）
 
 推奨:
 
@@ -325,9 +366,9 @@ candidate-v2-variable-4-6.rankingEligible = false
 - 公式3問は変更しない
 - ランキング契約は変更しない
 
-### 決定3：84問の選別基準
+### 決定3：108問候補プールの完成バンク選別基準
 
-監査manifestの84問は存在証拠であり、完成バンクではない。次の選別が必要。
+108問候補プールはレビュー用であり、完成バンクではない。次の選別が必要。
 
 - 人間向け難易度
 - 近似盤面距離
@@ -355,13 +396,14 @@ src/variable-stage-contract.js
 docs/VARIABLE_REGION_STAGE_CONTRACT.md
 ```
 
-### 7-2. 候補プール生成
+### 7-2. 候補プール生成（completed）
 
-- 84問より多い候補を生成
-- 14正解配置を可能な範囲で利用
-- seed再現性
-- 生成上限
-- 独立validator
+- 108問を選出
+- 3対称クラスを`46 / 45 / 17`で利用
+- 決定論的再現
+- raw容量と探索結果を記録
+- 独立validator全件合格
+- runtime・ranking無効
 
 ### 7-3. 難易度・近似選別
 

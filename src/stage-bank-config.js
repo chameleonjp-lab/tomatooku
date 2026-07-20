@@ -7,16 +7,19 @@ export const STAGE_BANK_CATALOG = Object.freeze({
     stageCount: 30,
     runtimeEnabled: true,
     rankingEligible: true,
+    status: "active",
     description: "現在の公式3問とランダム練習が利用する既存30問バンク",
   }),
   "candidate-v2": Object.freeze({
     id: "candidate-v2",
-    source: "generated/stage-bank-v2.json",
-    minimumStageCount: 84,
+    source: "generated/stage-bank-feasibility-v2.json",
+    requiredCanonicalStageCount: 84,
+    auditedMaximumCanonicalStageCount: 5,
     runtimeEnabled: false,
     rankingEligible: false,
-    requiresHumanReview: true,
-    description: "生成器v2が作成する未採用の候補バンク",
+    status: "blocked-by-constraints",
+    requiresHumanDecision: true,
+    description: "現仕様では84問を構築できないため有効化禁止の生成器v2候補",
   }),
 });
 
@@ -29,7 +32,10 @@ export function getStageBankDescriptor(bankId = ACTIVE_STAGE_BANK_ID) {
 export function assertCandidateBankRemainsInactive() {
   const candidate = getStageBankDescriptor("candidate-v2");
   if (candidate.runtimeEnabled || candidate.rankingEligible) {
-    throw new Error("candidate-v2 must not be enabled before explicit human approval");
+    throw new Error("candidate-v2 must remain inactive while feasibility is blocked");
+  }
+  if (candidate.status !== "blocked-by-constraints") {
+    throw new Error("candidate-v2 status must remain blocked until a new contract is approved");
   }
   return true;
 }

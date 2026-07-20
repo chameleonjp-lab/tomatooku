@@ -90,11 +90,13 @@ export async function loadPracticeStageBank({
       ? new globalThis.AbortController()
       : null;
   let timeoutId = null;
+  let timedOut = false;
 
   const timeout = new Promise((resolve) => {
     timeoutId = setTimeout(() => {
-      if (controller) controller.abort();
+      timedOut = true;
       resolve({ type: "timeout" });
+      if (controller) controller.abort();
     }, safeTimeoutMs);
   });
   const request = Promise.resolve()
@@ -106,7 +108,7 @@ export async function loadPracticeStageBank({
       if (!response || !response.ok) return { type: "http-error" };
       return { type: "bank", bank: await response.json() };
     })
-    .catch(() => ({ type: "network-error" }));
+    .catch(() => ({ type: timedOut ? "timeout" : "network-error" }));
 
   try {
     const outcome = await Promise.race([request, timeout]);

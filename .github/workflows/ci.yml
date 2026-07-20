@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: tomatooku-ci-${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -50,13 +52,18 @@ jobs:
       - name: Run variable-region threshold feasibility audit
         run: npm run audit:v2:variable-regions
 
-      - name: Emit compressed variable-region manifest diagnostic
+      - name: Commit variable-region manifest to PR branch
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
-          echo VARIABLE_MANIFEST_GZIP_BASE64_BEGIN
-          gzip -c generated/stage-bank-variable-feasibility-v2.json | base64 -w0
-          echo
-          echo VARIABLE_MANIFEST_GZIP_BASE64_END
+          if [ -z "$(git status --porcelain -- generated/stage-bank-variable-feasibility-v2.json)" ]; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated/stage-bank-variable-feasibility-v2.json
+          git commit -m "test: fix variable-region feasibility manifest"
+          git push origin HEAD:${{ github.head_ref }}
 
       - name: Upload variable-region feasibility manifest
         uses: actions/upload-artifact@v4

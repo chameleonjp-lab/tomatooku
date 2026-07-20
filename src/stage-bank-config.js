@@ -24,15 +24,18 @@ export const STAGE_BANK_CATALOG = Object.freeze({
   "candidate-v2-variable-4-6": Object.freeze({
     id: "candidate-v2-variable-4-6",
     source: "generated/stage-bank-variable-feasibility-v2.json",
+    contract: "docs/VARIABLE_REGION_STAGE_CONTRACT.md",
+    stageSchemaVersion: 2,
+    bankSchemaVersion: 1,
     requiredCanonicalStageCount: 84,
     witnessedCanonicalStageCount: 84,
     minRegionSize: 4,
     maxRegionSize: 6,
     runtimeEnabled: false,
     rankingEligible: false,
-    status: "feasible-pending-contract-approval",
+    status: "contract-proposed-pending-approval",
     requiresHumanDecision: true,
-    description: "エリアサイズ4〜6マスで84問の存在を確認した未承認候補",
+    description: "エリアサイズ4〜6マスの独立schema契約を提案済みの未承認候補",
   }),
 });
 
@@ -53,7 +56,7 @@ export function assertCandidateBankRemainsInactive() {
   if (fixed.status !== "blocked-by-constraints") {
     throw new Error("candidate-v2 must remain blocked under the fixed-size contract");
   }
-  if (variable.status !== "feasible-pending-contract-approval") {
+  if (variable.status !== "contract-proposed-pending-approval") {
     throw new Error("variable-region candidate must remain pending contract approval");
   }
   return true;

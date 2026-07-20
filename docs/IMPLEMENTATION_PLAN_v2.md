@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／仕様承認待ち
+- 現在状態: 公式ランキング公開済み／可変エリア4〜6マスで84問成立確認済み／stage schema v2提案済み／契約承認待ち
 
 ## 1. 運用ルール
 
@@ -194,7 +194,7 @@ docs/GENERATOR_V2_BANK_FEASIBILITY.md
 
 ### 4-4. Slice 4：可変4〜6マス成立性監査
 
-状態: **completed / FEASIBLE / CONTRACT APPROVAL PENDING**
+状態: **completed / FEASIBLE**
 
 監査契約:
 
@@ -242,6 +242,33 @@ generated/stage-bank-variable-feasibility-v2.json
 docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
 ```
 
+### 4-5. Slice 5：可変エリア Stage Schema v2
+
+状態: **completed / CONTRACT PROPOSED / APPROVAL PENDING**
+
+実装:
+
+- schema version 2
+- 5×5、A〜E、各4〜6マス
+- 4近傍連結
+- 行順solution・列重複禁止
+- 各エリア1個・隣接禁止
+- 独立ソルバによる一意解確認
+- D4・エリア名canonical化
+- content-derived安定ID
+- 84問以上のcandidate bank validator
+- runtime・ranking有効化拒否
+
+固定成果物:
+
+```text
+src/variable-stage-contract.js
+scripts/variable-stage-contract.test.js
+docs/VARIABLE_REGION_STAGE_CONTRACT.md
+```
+
+84問成立性manifestの全ステージは独立validatorへ合格する。生成器コードはvalidatorからimportしない。
+
 ## 5. 現在のバンク契約
 
 ```text
@@ -255,7 +282,7 @@ candidate-v2.status = blocked-by-constraints
 candidate-v2.runtimeEnabled = false
 candidate-v2.rankingEligible = false
 
-candidate-v2-variable-4-6.status = feasible-pending-contract-approval
+candidate-v2-variable-4-6.status = contract-proposed-pending-approval
 candidate-v2-variable-4-6.runtimeEnabled = false
 candidate-v2-variable-4-6.rankingEligible = false
 ```
@@ -270,7 +297,7 @@ candidate-v2-variable-4-6.rankingEligible = false
 
 ## 6. 現在の人間判断ゲート
 
-次を正式決定するまで可変サイズ候補バンクの実装・接続を開始しない。
+次を正式決定するまで可変サイズ候補プールの生成・選別・ゲーム接続を開始しない。
 
 ### 決定1：可変サイズ契約の採用
 
@@ -310,7 +337,7 @@ candidate-v2-variable-4-6.rankingEligible = false
 
 ## 7. 契約承認後の次work package
 
-### 7-1. 可変サイズstage schema
+### 7-1. 可変サイズstage schema（completed）
 
 - `regionSizeRange: [4, 6]`
 - A〜E
@@ -320,6 +347,13 @@ candidate-v2-variable-4-6.rankingEligible = false
 - 安定ID
 - D4重複なし
 - schema versionとgenerator version
+
+固定成果物:
+
+```text
+src/variable-stage-contract.js
+docs/VARIABLE_REGION_STAGE_CONTRACT.md
+```
 
 ### 7-2. 候補プール生成
 

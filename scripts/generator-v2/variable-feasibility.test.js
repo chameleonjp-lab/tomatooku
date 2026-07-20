@@ -117,13 +117,13 @@ test("コミット済み84問すべてが可変サイズ契約を満たす", () 
   }
 });
 
-test("現行バンクだけが有効で可変候補は承認待ち", () => {
+test("現行バンクだけが有効で可変候補は契約承認待ち", () => {
   assert.equal(ACTIVE_STAGE_BANK_ID, "legacy-v1");
   const variable = STAGE_BANK_CATALOG["candidate-v2-variable-4-6"];
   assert.equal(variable.witnessedCanonicalStageCount, 84);
   assert.equal(variable.runtimeEnabled, false);
   assert.equal(variable.rankingEligible, false);
-  assert.equal(variable.status, "feasible-pending-contract-approval");
+  assert.equal(variable.status, "contract-proposed-pending-approval");
   assert.equal(assertCandidateBankRemainsInactive(), true);
 });
 

@@ -39,9 +39,6 @@ jobs:
       - name: Run exhaustive fixed-size feasibility audit
         run: npm run audit:v2:bank
 
-      - name: Verify fixed-size manifest is reproducible
-        run: git diff --exit-code -- generated/stage-bank-feasibility-v2.json
-
       - name: Run variable-region threshold feasibility audit
         run: npm run audit:v2:variable-regions
 

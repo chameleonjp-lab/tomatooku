@@ -134,7 +134,14 @@ await test("応答が停止しても時間切れで旧30問へ戻る", async () 
   const result = await loadPracticeStageBank({
     feature: ENABLED_PRACTICE_FEATURE,
     timeoutMs: 5,
-    fetchImpl: async () => new Promise(() => {}),
+    fetchImpl: async (_url, { signal }) =>
+      new Promise((_, reject) => {
+        signal?.addEventListener(
+          "abort",
+          () => reject(new Error("aborted")),
+          { once: true }
+        );
+      }),
   });
   assert.equal(PRACTICE_STAGE_BANK_TIMEOUT_MS, 8000);
   assert.equal(result.bankId, "legacy-v1");

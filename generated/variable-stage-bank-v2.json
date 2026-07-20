@@ -1,0 +1,4627 @@
+{
+  "schemaVersion": 1,
+  "id": "candidate-v2-variable-4-6-final",
+  "status": "completed-bank-pending-runtime-approval",
+  "runtimeEnabled": false,
+  "rankingEligible": false,
+  "stageSchemaVersion": 2,
+  "generatorVersion": "2.7.0-variable-final-bank.1",
+  "sourceCandidatePool": {
+    "path": "generated/variable-stage-candidate-pool-v2.json",
+    "generatorVersion": "2.6.0-variable-pool.1",
+    "sha256": "4bdff6d3366cfcec1224ce9bf209250fa9aa70f4b7ceee1761c9d0ba1e00cf41"
+  },
+  "sourceReview": {
+    "path": "review/decisions/variable-stage-review-round1.json",
+    "schemaVersion": 1,
+    "exportedAt": "2026-07-20T07:10:19Z",
+    "sha256": "8a223aa40a6b632456125dc30668591f010f93ff3ec708c4c3c59abbc14f7cb5"
+  },
+  "boardSize": 5,
+  "constraints": {
+    "regionCount": 5,
+    "minRegionSize": 4,
+    "maxRegionSize": 6,
+    "regionsMustBeFourNeighborConnected": true,
+    "uniqueSolutionRequired": true,
+    "deduplication": "D4 transforms plus first-seen region-label normalization"
+  },
+  "stageCount": 84,
+  "rejectedStageCount": 24,
+  "minimumPairDistance": 1,
+  "distanceOnePairCount": 9,
+  "distanceOnePairs": [
+    [
+      "STG-0385e52f",
+      "STG-8e3e7a46"
+    ],
+    [
+      "STG-07455e25",
+      "STG-c551c232"
+    ],
+    [
+      "STG-246317db",
+      "STG-8e3e7a46"
+    ],
+    [
+      "STG-75e7cc16",
+      "STG-bda38a0d"
+    ],
+    [
+      "STG-75e7cc16",
+      "STG-ee9efd5b"
+    ],
+    [
+      "STG-8c4df48e",
+      "STG-ba446d6d"
+    ],
+    [
+      "STG-8e3e7a46",
+      "STG-e48d77b6"
+    ],
+    [
+      "STG-a6649fc6",
+      "STG-edb742a5"
+    ],
+    [
+      "STG-bb3d9d29",
+      "STG-ee9efd5b"
+    ]
+  ],
+  "distribution": {
+    "symmetryClass": {
+      "SC-3a178cba": 17,
+      "SC-95390462": 34,
+      "SC-be359992": 33
+    },
+    "difficulty": {
+      "1": 28,
+      "2": 28,
+      "3": 28
+    },
+    "regionProfile": {
+      "4-4-5-6-6": 61,
+      "4-5-5-5-6": 23
+    }
+  },
+  "stages": [
+    {
+      "schemaVersion": 2,
+      "id": "STG-01bd306d",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACABB|CCCBB|CDDDE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0385e52f",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDDB",
+        "CEEDB",
+        "CEEDD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDDB|CEEDB|CEEDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-05388253",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "CCBBB",
+        "CDDEE",
+        "CDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBAB|CCBBB|CDDEE|CDDEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-07455e25",
+      "regions": [
+        "AAAAA",
+        "ABCDD",
+        "BBCCD",
+        "BEECD",
+        "BEECD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCDD|BBCCD|BEECD|BEECD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0a930c10",
+      "regions": [
+        "AAAAA",
+        "ABCDD",
+        "EBCCD",
+        "EBBCD",
+        "EEBDD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCDD|EBCCD|EBBCD|EEBDD",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0b14368d",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "DCBBB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBAB|DCBBB|DCCEE|DDCEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0b2e4fff",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCBB",
+        "DDCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBBB|CCCBB|DDCCE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0e1026c7",
+      "regions": [
+        "AAAAB",
+        "AACCB",
+        "DDCCB",
+        "DEEEB",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACCB|DDCCB|DEEEB|DDDEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0ee6ca8d",
+      "regions": [
+        "AAAAB",
+        "CCBBB",
+        "DCCCE",
+        "DDDCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|CCBBB|DCCCE|DDDCE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-0f378577",
+      "regions": [
+        "AAABB",
+        "ACBBB",
+        "ACCCB",
+        "DDECC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ACBBB|ACCCB|DDECC|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-11b0d0ab",
+      "regions": [
+        "AAAAB",
+        "AACBB",
+        "DCCBE",
+        "DCBBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACBB|DCCBE|DCBBE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-13fc715e",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|CCCDB|CDDDE|CDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-14696f34",
+      "regions": [
+        "AAAAB",
+        "CBBBB",
+        "CCCCD",
+        "EEDCD",
+        "EEDDD"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|CBBBB|CCCCD|EEDCD|EEDDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-158d53a5",
+      "regions": [
+        "AAAAB",
+        "ACDBB",
+        "CCDDB",
+        "CEEDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDBB|CCDDB|CEEDE|CCEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-1bf62619",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDD",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDD|CDDDE|CCEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-1dc27319",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDDB",
+        "CDDBB",
+        "CEEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDDB|CDDBB|CEEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-1e3f1e3c",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBBB|CCCCB|CDDDE|CDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-20357d3a",
+      "regions": [
+        "AAAAA",
+        "ABBCC",
+        "DDBBC",
+        "EDDDC",
+        "EEECC"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBCC|DDBBC|EDDDC|EEECC",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-20431284",
+      "regions": [
+        "AAAAA",
+        "ABBBC",
+        "BBDDC",
+        "EDDCC",
+        "EEECC"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBBC|BBDDC|EDDCC|EEECC",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-20ebf5b8",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "DDDCC",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|DDDCC|DCCCE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-210399ce",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "AACCC",
+        "DCCEE",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|AACCC|DCCEE|DDDEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-21d3b7b3",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "ACDDB",
+        "CCDDB",
+        "CEEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|ACDDB|CCDDB|CEEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-224ae596",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDBB",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDBB|CDDDE|CCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-23a5d49f",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "ECDDB",
+        "ECCDB",
+        "EECDD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|ECDDB|ECCDB|EECDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-246317db",
+      "regions": [
+        "AAAAA",
+        "ABBCC",
+        "DDBBC",
+        "DDEEC",
+        "EEECC"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBCC|DDBBC|DDEEC|EEECC",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-2580944b",
+      "regions": [
+        "AAAAB",
+        "AACCB",
+        "DDCBB",
+        "DCCBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACCB|DDCBB|DCCBE|DDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-27c59f21",
+      "regions": [
+        "AAABB",
+        "ACBBB",
+        "CCBDD",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ACBBB|CCBDD|CDDDE|CDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-283aea60",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DDCEB",
+        "DCCEB",
+        "DDCEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCAB|DDCEB|DCCEB|DDCEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-2857ff8d",
+      "regions": [
+        "AAABB",
+        "ACAAB",
+        "CCDBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ACAAB|CCDBB|CDDDE|CDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-293dd948",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "ACCDB",
+        "EECDD",
+        "EECCD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|ACCDB|EECDD|EECCD",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-30cd98cb",
+      "regions": [
+        "AAAAB",
+        "AACDB",
+        "EECDB",
+        "ECCDB",
+        "EEDDD"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACDB|EECDB|ECCDB|EEDDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-34ba9d68",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDB|CDDDE|CDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-38da58ee",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "DBEEC",
+        "DBBEC",
+        "DDBEC"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCCC|DBEEC|DBBEC|DDBEC",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-397ca53d",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCBB",
+        "DDCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AABBB|CCCBB|DDCCE|DDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-39ba6d43",
+      "regions": [
+        "AAAAB",
+        "ACCCB",
+        "DDCEB",
+        "DCCEB",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCCB|DDCEB|DCCEB|DDDEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-3bb4740f",
+      "regions": [
+        "AAABB",
+        "AAACB",
+        "DDDCB",
+        "DEECC",
+        "DDEEC"
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|AAACB|DDDCB|DEECC|DDEEC",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-3f8c1d3f",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDDB",
+        "CEEDB",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDDB|CEEDB|CCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-423cb2b0",
+      "regions": [
+        "AAAAB",
+        "AACCB",
+        "DCCBB",
+        "DEEBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACCB|DCCBB|DEEBE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-43d3c2c1",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CDDDB",
+        "CCCDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|CDDDB|CCCDE|CCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-4c7c450d",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DCEEB",
+        "DCCEB",
+        "DDCEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCAB|DCEEB|DCCEB|DDCEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-587cd483",
+      "regions": [
+        "AAAAB",
+        "AACCB",
+        "DDCBB",
+        "DCCEE",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AACCB|DDCBB|DCCEE|DDDEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-5aed412d",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DCCCE|DDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-5e04e56a",
+      "regions": [
+        "AAAAA",
+        "ABCCD",
+        "BBCDD",
+        "BCCDE",
+        "BCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCCD|BBCDD|BCCDE|BCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-6168b936",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCDB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|CCCDB|CDDDE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-6319808f",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "ABCCC",
+        "DEEEC",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|ABCCC|DEEEC|DDDEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-697800f8",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|CCCCB|CDDDE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-6c245710",
+      "regions": [
+        "AAABB",
+        "ABBBB",
+        "CCCDD",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBB|CCCDD|CDDDE|CCEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-70140499",
+      "regions": [
+        "AAABB",
+        "AABBC",
+        "ACCCC",
+        "DEEEC",
+        "DDDEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|AABBC|ACCCC|DEEEC|DDDEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-736d5a60",
+      "regions": [
+        "AAAAB",
+        "ACCBB",
+        "DCCBE",
+        "DCEBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCBB|DCCBE|DCEBE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-75e7cc16",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DCBBB",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCAB|DCBBB|DCCCE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-77f0d4b9",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "ABCDD",
+        "ECCCD",
+        "EEECD"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|ABCDD|ECCCD|EEECD",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-79279693",
+      "regions": [
+        "AAABB",
+        "ACAAB",
+        "DCBBB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ACAAB|DCBBB|DCCEE|DDCEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-7dfeb90a",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDEB",
+        "CDDEB",
+        "CCDEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDEB|CDDEB|CCDEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-82b47f4f",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDC",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDC|BDDDE|BDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-8a377eb4",
+      "regions": [
+        "AAAAB",
+        "CCABB",
+        "DCCBE",
+        "DCEBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|CCABB|DCCBE|DCEBE|DDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-8c4df48e",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "DECCC",
+        "DEECC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|DECCC|DEECC|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-8e3e7a46",
+      "regions": [
+        "AAAAA",
+        "BBBCC",
+        "DDBBC",
+        "DDEEC",
+        "EEECC"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|BBBCC|DDBBC|DDEEC|EEECC",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-94ef9261",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "ACDDB",
+        "CCDDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|ACDDB|CCDDE|CCEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-a27903af",
+      "regions": [
+        "AAAAA",
+        "BACCC",
+        "BCCDD",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|BACCC|BCCDD|BDDDE|BBEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-a53237c1",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBCC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCCC|BBBCC|BDDDE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-a6649fc6",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "CCBBB",
+        "CDEEE",
+        "CDDDE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCAB|CCBBB|CDEEE|CDDDE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-a6de5d4e",
+      "regions": [
+        "AAAAB",
+        "ACDBB",
+        "ACDDB",
+        "ECCDB",
+        "EEEDD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDBB|ACDDB|ECCDB|EEEDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-a75c43f5",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "ACCCB",
+        "DDCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|ACCCB|DDCCE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-aaee755b",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "CCBBB",
+        "CDDDD",
+        "CEEEE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBAB|CCBBB|CDDDD|CEEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-b0ff7699",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "BBCDD",
+        "ECCCD",
+        "EEECD"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBBB|BBCDD|ECCCD|EEECD",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-b5dc2753",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCBBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACABB|CCBBB|CDDDE|CDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-b90b2bf2",
+      "regions": [
+        "AAAAA",
+        "ABBBC",
+        "DDDBC",
+        "EEDDC",
+        "EECCC"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABBBC|DDDBC|EEDDC|EECCC",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-ba446d6d",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "DBCCC",
+        "DEECC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|DBCCC|DEECC|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-bb3d9d29",
+      "regions": [
+        "AAAAB",
+        "ACCCB",
+        "DCBBB",
+        "DCCBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCCB|DCBBB|DCCBE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-bda38a0d",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "DCBBB",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBAB|DCBBB|DCCCE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-c551c232",
+      "regions": [
+        "AAAAA",
+        "ABCDD",
+        "BBCCD",
+        "BEECD",
+        "BEEDD"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|ABCDD|BBCCD|BEECD|BEEDD",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-c6d111cc",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCCB",
+        "CDDCE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AABBB|CCCCB|CDDCE|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-c8be2e53",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCCB",
+        "DDECC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|CCCCB|DDECC|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-d14a7bfa",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "DCCCC",
+        "DEEEC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|ABBBC|DCCCC|DEEEC|DDEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-d4c697b7",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DEECC",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DEECC|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-d50fa544",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CDDDB",
+        "CDEDE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ABBBB|CDDDB|CDEDE|CCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-d6eb37e7",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "CCDBB",
+        "CDDBE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDAB|CCDBB|CDDBE|CDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-e035bb47",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "DCCCC",
+        "DEECE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBBB|DCCCC|DEECE|DDEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-e48d77b6",
+      "regions": [
+        "AAAAA",
+        "BACCC",
+        "BCCDD",
+        "BEEDD",
+        "BBEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAA|BACCC|BCCDD|BEEDD|BBEEE",
+      "difficulty": 1
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-edb742a5",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "CCBBB",
+        "CDEEE",
+        "CDDDE"
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACBAB|CCBBB|CDEEE|CDDDE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-ee9efd5b",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DCBBB",
+        "DCCBE",
+        "DDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCAB|DCBBB|DCCBE|DDEEE",
+      "difficulty": 2
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-f523e201",
+      "regions": [
+        "AAAAB",
+        "ACDDB",
+        "CCDBB",
+        "CDDBE",
+        "CCEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACDDB|CCDBB|CDDBE|CCEEE",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-f8f2d8e6",
+      "regions": [
+        "AAAAB",
+        "ACCDB",
+        "EECDB",
+        "ECCDB",
+        "EEEDD"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|ACCDB|EECDB|ECCDB|EEEDD",
+      "difficulty": 3
+    },
+    {
+      "schemaVersion": 2,
+      "id": "STG-fad5b9d3",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "generatorVersion": "2.6.0-variable-pool.1",
+      "canonicalSignature": "AAAAB|AABBB|CCCBB|CDDDE|CDEEE",
+      "difficulty": 2
+    }
+  ],
+  "metadata": {
+    "STG-01bd306d": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-0385e52f": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-05388253": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-07455e25": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 569,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 11,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-0a930c10": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-0b14368d": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-0b2e4fff": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 430,
+        "propagationRounds": 3,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 17,
+        "branchNodes": 4,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-0e1026c7": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 489,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 9,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-0ee6ca8d": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-0f378577": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-11b0d0ab": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-13fc715e": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-14696f34": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 469,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 6,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 7
+    },
+    "STG-158d53a5": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-1bf62619": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-1dc27319": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-1e3f1e3c": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 370,
+        "propagationRounds": 3,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 19,
+        "branchNodes": 3,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-20357d3a": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 385,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-20431284": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 381,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 3,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 3
+    },
+    "STG-20ebf5b8": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 3
+    },
+    "STG-210399ce": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 4
+    },
+    "STG-21d3b7b3": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-224ae596": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-23a5d49f": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-246317db": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 385,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-2580944b": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 477,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 7,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-27c59f21": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-283aea60": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-2857ff8d": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-293dd948": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 3
+    },
+    "STG-30cd98cb": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 593,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 14,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-34ba9d68": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-38da58ee": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 569,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 11,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 9
+    },
+    "STG-397ca53d": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 465,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 6,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-39ba6d43": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 576,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 12,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-3bb4740f": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 476,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 7,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-3f8c1d3f": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 549,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-423cb2b0": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-43d3c2c1": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 552,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-4c7c450d": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-587cd483": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 493,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-5aed412d": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 500,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 10,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 3
+    },
+    "STG-5e04e56a": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 469,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 6,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 5
+    },
+    "STG-6168b936": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-6319808f": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-697800f8": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-6c245710": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 3
+    },
+    "STG-70140499": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-736d5a60": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-75e7cc16": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-77f0d4b9": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-79279693": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-7dfeb90a": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 553,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 2
+    },
+    "STG-82b47f4f": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-8a377eb4": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 476,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 7,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-8c4df48e": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-8e3e7a46": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-94ef9261": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 3
+    },
+    "STG-a27903af": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 385,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-a53237c1": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-a6649fc6": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-a6de5d4e": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 508,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 11,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 3
+    },
+    "STG-a75c43f5": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 3
+    },
+    "STG-aaee755b": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 4
+    },
+    "STG-b0ff7699": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 369,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 20,
+        "branchNodes": 3,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-b5dc2753": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-b90b2bf2": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 461,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 6,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 4
+    },
+    "STG-ba446d6d": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-bb3d9d29": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 400,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 5,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-bda38a0d": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-c551c232": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-c6d111cc": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-c8be2e53": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 449,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 21,
+        "branchNodes": 5,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 3
+    },
+    "STG-d14a7bfa": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 389,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 23,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 2
+    },
+    "STG-d4c697b7": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    },
+    "STG-d50fa544": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 552,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 9,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-d6eb37e7": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-e035bb47": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 542,
+        "propagationRounds": 3,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 8,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 4
+    },
+    "STG-e48d77b6": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 385,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 22,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 1,
+      "nearestStructuralDistance": 1
+    },
+    "STG-edb742a5": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-ee9efd5b": {
+      "symmetryClassId": "SC-3a178cba",
+      "sourcePatternId": "SP-f5f166b0",
+      "sourcePatternSignature": "1,3,0,4,2",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 1
+    },
+    "STG-f523e201": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 484,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 8,
+        "maxGuessDepth": 2,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-f8f2d8e6": {
+      "symmetryClassId": "SC-be359992",
+      "sourcePatternId": "SP-060f5160",
+      "sourcePatternSignature": "1,4,2,0,3",
+      "regionProfile": "4-5-5-5-6",
+      "difficulty": {
+        "score": 576,
+        "propagationRounds": 1,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 25,
+        "branchNodes": 12,
+        "maxGuessDepth": 3,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 3,
+      "nearestStructuralDistance": 1
+    },
+    "STG-fad5b9d3": {
+      "symmetryClassId": "SC-95390462",
+      "sourcePatternId": "SP-a6ee2d58",
+      "sourcePatternSignature": "0,2,4,1,3",
+      "regionProfile": "4-4-5-6-6",
+      "difficulty": {
+        "score": 393,
+        "propagationRounds": 2,
+        "forcedRows": 0,
+        "unresolvedRows": 5,
+        "remainingCandidates": 24,
+        "branchNodes": 4,
+        "maxGuessDepth": 1,
+        "solutionCount": 1
+      },
+      "difficultyLevel": 2,
+      "nearestStructuralDistance": 2
+    }
+  }
+}

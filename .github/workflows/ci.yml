@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Static and browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -34,40 +34,16 @@ jobs:
         run: npm ci
 
       - name: Run static and contract tests
-        shell: bash
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee npm-test.log
+        run: npm test
 
-      - name: Upload static test diagnostics
-        if: always()
+      - name: Run exhaustive v2 stage-bank feasibility audit
+        run: npm run audit:v2:bank
+
+      - name: Upload feasibility manifest
         uses: actions/upload-artifact@v4
         with:
-          name: npm-test-log
-          path: npm-test.log
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Generate v2 candidate stage bank
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run gen:v2:bank 2>&1 | tee stage-bank-generation.log
-
-      - name: Upload stage bank generation diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage-bank-generation-log
-          path: stage-bank-generation.log
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload v2 stage bank artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage-bank-v2
-          path: generated/stage-bank-v2.json
+          name: stage-bank-feasibility-v2
+          path: generated/stage-bank-feasibility-v2.json
           if-no-files-found: error
           retention-days: 7
 

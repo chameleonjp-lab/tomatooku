@@ -204,8 +204,7 @@ npm run test:accessibility             # UIアクセシビリティ契約
 npm run test:generator-v2              # v2生成器の全契約
 npm run test:generator-v2:foundation   # v2列挙・対称性・seed・ID契約
 npm run test:generator-v2:regions      # v2連結エリア・一意解・盤面ID契約
-npm run test:generator-v2:bank         # 距離・難易度・バンク停止契約
-npm run test:generator-v2:feasibility  # 21,452分割の全探索監査
+npm run test:generator-v2:feasibility  # 全探索・manifest・停止契約
 npm run e2e                            # Playwrightブラウザテスト
 npm run serve                          # ローカルHTTPサーバー
 ```
@@ -231,8 +230,6 @@ src/
   tutorial.js
 scripts/
   generator-v2/
-    bank.js
-    bank.test.js
     core.js
     core.test.js
     feasibility.js

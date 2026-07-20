@@ -6,10 +6,9 @@ import {
 import { minimumVariableStageDistance } from "./variable-pool.js";
 
 export const VARIABLE_FINAL_BANK_ID = "candidate-v2-variable-4-6-final";
-export const VARIABLE_FINAL_BANK_STATUS =
-  "completed-bank-pending-runtime-approval";
+export const VARIABLE_FINAL_BANK_STATUS = "active-practice-only";
 export const VARIABLE_FINAL_BANK_GENERATOR_VERSION =
-  "2.7.0-variable-final-bank.1";
+  "2.8.0-variable-final-bank.2";
 export const VARIABLE_FINAL_BANK_STAGE_COUNT = 84;
 
 export function sha256Hex(value) {
@@ -64,8 +63,10 @@ export function assertVariableStageFinalBank(bank) {
       `final bank status must be ${VARIABLE_FINAL_BANK_STATUS}`
     );
   }
-  if (bank.runtimeEnabled !== false || bank.rankingEligible !== false) {
-    throw new TypeError("final bank must remain runtime and ranking disabled");
+  if (bank.runtimeEnabled !== true || bank.rankingEligible !== false) {
+    throw new TypeError(
+      "final bank must be runtime enabled for practice and ranking disabled"
+    );
   }
   if (bank.stageCount !== VARIABLE_FINAL_BANK_STAGE_COUNT) {
     throw new TypeError(
@@ -80,6 +81,8 @@ export function assertVariableStageFinalBank(bank) {
     {
       ...bank,
       status: VARIABLE_STAGE_BANK_STATUS,
+      runtimeEnabled: false,
+      rankingEligible: false,
     },
     { minimumStageCount: VARIABLE_FINAL_BANK_STAGE_COUNT }
   );
@@ -161,7 +164,7 @@ export function buildVariableStageFinalBank({
     schemaVersion: 1,
     id: VARIABLE_FINAL_BANK_ID,
     status: VARIABLE_FINAL_BANK_STATUS,
-    runtimeEnabled: false,
+    runtimeEnabled: true,
     rankingEligible: false,
     stageSchemaVersion: 2,
     generatorVersion: VARIABLE_FINAL_BANK_GENERATOR_VERSION,

@@ -27,7 +27,10 @@ test("3対称クラスから均等に6問選出", () => {
 
 test("選出stageは独立Stage Schema v2へ合格", () => {
   for (const stage of small.stages) {
-    assert.deepEqual(validateVariableStage(stage), { valid: true, problems: [] });
+    const validation = validateVariableStage(stage);
+    assert.equal(validation.valid, true);
+    assert.deepEqual(validation.problems, []);
+    assert.equal(validation.canonicalSignature, stage.canonicalSignature);
   }
 });
 

@@ -51,6 +51,12 @@ jobs:
       - name: Verify variable candidate pool is reproducible
         run: git diff --exit-code -- generated/variable-stage-candidate-pool-v2.json
 
+      - name: Regenerate completed variable-stage bank
+        run: npm run gen:v2:variable-final-bank
+
+      - name: Verify completed variable-stage bank is reproducible
+        run: git diff --exit-code -- generated/variable-stage-bank-v2.json
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 

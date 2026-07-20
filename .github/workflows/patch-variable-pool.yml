@@ -1,0 +1,36 @@
+name: Patch variable pool typo
+
+on:
+  pull_request:
+    paths:
+      - "scripts/generator-v2/variable-pool.js"
+      - ".github/workflows/patch-variable-pool.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Correct variable name
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/generator-v2/variable-pool.js')
+          text = path.read_text()
+          fixed = text.replace('minimumParrPairDistance', 'minimumPairDistance')
+          if fixed != text:
+              path.write_text(fixed)
+          PY
+          if [ -n "$(git status --porcelain -- scripts/generator-v2/variable-pool.js)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add scripts/generator-v2/variable-pool.js
+            git commit -m "fix: correct candidate pool distance field"
+            git push origin HEAD:${{ github.head_ref }}
+          fi

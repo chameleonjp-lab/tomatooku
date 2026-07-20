@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
-import { assertVariableStageBank } from "../../src/variable-stage-contract.js";
+import {
+  VARIABLE_STAGE_BANK_STATUS,
+  assertVariableStageBank,
+} from "../../src/variable-stage-contract.js";
 import { minimumVariableStageDistance } from "./variable-pool.js";
 
 export const VARIABLE_FINAL_BANK_ID = "candidate-v2-variable-4-6-final";
@@ -35,7 +38,10 @@ function assertSourceState(candidatePool, review) {
   if (!candidatePool || candidatePool.stageCount !== 108) {
     throw new TypeError("candidate pool must contain exactly 108 stages");
   }
-  if (candidatePool.runtimeEnabled !== false || candidatePool.rankingEligible !== false) {
+  if (
+    candidatePool.runtimeEnabled !== false ||
+    candidatePool.rankingEligible !== false
+  ) {
     throw new TypeError("candidate pool must remain runtime and ranking disabled");
   }
   if (!review || review.schemaVersion !== 1 || review.stageCount !== 108) {
@@ -44,6 +50,40 @@ function assertSourceState(candidatePool, review) {
   if (review.manifestGeneratorVersion !== candidatePool.generatorVersion) {
     throw new TypeError("review manifestGeneratorVersion must match candidate pool");
   }
+}
+
+export function assertVariableStageFinalBank(bank) {
+  if (!bank || typeof bank !== "object" || Array.isArray(bank)) {
+    throw new TypeError("final bank must be an object");
+  }
+  if (bank.id !== VARIABLE_FINAL_BANK_ID) {
+    throw new TypeError(`final bank id must be ${VARIABLE_FINAL_BANK_ID}`);
+  }
+  if (bank.status !== VARIABLE_FINAL_BANK_STATUS) {
+    throw new TypeError(
+      `final bank status must be ${VARIABLE_FINAL_BANK_STATUS}`
+    );
+  }
+  if (bank.runtimeEnabled !== false || bank.rankingEligible !== false) {
+    throw new TypeError("final bank must remain runtime and ranking disabled");
+  }
+  if (bank.stageCount !== VARIABLE_FINAL_BANK_STAGE_COUNT) {
+    throw new TypeError(
+      `final bank stageCount must be ${VARIABLE_FINAL_BANK_STAGE_COUNT}`
+    );
+  }
+  if (!Array.isArray(bank.stages) || bank.stages.length !== bank.stageCount) {
+    throw new TypeError("final bank stages must match stageCount");
+  }
+
+  assertVariableStageBank(
+    {
+      ...bank,
+      status: VARIABLE_STAGE_BANK_STATUS,
+    },
+    { minimumStageCount: VARIABLE_FINAL_BANK_STAGE_COUNT }
+  );
+  return bank;
 }
 
 export function buildVariableStageFinalBank({
@@ -56,11 +96,15 @@ export function buildVariableStageFinalBank({
 } = {}) {
   assertSourceState(candidatePool, review);
 
-  const stagesById = new Map(candidatePool.stages.map((stage) => [stage.id, stage]));
+  const stagesById = new Map(
+    candidatePool.stages.map((stage) => [stage.id, stage])
+  );
   const candidateIds = [...stagesById.keys()].sort();
   const decisionIds = Object.keys(review.decisions || {}).sort();
   if (JSON.stringify(candidateIds) !== JSON.stringify(decisionIds)) {
-    throw new TypeError("review decisions must exactly cover the candidate pool IDs");
+    throw new TypeError(
+      "review decisions must exactly cover the candidate pool IDs"
+    );
   }
 
   const keptIds = decisionIds.filter(
@@ -73,9 +117,14 @@ export function buildVariableStageFinalBank({
     (id) => !["keep", "reject"].includes(review.decisions[id]?.status)
   );
   if (unsupported.length) {
-    throw new TypeError(`review contains unsupported decisions: ${unsupported.join(", ")}`);
+    throw new TypeError(
+      `review contains unsupported decisions: ${unsupported.join(", ")}`
+    );
   }
-  if (keptIds.length !== VARIABLE_FINAL_BANK_STAGE_COUNT || rejectedIds.length !== 24) {
+  if (
+    keptIds.length !== VARIABLE_FINAL_BANK_STAGE_COUNT ||
+    rejectedIds.length !== 24
+  ) {
     throw new TypeError(
       `review must select 84 keep and 24 reject; got ${keptIds.length}/${rejectedIds.length}`
     );
@@ -92,7 +141,11 @@ export function buildVariableStageFinalBank({
   const distanceOnePairs = [];
   let minimumPairDistance = 25;
   for (let leftIndex = 0; leftIndex < stages.length; leftIndex++) {
-    for (let rightIndex = leftIndex + 1; rightIndex < stages.length; rightIndex++) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < stages.length;
+      rightIndex++
+    ) {
       const left = stages[leftIndex];
       const right = stages[rightIndex];
       const distance = symmetricDistance(left, right);
@@ -143,9 +196,6 @@ export function buildVariableStageFinalBank({
     metadata,
   };
 
-  assertVariableStageBank(bank, {
-    minimumStageCount: VARIABLE_FINAL_BANK_STAGE_COUNT,
-    expectedStatus: VARIABLE_FINAL_BANK_STATUS,
-  });
+  assertVariableStageFinalBank(bank);
   return bank;
 }

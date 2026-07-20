@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／108問候補プール生成済み／人間レビュー基盤実装済み／レビュー実施・完成バンク選別待ち
+- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／レビュー第1巡承認済み／84問完成バンク固定済み／ランダム練習接続承認待ち
 
 ## 1. 運用ルール
 
@@ -335,7 +335,55 @@ scripts/variable-stage-review.e2e.js
 docs/VARIABLE_STAGE_REVIEW_TOOL.md
 ```
 
-レビュー基盤の実装完了は、108問の採否レビュー完了を意味しない。完成バンク選別はレビューJSONを取得した後の別work packageとする。
+レビュー基盤の実装完了は、108問の採否レビュー完了を意味しない。
+
+### 4-8. Slice 8：レビュー第1巡
+
+状態: **completed / HUMAN APPROVED**
+
+実測結果:
+
+```text
+採用                         84
+除外                         24
+保留                          0
+未判断                        0
+対称クラス分布               34 / 33 / 17
+難易度分布                   28 / 28 / 28
+サイズ分布                   61 / 23
+```
+
+固定成果物:
+
+```text
+review/decisions/variable-stage-review-round1.json
+docs/VARIABLE_STAGE_REVIEW_ROUND1.md
+scripts/variable-stage-review-round1.test.js
+```
+
+### 4-9. Slice 9：84問完成バンク
+
+状態: **completed / RUNTIME APPROVAL PENDING**
+
+実装:
+
+- レビュー`keep`84問だけを抽出
+- 候補プールとレビューJSONのSHA-256を記録
+- Stage Schema v2独立validator全件合格
+- 分布fixture固定
+- 距離1例外9組を固定
+- 決定論的再生成
+- runtime・ranking無効
+
+固定成果物:
+
+```text
+generated/variable-stage-bank-v2.json
+scripts/generator-v2/variable-final-bank.js
+scripts/generate_variable_stage_bank_v2.js
+scripts/variable-stage-final-bank.test.js
+docs/VARIABLE_STAGE_FINAL_BANK.md
+```
 
 ## 5. 現在のバンク契約
 
@@ -357,6 +405,10 @@ candidate-v2-variable-4-6.rankingEligible = false
 candidate-v2-variable-4-6-pool.status = candidate-pool-ready-for-review
 candidate-v2-variable-4-6-pool.runtimeEnabled = false
 candidate-v2-variable-4-6-pool.rankingEligible = false
+
+candidate-v2-variable-4-6-final.status = completed-bank-pending-runtime-approval
+candidate-v2-variable-4-6-final.runtimeEnabled = false
+candidate-v2-variable-4-6-final.rankingEligible = false
 ```
 
 生成器作業によって次を変更してはいけない。
@@ -369,7 +421,7 @@ candidate-v2-variable-4-6-pool.rankingEligible = false
 
 ## 6. 現在の人間判断ゲート
 
-108問の人間レビュー結果を確定し、完成バンクを別PRで固定するまでゲーム接続しない。
+84問完成バンクは固定済み。明示承認を得てランダム練習接続PRを作成するまでゲーム接続しない。
 
 ### 決定1：可変サイズ契約の採用（resolved）
 
@@ -397,15 +449,19 @@ candidate-v2-variable-4-6-pool.rankingEligible = false
 - 公式3問は変更しない
 - ランキング契約は変更しない
 
-### 決定3：108問候補プールの完成バンク選別基準
+### 決定3：108問候補プールの完成バンク選別（resolved）
 
-108問候補プールはレビュー用であり、完成バンクではない。次の選別が必要。
+PR #18で採用84問・除外24問を承認済み。
 
-- 人間向け難易度
-- 近似盤面距離
-- 正解配置分布
-- サイズプロファイル分布
-- iPhoneでの色境界識別性
+### 決定4：ランダム練習への接続
+
+推奨:
+
+- 公式3問は現行のまま
+- ランダム練習だけ84問完成バンクへ切替
+- 完成バンクはランキング対象外
+- 読込失敗時は旧`legacy-v1`へ安全に戻す
+- 即時ロールバック可能なfeature gateを使用
 
 ## 7. 契約承認後の次work package
 
@@ -436,7 +492,7 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 - 独立validator全件合格
 - runtime・ranking無効
 
-### 7-3. 難易度・近似選別（自動指標completed / 人間判断pending）
+### 7-3. 難易度・近似選別（completed）
 
 - 候補削除
 - 強制配置
@@ -446,7 +502,7 @@ docs/VARIABLE_REGION_STAGE_CONTRACT.md
 - 盤面境界距離
 - サイズプロファイル分布
 
-### 7-4. 人間レビュー（基盤completed / 実施pending）
+### 7-4. 人間レビュー（completed）
 
 レビュー画面:
 
@@ -470,15 +526,16 @@ review/variable-stage-review.html
 - レビューJSONの保存
 - 採用84問以上の確保
 
-### 7-5. 完成バンク固定（pending）
+### 7-5. 完成バンク固定（completed）
 
 - レビューJSONを入力として採用Stage IDを固定
 - 未判断を自動採用しない
 - 採用84問未満なら生成・選別条件を再検討
 - 完成バンクを独立validatorへ再投入
 - runtime・rankingは引き続き無効
+- `generated/variable-stage-bank-v2.json`へ固定済み
 
-### 7-6. 練習モード先行切替
+### 7-6. 練習モード先行切替（pending）
 
 人間承認後のみ:
 
@@ -513,4 +570,4 @@ review/variable-stage-review.html
 - 候補バンクが独立検証済み
 - 練習モード切替が人間承認済み
 
-現時点では、ゲーム公開部分、可変4〜6マス契約、108問候補プール、人間レビュー基盤まで完成しています。残工程は108問の実レビュー、完成バンク固定、人間承認後のランダム練習先行切替です。
+現時点では、ゲーム公開部分、可変4〜6マス契約、108問候補プール、レビュー第1巡、84問完成バンク固定まで完了しています。残工程は明示承認後のランダム練習先行切替と実機確認です。

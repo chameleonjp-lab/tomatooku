@@ -53,6 +53,28 @@ export const STAGE_BANK_CATALOG = Object.freeze({
     requiresHumanDecision: true,
     description: "難易度・構造距離・対称クラス分布を付与したレビュー用108問候補プール",
   }),
+  "candidate-v2-variable-4-6-final": Object.freeze({
+    id: "candidate-v2-variable-4-6-final",
+    source: "generated/variable-stage-bank-v2.json",
+    reviewSource: "review/decisions/variable-stage-review-round1.json",
+    contract: "docs/VARIABLE_REGION_STAGE_CONTRACT.md",
+    stageSchemaVersion: 2,
+    bankSchemaVersion: 1,
+    stageCount: 84,
+    minRegionSize: 4,
+    maxRegionSize: 6,
+    symmetryClassDistribution: Object.freeze({
+      "SC-95390462": 34,
+      "SC-be359992": 33,
+      "SC-3a178cba": 17,
+    }),
+    difficultyDistribution: Object.freeze({ 1: 28, 2: 28, 3: 28 }),
+    runtimeEnabled: false,
+    rankingEligible: false,
+    status: "completed-bank-pending-runtime-approval",
+    requiresHumanDecision: true,
+    description: "承認済みレビューkeep 84問から生成した完成バンク。ゲーム接続は未承認",
+  }),
 });
 
 export function getStageBankDescriptor(bankId = ACTIVE_STAGE_BANK_ID) {
@@ -65,7 +87,8 @@ export function assertCandidateBankRemainsInactive() {
   const fixed = getStageBankDescriptor("candidate-v2");
   const variable = getStageBankDescriptor("candidate-v2-variable-4-6");
   const pool = getStageBankDescriptor("candidate-v2-variable-4-6-pool");
-  for (const candidate of [fixed, variable, pool]) {
+  const finalBank = getStageBankDescriptor("candidate-v2-variable-4-6-final");
+  for (const candidate of [fixed, variable, pool, finalBank]) {
     if (candidate.runtimeEnabled || candidate.rankingEligible) {
       throw new Error(`${candidate.id} must remain inactive before explicit approval`);
     }
@@ -78,6 +101,9 @@ export function assertCandidateBankRemainsInactive() {
   }
   if (pool.status !== "candidate-pool-ready-for-review") {
     throw new Error("variable-region candidate pool must remain review-only");
+  }
+  if (finalBank.status !== "completed-bank-pending-runtime-approval") {
+    throw new Error("completed variable-region bank must remain pending runtime approval");
   }
   return true;
 }

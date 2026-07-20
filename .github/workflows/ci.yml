@@ -34,19 +34,7 @@ jobs:
         run: npm ci
 
       - name: Run static and contract tests
-        shell: bash
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee npm-test-variable-pool.log
-
-      - name: Upload static test diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npm-test-variable-pool-log
-          path: npm-test-variable-pool.log
-          if-no-files-found: error
-          retention-days: 7
+        run: npm test
 
       - name: Run exhaustive fixed-size feasibility audit
         run: npm run audit:v2:bank
@@ -58,7 +46,19 @@ jobs:
         run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
 
       - name: Generate balanced variable candidate pool
-        run: npm run gen:v2:variable-pool
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run gen:v2:variable-pool 2>&1 | tee variable-pool-generation.log
+
+      - name: Upload variable pool generation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: variable-pool-generation-log
+          path: variable-pool-generation.log
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Upload variable candidate pool artifact
         uses: actions/upload-artifact@v4

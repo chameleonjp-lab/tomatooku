@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Static and browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -36,16 +36,14 @@ jobs:
       - name: Run static and contract tests
         run: npm test
 
-      - name: Run exhaustive v2 stage-bank feasibility audit
+      - name: Run exhaustive fixed-size feasibility audit
         run: npm run audit:v2:bank
 
-      - name: Upload feasibility manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage-bank-feasibility-v2
-          path: generated/stage-bank-feasibility-v2.json
-          if-no-files-found: error
-          retention-days: 7
+      - name: Run variable-region threshold feasibility audit
+        run: npm run audit:v2:variable-regions
+
+      - name: Verify variable-region manifest is reproducible
+        run: git diff --exit-code -- generated/stage-bank-variable-feasibility-v2.json
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

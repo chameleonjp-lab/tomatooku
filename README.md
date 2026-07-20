@@ -65,17 +65,14 @@ T021（むずかしい）
 - 対称クラスの安定`symmetryClassId`: 3件
 - seed付きMulberry32と非破壊Fisher–Yates shuffle
 - generator versionとseedを持つ固定manifest
-- 同一seedから同じmanifestを再生成
 
 ```text
 generated/solution-patterns-v2.json
 ```
 
-### Slice 2：連結エリアと一意解候補
+### Slice 2：固定5マス連結エリア候補
 
 正解セルを別エリアの種として、各5マス・4近傍連結のエリアへ成長させます。全探索ソルバで一意解を確認し、エリア名、回転、反転に依存しない安定`stageId`を生成します。
-
-既定seed・1配置1,500試行の固定probe:
 
 ```text
 正解配置: 14
@@ -89,9 +86,9 @@ generated/solution-patterns-v2.json
 generated/stage-candidates-v2.json
 ```
 
-### Slice 3：84問候補バンク成立性監査
+### Slice 3：固定5マス84問成立性監査
 
-ランダム試行だけでは生成不可能か判断できないため、現在の盤面契約を固定して全探索しました。
+現在の盤面契約を固定して全探索しました。
 
 ```text
 正解配置                     14
@@ -102,29 +99,58 @@ D4・エリア名正規化後           5
 目標成立                      false
 ```
 
-現契約では、対称形を除外した84問バンクは構築できません。最大数は5問です。
+固定5マス契約では、対称形を除外した84問バンクは構築できません。最大数は5問です。
 
 ```text
 generated/stage-bank-feasibility-v2.json
 ```
 
-`candidate-v2`は次の状態で固定されています。
-
 ```text
-runtimeEnabled = false
-rankingEligible = false
-status = blocked-by-constraints
+candidate-v2.runtimeEnabled = false
+candidate-v2.rankingEligible = false
+candidate-v2.status = blocked-by-constraints
 ```
 
-現行30問、公式3問、ランダム練習には接続していません。
+### Slice 4：可変4〜6マス84問成立性監査
 
-推奨する次の検討は、5エリアと連結性を維持したまま「各エリアちょうど5マス」を可変サイズへ緩和し、新契約を再び全探索監査することです。
+中心ルールを維持したまま、エリアサイズだけを4〜6マスへ緩和して存在証明型の監査を行いました。
+
+```text
+要求canonical盤面                    84
+確認canonical盤面                    84
+目標成立                              true
+処理した正解配置                      1 / 14
+訪問した連結完全分割                  9,524
+一意解として確認した分割              84
+```
+
+サイズプロファイル:
+
+```text
+4-4-5-6-6    65問
+4-5-5-5-6    19問
+```
+
+`3〜7マス`まで広げる必要はなく、最小緩和`4〜6マス`だけで84問が成立します。
+
+```text
+generated/stage-bank-variable-feasibility-v2.json
+```
+
+```text
+candidate-v2-variable-4-6.runtimeEnabled = false
+candidate-v2-variable-4-6.rankingEligible = false
+candidate-v2-variable-4-6.status = feasible-pending-contract-approval
+```
+
+成立確認は仕様採用を意味しません。現行30問、公式3問、ランダム練習には接続していません。
 
 詳細:
 
 - `docs/GENERATOR_V2_FOUNDATION.md`
 - `docs/GENERATOR_V2_REGIONS.md`
 - `docs/GENERATOR_V2_BANK_FEASIBILITY.md`
+- `docs/GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md`
 
 ## 画面フロー
 
@@ -190,23 +216,25 @@ npm run serve
 ## 開発コマンド
 
 ```bash
-npm run gen                            # 現行30問バンクを再生成
-npm run gen:v2                         # v2配置manifestと候補probeを再生成
-npm run gen:v2:patterns                # v2正解配置manifestを再生成
-npm run gen:v2:candidates              # v2連結エリア候補manifestを再生成
-npm run audit:v2:bank                  # 84問候補バンクの成立性を全探索監査
-npm run verify                         # 現行ステージ形式・一意解検証
-npm test                               # 全静的・契約テスト
-npm run test:game                      # ゲームロジック
-npm run test:ranking                   # ランキング契約
-npm run test:launch                    # 本番送信ゲートと公開導線
-npm run test:accessibility             # UIアクセシビリティ契約
-npm run test:generator-v2              # v2生成器の全契約
-npm run test:generator-v2:foundation   # v2列挙・対称性・seed・ID契約
-npm run test:generator-v2:regions      # v2連結エリア・一意解・盤面ID契約
-npm run test:generator-v2:feasibility  # 全探索・manifest・停止契約
-npm run e2e                            # Playwrightブラウザテスト
-npm run serve                          # ローカルHTTPサーバー
+npm run gen                              # 現行30問バンクを再生成
+npm run gen:v2                           # v2配置manifestと候補probeを再生成
+npm run gen:v2:patterns                  # v2正解配置manifestを再生成
+npm run gen:v2:candidates                # v2固定5マス候補manifestを再生成
+npm run audit:v2:bank                    # 固定5マス84問成立性を全探索監査
+npm run audit:v2:variable-regions        # 可変4〜6マスで84問の存在を監査
+npm run verify                           # 現行ステージ形式・一意解検証
+npm test                                 # 全静的・契約テスト
+npm run test:game                        # ゲームロジック
+npm run test:ranking                     # ランキング契約
+npm run test:launch                      # 本番送信ゲートと公開導線
+npm run test:accessibility               # UIアクセシビリティ契約
+npm run test:generator-v2                # v2生成器の全契約
+npm run test:generator-v2:foundation     # v2列挙・対称性・seed・ID契約
+npm run test:generator-v2:regions        # v2固定5マス・一意解・盤面ID契約
+npm run test:generator-v2:feasibility    # 固定5マス全探索・停止契約
+npm run test:generator-v2:variable-regions # 可変4〜6マス成立性契約
+npm run e2e                              # Playwrightブラウザテスト
+npm run serve                            # ローカルHTTPサーバー
 ```
 
 ## 構成
@@ -216,6 +244,7 @@ generated/
   solution-patterns-v2.json
   stage-candidates-v2.json
   stage-bank-feasibility-v2.json
+  stage-bank-variable-feasibility-v2.json
 index.html
 src/
   accessibility.css
@@ -236,8 +265,11 @@ scripts/
     feasibility.test.js
     regions.js
     regions.test.js
+    variable-feasibility.js
+    variable-feasibility.test.js
   accessibility.test.js
   audit_stage_bank_v2.js
+  audit_variable_region_sizes_v2.js
   generate_stages.js
   generate_stages_v2.js
   generate_stage_candidates_v2.js
@@ -257,6 +289,7 @@ docs/
   GENERATOR_V2_FOUNDATION.md
   GENERATOR_V2_REGIONS.md
   GENERATOR_V2_BANK_FEASIBILITY.md
+  GENERATOR_V2_VARIABLE_REGION_FEASIBILITY.md
 ```
 
 ## セキュリティ

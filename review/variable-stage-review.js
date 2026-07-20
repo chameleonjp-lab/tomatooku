@@ -534,7 +534,7 @@ function exportReviewData() {
   document.body.append(anchor);
   anchor.click();
   anchor.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   elements.transferState.textContent = "レビュー結果を書き出しました";
 }
 

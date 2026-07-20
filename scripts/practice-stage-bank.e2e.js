@@ -3,6 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { launchBrowser } from "./launch.js";
+import {
+  ACTIVE_PRACTICE_STAGE_BANK_ID,
+  PRACTICE_STAGE_BANK_FEATURE,
+} from "../src/stage-bank-config.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = 8103;
@@ -168,6 +172,7 @@ async function main() {
 
       const seenIds = [];
       const seenDifficulties = [];
+      const featureEnabled = PRACTICE_STAGE_BANK_FEATURE.enabled;
       for (let index = 0; index < 3; index++) {
         await waitForPlaying(page);
         seenIds.push(await page.getAttribute("#board", "data-stage-id"));
@@ -176,12 +181,13 @@ async function main() {
         );
         ok(
           (await page.getAttribute("#board", "data-stage-bank-id")) ===
-            "candidate-v2-variable-4-6-final",
-          `練習ステージ${index + 1}は完成バンク`
+            ACTIVE_PRACTICE_STAGE_BANK_ID,
+          `練習ステージ${index + 1}はfeature gate選択bank`
         );
         ok(
-          (await page.getAttribute("#board", "data-stage-bank-fallback")) === "false",
-          `練習ステージ${index + 1}はfallbackなし`
+          (await page.getAttribute("#board", "data-stage-bank-fallback")) ===
+            String(!featureEnabled),
+          `練習ステージ${index + 1}はfeature gateどおりのfallback状態`
         );
         await solveCurrentStage(page);
         if (index < 2) {
@@ -198,7 +204,14 @@ async function main() {
         null,
         { timeout: 5000 }
       );
-      ok(seenIds.every((id) => /^STG-[0-9a-f]{8}$/.test(id)), "練習はSTG IDのみ");
+      ok(
+        seenIds.every((id) =>
+          featureEnabled
+            ? /^STG-[0-9a-f]{8}$/.test(id)
+            : /^T\d{3}$/.test(id)
+        ),
+        featureEnabled ? "練習はSTG IDのみ" : "停止中の練習は旧T IDのみ"
+      );
       ok(new Set(seenIds).size === 3, "練習3問のIDは重複なし");
       ok(JSON.stringify(seenDifficulties) === JSON.stringify([1, 2, 3]), "練習は難易度1→2→3");
       ok((await page.textContent("#result-mode")) === "ランダム練習", "結果はランダム練習表示");

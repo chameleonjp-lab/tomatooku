@@ -19,7 +19,20 @@ export const STAGE_BANK_CATALOG = Object.freeze({
     rankingEligible: false,
     status: "blocked-by-constraints",
     requiresHumanDecision: true,
-    description: "現仕様では84問を構築できないため有効化禁止の生成器v2候補",
+    description: "各エリア5マス固定では84問を構築できない生成器v2候補",
+  }),
+  "candidate-v2-variable-4-6": Object.freeze({
+    id: "candidate-v2-variable-4-6",
+    source: "generated/stage-bank-variable-feasibility-v2.json",
+    requiredCanonicalStageCount: 84,
+    witnessedCanonicalStageCount: 84,
+    minRegionSize: 4,
+    maxRegionSize: 6,
+    runtimeEnabled: false,
+    rankingEligible: false,
+    status: "feasible-pending-contract-approval",
+    requiresHumanDecision: true,
+    description: "エリアサイズ4〜6マスで84問の存在を確認した未承認候補",
   }),
 });
 
@@ -30,12 +43,18 @@ export function getStageBankDescriptor(bankId = ACTIVE_STAGE_BANK_ID) {
 }
 
 export function assertCandidateBankRemainsInactive() {
-  const candidate = getStageBankDescriptor("candidate-v2");
-  if (candidate.runtimeEnabled || candidate.rankingEligible) {
-    throw new Error("candidate-v2 must remain inactive while feasibility is blocked");
+  const fixed = getStageBankDescriptor("candidate-v2");
+  const variable = getStageBankDescriptor("candidate-v2-variable-4-6");
+  for (const candidate of [fixed, variable]) {
+    if (candidate.runtimeEnabled || candidate.rankingEligible) {
+      throw new Error(`${candidate.id} must remain inactive before explicit approval`);
+    }
   }
-  if (candidate.status !== "blocked-by-constraints") {
-    throw new Error("candidate-v2 status must remain blocked until a new contract is approved");
+  if (fixed.status !== "blocked-by-constraints") {
+    throw new Error("candidate-v2 must remain blocked under the fixed-size contract");
+  }
+  if (variable.status !== "feasible-pending-contract-approval") {
+    throw new Error("variable-region candidate must remain pending contract approval");
   }
   return true;
 }

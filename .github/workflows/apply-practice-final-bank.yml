@@ -58,14 +58,15 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          git restore .github/workflows/ci.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/game.js src/main.js src/stage-bank-config.js \
             scripts/generator-v2/variable-final-bank.js \
             scripts/variable-stage-final-bank.test.js \
             generated/variable-stage-bank-v2.json package.json \
-            .github/workflows/ci.yml src/practice-stage-bank.js \
-            scripts/practice-stage-bank.test.js scripts/practice-stage-bank.e2e.js
+            src/practice-stage-bank.js scripts/practice-stage-bank.test.js \
+            scripts/practice-stage-bank.e2e.js
           git status --short
           git commit -m "feat: connect final bank to random practice"
           git push origin HEAD:agent/tomatooku-practice-final-bank

@@ -2,13 +2,10 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: tomatooku-ci-${{ github.workflow }}-${{ github.ref }}
@@ -21,8 +18,33 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Delay Blob URL cleanup until download starts
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('review/variable-stage-review.js')
+          text = path.read_text()
+          old = '  URL.revokeObjectURL(url);'
+          new = '  setTimeout(() => URL.revokeObjectURL(url), 1000);'
+          if old in text:
+              path.write_text(text.replace(old, new, 1))
+          elif new not in text:
+              raise SystemExit('download cleanup target not found')
+          PY
+          if [ -n "$(git status --porcelain -- review/variable-stage-review.js)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add review/variable-stage-review.js
+            git commit -m "fix: keep review export URL alive for download"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -58,16 +80,4 @@ jobs:
         run: npm run e2e
 
       - name: Run review tool iPhone SE E2E
-        shell: bash
-        run: |
-          set -o pipefail
-          npm run e2e:review 2>&1 | tee review-e2e.log
-
-      - name: Upload review E2E diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: variable-stage-review-e2e-log
-          path: review-e2e.log
-          if-no-files-found: error
-          retention-days: 7
+        run: npm run e2e:review

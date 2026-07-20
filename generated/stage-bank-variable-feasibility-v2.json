@@ -1,0 +1,3409 @@
+{
+  "schemaVersion": 1,
+  "auditVersion": "2.4.0-variable-regions.1",
+  "auditMode": "threshold-witness",
+  "exhaustive": false,
+  "boardSize": 5,
+  "constraints": {
+    "regionCount": 5,
+    "minRegionSize": 4,
+    "maxRegionSize": 6,
+    "regionsMustBeFourNeighborConnected": true,
+    "oneTomatoPerRow": true,
+    "oneTomatoPerColumn": true,
+    "oneTomatoPerRegion": true,
+    "tomatoesMayNotTouchIncludingDiagonals": true,
+    "uniqueSolutionRequired": true,
+    "deduplication": "D4 transforms plus first-seen region-label normalization"
+  },
+  "requiredCanonicalTarget": 84,
+  "targetFeasible": true,
+  "canonicalStageCount": 84,
+  "patternsVisited": 1,
+  "connectedPartitionCountVisited": 9524,
+  "uniqueSolutionCountVisited": 84,
+  "profileDistribution": {
+    "4-5-5-5-6": 19,
+    "4-4-5-6-6": 65
+  },
+  "conclusion": "The target of 84 D4-unique stages is feasible with connected region sizes 4-6.",
+  "patternAudits": [
+    {
+      "patternId": "SP-a6ee2d58",
+      "symmetryClassId": "SC-95390462",
+      "patternSignature": "0,2,4,1,3",
+      "candidateRegionCounts": [
+        66,
+        516,
+        197,
+        409,
+        142
+      ],
+      "connectedPartitionCountVisited": 9524,
+      "uniqueSolutionCountVisited": 84,
+      "thresholdReached": false
+    }
+  ],
+  "canonicalStages": [
+    {
+      "stageId": "STG-01bd306d",
+      "canonicalSignature": "AAAAB|ACABB|CCCBB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-05453ba1",
+      "canonicalSignature": "AAAAA|ABBBB|CCCCB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-0868fad9",
+      "canonicalSignature": "AAAAB|ACBBB|CCCCB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-0a930c10",
+      "canonicalSignature": "AAAAA|ABCDD|EBCCD|EBBCD|EEBDD",
+      "regions": [
+        "AAAAA",
+        "ABCDD",
+        "EBCCD",
+        "EBBCD",
+        "EEBDD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-0b14368d",
+      "canonicalSignature": "AAAAB|ACBAB|DCBBB|DCCEE|DDCEE",
+      "regions": [
+        "AAAAB",
+        "ACBAB",
+        "DCBBB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-13fc715e",
+      "canonicalSignature": "AAAAB|ABBBB|CCCDB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-199a23ae",
+      "canonicalSignature": "AAAAA|ABBBB|CCCCB|CDDCE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCCB",
+        "CDDCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-19aa2ed1",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDC|BDDDE|BBEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDC",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-1bc09a5a",
+      "canonicalSignature": "AAAAB|ACCAB|DCBBB|DCCEE|DDCEE",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DCBBB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-1bf62619",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDD|CDDDE|CCEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDD",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-1e3f1e3c",
+      "canonicalSignature": "AAAAA|ABBBB|CCCCB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-1ef15790",
+      "canonicalSignature": "AAAAB|ACABB|CCCBB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-20357d3a",
+      "canonicalSignature": "AAAAA|ABBCC|DDBBC|EDDDC|EEECC",
+      "regions": [
+        "AAAAA",
+        "ABBCC",
+        "DDBBC",
+        "EDDDC",
+        "EEECC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-20431284",
+      "canonicalSignature": "AAAAA|ABBBC|BBDDC|EDDCC|EEECC",
+      "regions": [
+        "AAAAA",
+        "ABBBC",
+        "BBDDC",
+        "EDDCC",
+        "EEECC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-20ebf5b8",
+      "canonicalSignature": "AAABB|ABBBC|DDDCC|DCCCE|DDEEE",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "DDDCC",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-23a5d49f",
+      "canonicalSignature": "AAAAB|ACDAB|ECDDB|ECCDB|EECDD",
+      "regions": [
+        "AAAAB",
+        "ACDAB",
+        "ECDDB",
+        "ECCDB",
+        "EECDD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-27c59f21",
+      "canonicalSignature": "AAABB|ACBBB|CCBDD|CDDDE|CDEEE",
+      "regions": [
+        "AAABB",
+        "ACBBB",
+        "CCBDD",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-293dd948",
+      "canonicalSignature": "AAAAB|ACBBB|ACCDB|EECDD|EECCD",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "ACCDB",
+        "EECDD",
+        "EECCD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-2dfb34ab",
+      "canonicalSignature": "AAAAA|ABCCC|BBBCC|BDDDE|BDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBCC",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-2f78a997",
+      "canonicalSignature": "AAAAB|ACBBB|CCCDB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-32ed6e20",
+      "canonicalSignature": "AAAAA|ABCCC|BBBDC|BDDDE|BDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBDC",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-34345955",
+      "canonicalSignature": "AAAAB|ABBBB|CCCCB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-34ba9d68",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-34ce8612",
+      "canonicalSignature": "AAAAB|ACABB|CCCDB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCDB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-38da58ee",
+      "canonicalSignature": "AAAAA|ABCCC|DBEEC|DBBEC|DDBEC",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "DBEEC",
+        "DBBEC",
+        "DDBEC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-39b470e9",
+      "canonicalSignature": "AAABB|AAACB|DDDCB|DEECC|DDEEE",
+      "regions": [
+        "AAABB",
+        "AAACB",
+        "DDDCB",
+        "DEECC",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-3bb4740f",
+      "canonicalSignature": "AAABB|AAACB|DDDCB|DEECC|DDEEC",
+      "regions": [
+        "AAABB",
+        "AAACB",
+        "DDDCB",
+        "DEECC",
+        "DDEEC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-3df8d3f0",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDD|BDDDE|BBEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDD",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-43b9b60c",
+      "canonicalSignature": "AAAAA|ABCCC|BBCCC|BDDDE|BDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCCC",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-477eb7c1",
+      "canonicalSignature": "AAAAB|ABBBB|ACCDB|EECDD|EECCD",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "ACCDB",
+        "EECDD",
+        "EECCD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-47ac75ea",
+      "canonicalSignature": "AAAAB|AABBB|CCCCB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCCB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-4c7c450d",
+      "canonicalSignature": "AAAAB|ACCAB|DCEEB|DCCEB|DDCEE",
+      "regions": [
+        "AAAAB",
+        "ACCAB",
+        "DCEEB",
+        "DCCEB",
+        "DDCEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-4dc01b9a",
+      "canonicalSignature": "AAAAA|BACCC|BBCDD|BDDDE|BBEEE",
+      "regions": [
+        "AAAAA",
+        "BACCC",
+        "BBCDD",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-500e88f7",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDB|CDDDE|CCEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDB",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-55b7c247",
+      "canonicalSignature": "AAAAB|ABBBB|CCCCB|CDDCE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCCB",
+        "CDDCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-5a97a3c4",
+      "canonicalSignature": "AAAAA|BACCC|BDCDD|BDDDE|BBEEE",
+      "regions": [
+        "AAAAA",
+        "BACCC",
+        "BDCDD",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-5aed412d",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DCCCE|DDEEE",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-5db02a61",
+      "canonicalSignature": "AAAAB|ABBBB|CCCDB|CDDDE|CCEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCDB",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-6168b936",
+      "canonicalSignature": "AAAAB|ACBBB|CCCDB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCDB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-6319808f",
+      "canonicalSignature": "AAABB|ABBBC|ABCCC|DEEEC|DDDEE",
+      "regions": [
+        "AAABB",
+        "ABBBC",
+        "ABCCC",
+        "DEEEC",
+        "DDDEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-640be8dd",
+      "canonicalSignature": "AAAAA|ABBBB|CCCBB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-697800f8",
+      "canonicalSignature": "AAAAB|ABBBB|CCCCB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-69f55c48",
+      "canonicalSignature": "AAAAA|ABCCC|BBBBC|BDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBBC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-6baead5c",
+      "canonicalSignature": "AAAAB|ACABB|CCCCB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-6c245710",
+      "canonicalSignature": "AAABB|ABBBB|CCCDD|CDDDE|CCEEE",
+      "regions": [
+        "AAABB",
+        "ABBBB",
+        "CCCDD",
+        "CDDDE",
+        "CCEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-7005627b",
+      "canonicalSignature": "AAABB|AAACB|DDDCB|DCCCE|DDEEE",
+      "regions": [
+        "AAABB",
+        "AAACB",
+        "DDDCB",
+        "DCCCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-70140499",
+      "canonicalSignature": "AAABB|AABBC|ACCCC|DEEEC|DDDEE",
+      "regions": [
+        "AAABB",
+        "AABBC",
+        "ACCCC",
+        "DEEEC",
+        "DDDEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-73718467",
+      "canonicalSignature": "AAAAB|ACABB|CCCBB|CDDBE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCBB",
+        "CDDBE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-77f0d4b9",
+      "canonicalSignature": "AAAAB|ABBBB|ABCDD|ECCCD|EEECD",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "ABCDD",
+        "ECCCD",
+        "EEECD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-79279693",
+      "canonicalSignature": "AAABB|ACAAB|DCBBB|DCCEE|DDCEE",
+      "regions": [
+        "AAABB",
+        "ACAAB",
+        "DCBBB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-7cb65b95",
+      "canonicalSignature": "AAAAB|ACBBB|CCCBB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-82b47f4f",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDC|BDDDE|BDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDC",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-85c7d68d",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DEECE|DDEEE",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DEECE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-8bc7b9ce",
+      "canonicalSignature": "AAAAA|ABCCC|BBBCC|BDDCE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBCC",
+        "BDDCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-94e374ad",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDC|BDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-952d543e",
+      "canonicalSignature": "AAAAA|ABCCC|BBBDC|BDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBDC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-9785acc5",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-98aee138",
+      "canonicalSignature": "AAAAB|ACBBB|CCCBB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-99b3abd9",
+      "canonicalSignature": "AAABB|ACAAB|DCEEB|DCCEE|DDCEE",
+      "regions": [
+        "AAABB",
+        "ACAAB",
+        "DCEEB",
+        "DCCEE",
+        "DDCEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-9a74fada",
+      "canonicalSignature": "AAAAB|ACABB|CCBBB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCBBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-9a8cc500",
+      "canonicalSignature": "AAAAA|ABBBB|CCCBB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "CCCBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-9b26597e",
+      "canonicalSignature": "AAAAA|ABCCC|BBCDD|BDDDE|BDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCDD",
+        "BDDDE",
+        "BDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-a27903af",
+      "canonicalSignature": "AAAAA|BACCC|BCCDD|BDDDE|BBEEE",
+      "regions": [
+        "AAAAA",
+        "BACCC",
+        "BCCDD",
+        "BDDDE",
+        "BBEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-a3f5d80b",
+      "canonicalSignature": "AAAAB|ACABB|CCCDB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCCDB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-a53237c1",
+      "canonicalSignature": "AAAAA|ABCCC|BBBCC|BDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBBCC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-a6de5d4e",
+      "canonicalSignature": "AAAAB|ACDBB|ACDDB|ECCDB|EEEDD",
+      "regions": [
+        "AAAAB",
+        "ACDBB",
+        "ACDDB",
+        "ECCDB",
+        "EEEDD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-b0ff7699",
+      "canonicalSignature": "AAAAA|ABBBB|BBCDD|ECCCD|EEECD",
+      "regions": [
+        "AAAAA",
+        "ABBBB",
+        "BBCDD",
+        "ECCCD",
+        "EEECD"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-b5dc2753",
+      "canonicalSignature": "AAAAB|ACABB|CCBBB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACABB",
+        "CCBBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-b90b2bf2",
+      "canonicalSignature": "AAAAA|ABBBC|DDDBC|EEDDC|EECCC",
+      "regions": [
+        "AAAAA",
+        "ABBBC",
+        "DDDBC",
+        "EEDDC",
+        "EECCC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-bd62b962",
+      "canonicalSignature": "AAAAA|ABCCC|BBCCC|BDDDE|DDEEE",
+      "regions": [
+        "AAAAA",
+        "ABCCC",
+        "BBCCC",
+        "BDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-c6d111cc",
+      "canonicalSignature": "AAAAB|AABBB|CCCCB|CDDCE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCCB",
+        "CDDCE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-d2426d16",
+      "canonicalSignature": "AAAAB|ACBBB|CCBDD|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCBDD",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-d2c69491",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DEECC|DDEEC",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DEECC",
+        "DDEEC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-d4c4a00d",
+      "canonicalSignature": "AAAAA|ABBCC|DBEEC|DBBEC|DDBEC",
+      "regions": [
+        "AAAAA",
+        "ABBCC",
+        "DBEEC",
+        "DBBEC",
+        "DDBEC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-d4c697b7",
+      "canonicalSignature": "AAABB|AACCB|DDDCB|DEECC|DDEEE",
+      "regions": [
+        "AAABB",
+        "AACCB",
+        "DDDCB",
+        "DEECC",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          2
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-df6e8d5a",
+      "canonicalSignature": "AAAAB|AABBB|CCCBB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCBB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-eb49788f",
+      "canonicalSignature": "AAAAA|BBBCC|DDBBC|EDDDC|EEECC",
+      "regions": [
+        "AAAAA",
+        "BBBCC",
+        "DDBBC",
+        "EDDDC",
+        "EEECC"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-ec909e3f",
+      "canonicalSignature": "AAAAA|ABCDD|EBCCD|EBBCD|EEBCD",
+      "regions": [
+        "AAAAA",
+        "ABCDD",
+        "EBCCD",
+        "EBBCD",
+        "EEBCD"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-ee3c9e89",
+      "canonicalSignature": "AAABB|ACABB|CCADD|CDDDE|CDEEE",
+      "regions": [
+        "AAABB",
+        "ACABB",
+        "CCADD",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-ee4ed9e9",
+      "canonicalSignature": "AAAAA|BBBCC|DDBDC|EDDDC|EEECC",
+      "regions": [
+        "AAAAA",
+        "BBBCC",
+        "DDBDC",
+        "EDDDC",
+        "EEECC"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          0
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-f1153265",
+      "canonicalSignature": "AAAAB|ACBBB|CCCDD|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "ACBBB",
+        "CCCDD",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-f6ed22bf",
+      "canonicalSignature": "AAAAB|ABBBB|CCCDB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "ABBBB",
+        "CCCDB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-fad5b9d3",
+      "canonicalSignature": "AAAAB|AABBB|CCCBB|CDDDE|CDEEE",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCBB",
+        "CDDDE",
+        "CDEEE"
+      ],
+      "regionSizes": [
+        4,
+        4,
+        5,
+        6,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    {
+      "stageId": "STG-fb23ec63",
+      "canonicalSignature": "AAAAB|AABBB|CCCCB|CDDDE|DDEEE",
+      "regions": [
+        "AAAAB",
+        "AABBB",
+        "CCCCB",
+        "CDDDE",
+        "DDEEE"
+      ],
+      "regionSizes": [
+        4,
+        5,
+        5,
+        5,
+        6
+      ],
+      "solution": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    }
+  ]
+}

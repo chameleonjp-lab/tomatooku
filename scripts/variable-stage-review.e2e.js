@@ -115,6 +115,8 @@ async function main() {
     await page.click('[data-decision="hold"]');
     ok((await page.textContent("#current-decision")) === "保留", "保留判断を保存");
 
+    await page.click(".transfer-panel > summary");
+    ok(await page.locator(".transfer-panel").getAttribute("open") !== null, "レビュー結果の入出力を開く");
     await page.evaluate(() => {
       const capture = {
         blob: null,

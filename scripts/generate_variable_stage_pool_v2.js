@@ -19,8 +19,9 @@ function positiveInteger(name, fallback) {
 }
 
 const rawTargetPerClass = positiveInteger("raw-per-class", 84);
-const selectedTargetPerClass = positiveInteger("selected-per-class", 36);
-const maxPartitionsPerClass = positiveInteger("max-partitions-per-class", 250000);
+const selectedTargetTotal = positiveInteger("selected-total", 108);
+const minimumSelectedPerClass = positiveInteger("minimum-per-class", 17);
+const maxPartitionsPerClass = positiveInteger("max-partitions-per-class", 1000000);
 const output = resolve(
   process.cwd(),
   option("output", "generated/variable-stage-candidate-pool-v2.json")
@@ -29,7 +30,8 @@ const stdoutOnly = process.argv.includes("--stdout");
 
 const manifest = buildVariableStageCandidatePool({
   rawTargetPerClass,
-  selectedTargetPerClass,
+  selectedTargetTotal,
+  minimumSelectedPerClass,
   maxPartitionsPerClass,
 });
 const body = `${JSON.stringify(manifest, null, 2)}\n`;

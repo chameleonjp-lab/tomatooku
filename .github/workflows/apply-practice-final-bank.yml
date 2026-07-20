@@ -20,27 +20,44 @@ jobs:
         with:
           ref: agent/tomatooku-practice-final-bank
 
+      - name: Detect already-applied patch
+        id: detect
+        shell: bash
+        run: |
+          if grep -q 'LEGACY_PRACTICE_STAGE_SETS' src/game.js; then
+            echo "applied=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "applied=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Node.js
+        if: steps.detect.outputs.applied == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
       - name: Install dependencies
+        if: steps.detect.outputs.applied == 'false'
         run: npm ci
 
       - name: Apply connection patch
+        if: steps.detect.outputs.applied == 'false'
         run: python3 scripts/apply_practice_final_bank_connection.py
 
       - name: Regenerate active practice bank
+        if: steps.detect.outputs.applied == 'false'
         run: npm run gen:v2:variable-final-bank
 
       - name: Run static contracts
+        if: steps.detect.outputs.applied == 'false'
         run: npm test
 
-      - name: Commit connection and remove one-time files
+      - name: Commit connection
+        if: steps.detect.outputs.applied == 'false'
         shell: bash
         run: |
+          set -euxo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/game.js src/main.js src/stage-bank-config.js \
@@ -49,10 +66,6 @@ jobs:
             generated/variable-stage-bank-v2.json package.json \
             .github/workflows/ci.yml src/practice-stage-bank.js \
             scripts/practice-stage-bank.test.js scripts/practice-stage-bank.e2e.js
-          git rm scripts/apply_practice_final_bank_connection.py \
-            .github/workflows/apply-practice-final-bank.yml
-          if [ -f review/.practice-final-bank-trigger ]; then
-            git rm review/.practice-final-bank-trigger
-          fi
+          git status --short
           git commit -m "feat: connect final bank to random practice"
           git push origin HEAD:agent/tomatooku-practice-final-bank

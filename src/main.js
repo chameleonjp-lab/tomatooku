@@ -21,6 +21,7 @@ import {
   isSubmissionEnabled,
 } from "./ranking.js";
 import { playTutorial, stopTutorial } from "./tutorial.js";
+import { loadPracticeStageBank } from "./practice-stage-bank.js";
 
 const PLAYER_KEY = "tomatoku.playerName";
 const GAME_URL = "https://chameleonjp.codeberg.page/tomatooku/";
@@ -52,6 +53,8 @@ let countdownTimerIds = [];
 let transitionTimerId = null;
 let toastTimerId = null;
 let lastHudPaintAt = 0;
+let practiceStageBankPromise = null;
+let startInFlight = false;
 
 function gameUrl() {
   try {
@@ -129,14 +132,14 @@ function initHome() {
   input.value = loadPlayerName();
 
   $("#start-official-btn").addEventListener("click", () => {
-    onStart(GAME_MODE.OFFICIAL);
+    void onStart(GAME_MODE.OFFICIAL);
   });
   $("#start-practice-btn").addEventListener("click", () => {
-    onStart(GAME_MODE.PRACTICE);
+    void onStart(GAME_MODE.PRACTICE);
   });
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.isComposing) {
-      onStart(GAME_MODE.OFFICIAL);
+      void onStart(GAME_MODE.OFFICIAL);
     }
   });
 
@@ -193,7 +196,44 @@ function initModals() {
   });
 }
 
-function onStart(mode) {
+function setStartButtonsDisabled(disabled) {
+  const official = $("#start-official-btn");
+  const practice = $("#start-practice-btn");
+  if (official) official.disabled = disabled;
+  if (practice) practice.disabled = disabled;
+}
+
+function ensurePracticeStageBank() {
+  if (!practiceStageBankPromise) {
+    practiceStageBankPromise = loadPracticeStageBank();
+  }
+  return practiceStageBankPromise;
+}
+
+async function startNamedGame(name, mode) {
+  if (startInFlight) return;
+  startInFlight = true;
+  setStartButtonsDisabled(true);
+  const error = $("#name-error");
+
+  try {
+    let practiceBank = null;
+    if (mode === GAME_MODE.PRACTICE) {
+      if (error) error.textContent = "練習問題を準備中…";
+      practiceBank = await ensurePracticeStageBank();
+    }
+    if (error) error.textContent = "";
+    beginCountdown(name, mode, practiceBank);
+    if (practiceBank?.fallback) {
+      setTimeout(() => showToast("従来の練習問題で開始します"), 0);
+    }
+  } finally {
+    startInFlight = false;
+    setStartButtonsDisabled(false);
+  }
+}
+
+async function onStart(mode) {
   const input = $("#player-name");
   const name = input.value.trim();
   const error = $("#name-error");
@@ -206,7 +246,7 @@ function onStart(mode) {
 
   error.textContent = "";
   savePlayerName(name);
-  beginCountdown(name, mode);
+  await startNamedGame(name, mode);
 }
 
 function clearCountdownWork() {
@@ -261,6 +301,8 @@ function cancelActivePlay({ goHome = true } = {}) {
     delete board.dataset.stageId;
     delete board.dataset.difficulty;
     delete board.dataset.mode;
+    delete board.dataset.stageBankId;
+    delete board.dataset.stageBankFallback;
   }
 
   if (goHome) {
@@ -271,11 +313,16 @@ function cancelActivePlay({ goHome = true } = {}) {
   }
 }
 
-function beginCountdown(name, mode) {
+function beginCountdown(name, mode, practiceBank = null) {
   cancelActivePlay({ goHome: false });
   resetSubmission();
 
-  session = new GameSession(name, Math.random, { mode });
+  session = new GameSession(name, Math.random, {
+    mode,
+    practiceStageBank: practiceBank?.stages,
+    practiceStageBankId: practiceBank?.bankId,
+    practiceStageBankFallback: practiceBank?.fallback,
+  });
   activePlayId = session.playId;
   const playId = activePlayId;
 
@@ -337,6 +384,8 @@ function buildBoard() {
   board.dataset.stageId = session.current.stage.id;
   board.dataset.difficulty = String(session.current.stage.difficulty);
   board.dataset.mode = session.mode;
+  board.dataset.stageBankId = session.stageBankId;
+  board.dataset.stageBankFallback = String(session.stageBankFallback);
   cells = [];
 
   const state = session.current;
@@ -712,7 +761,7 @@ function initResultControls() {
   $("#again-btn").addEventListener("click", () => {
     const name = (session && session.playerName) || loadPlayerName();
     const mode = (session && session.mode) || GAME_MODE.OFFICIAL;
-    beginCountdown(name, mode);
+    void startNamedGame(name, mode);
   });
 
   $("#home-btn").addEventListener("click", () => {

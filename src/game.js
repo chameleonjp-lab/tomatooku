@@ -108,6 +108,9 @@ export function selectOfficialStages(
 }
 
 export function buildPracticeStageSets(stageBank = STAGES) {
+  if (!Array.isArray(stageBank)) {
+    throw new TypeError("練習ステージバンクは配列である必要があります");
+  }
   const groups = stagesByDifficulty(stageBank);
   const sets = [];
 
@@ -128,19 +131,34 @@ export function buildPracticeStageSets(stageBank = STAGES) {
   return sets;
 }
 
-const PRACTICE_STAGE_SETS = buildPracticeStageSets();
+const LEGACY_PRACTICE_STAGE_SETS = buildPracticeStageSets();
+const PRACTICE_STAGE_SET_CACHE = new WeakMap();
 
-export function selectPracticeStages(rand = Math.random) {
+function practiceStageSetsFor(stageBank) {
+  if (stageBank === STAGES) return LEGACY_PRACTICE_STAGE_SETS;
+  if (!Array.isArray(stageBank)) {
+    throw new TypeError("練習ステージバンクは配列である必要があります");
+  }
+  let sets = PRACTICE_STAGE_SET_CACHE.get(stageBank);
+  if (!sets) {
+    sets = buildPracticeStageSets(stageBank);
+    PRACTICE_STAGE_SET_CACHE.set(stageBank, sets);
+  }
+  return sets;
+}
+
+export function selectPracticeStages(rand = Math.random, stageBank = STAGES) {
+  const sets = practiceStageSetsFor(stageBank);
   const value = Number(rand());
   const normalized = Number.isFinite(value)
     ? Math.min(0.999999999999, Math.max(0, value))
     : 0;
-  return PRACTICE_STAGE_SETS[Math.floor(normalized * PRACTICE_STAGE_SETS.length)];
+  return sets[Math.floor(normalized * sets.length)];
 }
 
 /** v1呼び出し名の互換。 */
-export function pickStages(rand = Math.random) {
-  return selectPracticeStages(rand);
+export function pickStages(rand = Math.random, stageBank = STAGES) {
+  return selectPracticeStages(rand, stageBank);
 }
 
 export function buildRegionMap(regions) {
@@ -309,10 +327,21 @@ export class GameSession {
       options.mode === GAME_MODE.OFFICIAL
         ? GAME_MODE.OFFICIAL
         : GAME_MODE.PRACTICE;
+    this.practiceStageBank =
+      this.mode === GAME_MODE.PRACTICE
+        ? options.practiceStageBank || STAGES
+        : null;
+    this.stageBankId =
+      this.mode === GAME_MODE.OFFICIAL
+        ? "legacy-v1"
+        : String(options.practiceStageBankId || "legacy-v1");
+    this.stageBankFallback =
+      this.mode === GAME_MODE.PRACTICE &&
+      Boolean(options.practiceStageBankFallback);
     this.stages =
       this.mode === GAME_MODE.OFFICIAL
         ? selectOfficialStages(options.officialStageIds)
-        : selectPracticeStages(rand);
+        : selectPracticeStages(rand, this.practiceStageBank);
     this.index = 0;
     this.states = this.stages.map((stage) => new StageState(stage));
     this.mistakeCount = 0;

@@ -4,7 +4,7 @@
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
 - 更新日: 2026-07-20
-- 現在状態: 公式ランキング公開済み／可変エリアStage Schema v2承認済み／レビュー第1巡承認済み／84問完成バンク固定済み／ランダム練習接続承認待ち
+- 現在状態: 公式ランキング公開済み／84問完成バンク固定済み／ランダム練習接続実装済み／公式・ランキング隔離済み／公開後実機確認待ち
 
 ## 1. 運用ルール
 
@@ -363,7 +363,7 @@ scripts/variable-stage-review-round1.test.js
 
 ### 4-9. Slice 9：84問完成バンク
 
-状態: **completed / RUNTIME APPROVAL PENDING**
+状態: **completed / ACTIVE FOR PRACTICE ONLY**
 
 実装:
 
@@ -373,7 +373,8 @@ scripts/variable-stage-review-round1.test.js
 - 分布fixture固定
 - 距離1例外9組を固定
 - 決定論的再生成
-- runtime・ranking無効
+- runtimeは練習専用で有効
+- rankingは無効
 
 固定成果物:
 
@@ -383,6 +384,30 @@ scripts/generator-v2/variable-final-bank.js
 scripts/generate_variable_stage_bank_v2.js
 scripts/variable-stage-final-bank.test.js
 docs/VARIABLE_STAGE_FINAL_BANK.md
+```
+
+### 4-10. Slice 10：ランダム練習先行接続
+
+状態: **implemented / RELEASE DEVICE CHECK PENDING**
+
+実装:
+
+- 公式active bankと練習active bankを分離
+- 練習開始時だけ84問JSONを遅延取得
+- Stage Schema v2 runtime検証
+- 読込失敗時は旧30問へ自動fallback
+- feature gateによる即時ロールバック
+- 公式開始時の完成bank取得を禁止
+- 練習結果のランキング送信を禁止
+- 盤面へbank IDとfallback状態を記録
+
+固定成果物:
+
+```text
+src/practice-stage-bank.js
+scripts/practice-stage-bank.test.js
+scripts/practice-stage-bank.e2e.js
+docs/PRACTICE_STAGE_BANK_ROLLOUT.md
 ```
 
 ## 5. 現在のバンク契約
@@ -406,9 +431,12 @@ candidate-v2-variable-4-6-pool.status = candidate-pool-ready-for-review
 candidate-v2-variable-4-6-pool.runtimeEnabled = false
 candidate-v2-variable-4-6-pool.rankingEligible = false
 
-candidate-v2-variable-4-6-final.status = completed-bank-pending-runtime-approval
-candidate-v2-variable-4-6-final.runtimeEnabled = false
+candidate-v2-variable-4-6-final.status = active-practice-only
+candidate-v2-variable-4-6-final.runtimeEnabled = true
 candidate-v2-variable-4-6-final.rankingEligible = false
+
+ACTIVE_PRACTICE_STAGE_BANK_ID = candidate-v2-variable-4-6-final
+PRACTICE_STAGE_BANK_FEATURE.fallbackBankId = legacy-v1
 ```
 
 生成器作業によって次を変更してはいけない。
@@ -421,7 +449,7 @@ candidate-v2-variable-4-6-final.rankingEligible = false
 
 ## 6. 現在の人間判断ゲート
 
-84問完成バンクは固定済み。明示承認を得てランダム練習接続PRを作成するまでゲーム接続しない。
+ランダム練習接続は実装済み。マージ・公開後の実機確認が完了するまで、feature gateと旧30問fallbackを維持する。
 
 ### 決定1：可変サイズ契約の採用（resolved）
 
@@ -453,9 +481,9 @@ candidate-v2-variable-4-6-final.rankingEligible = false
 
 PR #18で採用84問・除外24問を承認済み。
 
-### 決定4：ランダム練習への接続
+### 決定4：ランダム練習への接続（resolved）
 
-推奨:
+採用内容:
 
 - 公式3問は現行のまま
 - ランダム練習だけ84問完成バンクへ切替
@@ -535,15 +563,17 @@ review/variable-stage-review.html
 - runtime・rankingは引き続き無効
 - `generated/variable-stage-bank-v2.json`へ固定済み
 
-### 7-6. 練習モード先行切替（pending）
+### 7-6. 練習モード先行切替（implemented / device check pending）
 
-人間承認後のみ:
+実装済み:
 
-- 可変サイズvalidatorをゲームへ接続
-- 練習用バンクを切替
+- 可変サイズvalidatorを練習loaderへ接続
+- 練習用バンクを84問へ切替
 - 公式3問は維持
 - ランキングは維持
-- 即時ロールバック可能にする
+- feature gateで即時ロールバック可能
+- 読込失敗時は旧30問へ自動fallback
+- 専用iPhone SE相当E2Eを追加
 
 ## 8. 公開・実機の継続確認
 
@@ -570,4 +600,4 @@ review/variable-stage-review.html
 - 候補バンクが独立検証済み
 - 練習モード切替が人間承認済み
 
-現時点では、ゲーム公開部分、可変4〜6マス契約、108問候補プール、レビュー第1巡、84問完成バンク固定まで完了しています。残工程は明示承認後のランダム練習先行切替と実機確認です。
+現時点では、ゲーム公開部分、84問完成バンク、ランダム練習先行接続、公式・ランキング隔離、fallbackとロールバック契約まで実装済みです。残工程はCodeberg Pages反映後のiPhone 17 Pro等による実機確認です。

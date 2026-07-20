@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Static and browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -65,3 +65,6 @@ jobs:
 
       - name: Run review tool iPhone SE E2E
         run: npm run e2e:review
+
+      - name: Run practice final bank iPhone SE E2E
+        run: npm run e2e:practice-bank

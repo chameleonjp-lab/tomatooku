@@ -238,15 +238,31 @@ review/decisions/variable-stage-review-round1.json
 
 ```text
 generated/variable-stage-bank-v2.json
-candidate-v2-variable-4-6-final.status = completed-bank-pending-runtime-approval
-candidate-v2-variable-4-6-final.runtimeEnabled = false
+candidate-v2-variable-4-6-final.status = active-practice-only
+candidate-v2-variable-4-6-final.runtimeEnabled = true
 candidate-v2-variable-4-6-final.rankingEligible = false
 ACTIVE_STAGE_BANK_ID = legacy-v1
+ACTIVE_PRACTICE_STAGE_BANK_ID = candidate-v2-variable-4-6-final
 ```
 
-完成バンクは問題内容として固定済みですが、ゲーム実行経路への接続は未承認です。
+### Slice 10：ランダム練習への先行接続
 
-現行30問、公式3問、ランダム練習には接続していません。
+84問完成バンクをランダム練習だけへ接続しました。
+
+- 公式3問は`T001 / T011 / T021`のまま
+- 公式開始時は完成バンクJSONを取得しない
+- 練習は84問から難易度1→2→3を出題
+- 練習結果はランキング対象外
+- JSON取得・schema検証失敗時は旧30問へ自動fallback
+- feature gateを無効化すると即時に旧30問へ戻せる
+
+```text
+PRACTICE_STAGE_BANK_FEATURE.enabled = true
+primary = candidate-v2-variable-4-6-final
+fallback = legacy-v1
+```
+
+接続実装と自動テストは完了しています。残る工程はCodeberg Pages反映後の実機確認です。
 
 詳細:
 
@@ -259,6 +275,7 @@ ACTIVE_STAGE_BANK_ID = legacy-v1
 - `docs/VARIABLE_STAGE_REVIEW_TOOL.md`
 - `docs/VARIABLE_STAGE_REVIEW_ROUND1.md`
 - `docs/VARIABLE_STAGE_FINAL_BANK.md`
+- `docs/PRACTICE_STAGE_BANK_ROLLOUT.md`
 
 ## 画面フロー
 
@@ -348,8 +365,10 @@ npm run test:variable-stage-contract      # 独立stage schema v2・bank契約
 npm run test:variable-stage-review        # レビュー画面・108問距離再計算契約
 npm run test:variable-stage-review-round1 # 採用84・除外24レビュー契約
 npm run test:variable-stage-final-bank    # 84問完成バンク・出典SHA・分布契約
+npm run test:practice-stage-bank          # 練習bank routing・fallback契約
 npm run e2e                              # 公開ゲームPlaywrightブラウザテスト
 npm run e2e:review                       # レビュー画面iPhone SE相当E2E
+npm run e2e:practice-bank                 # 公式隔離・練習84問・fallback E2E
 npm run serve                            # ローカルHTTPサーバー
 ```
 
@@ -375,6 +394,7 @@ src/
   accessibility.js
   game.js
   main.js
+  practice-stage-bank.js
   ranking-config.js
   ranking.js
   stage-bank-config.js
@@ -403,6 +423,8 @@ scripts/
   variable-stage-review.e2e.js
   variable-stage-review-round1.test.js
   variable-stage-final-bank.test.js
+  practice-stage-bank.test.js
+  practice-stage-bank.e2e.js
   generate_stages.js
   generate_stages_v2.js
   generate_stage_candidates_v2.js
@@ -430,6 +452,7 @@ docs/
   VARIABLE_STAGE_REVIEW_TOOL.md
   VARIABLE_STAGE_REVIEW_ROUND1.md
   VARIABLE_STAGE_FINAL_BANK.md
+  PRACTICE_STAGE_BANK_ROLLOUT.md
 ```
 
 ## セキュリティ

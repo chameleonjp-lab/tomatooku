@@ -3,7 +3,7 @@
 - 文書種別: 現行実装・残工程計画
 - 対象: `chameleonjp-lab/tomatooku`
 - 基準ブランチ: `main`
-- 更新日: 2026-07-20
+- 更新日: 2026-07-21
 - 現在状態: 公式ランキング公開済み／84問完成バンク固定済み／ランダム練習接続実装済み／公式・ランキング隔離済み／公開後実機確認待ち
 
 ## 1. 運用ルール
@@ -400,6 +400,10 @@ docs/VARIABLE_STAGE_FINAL_BANK.md
 - 公式開始時の完成bank取得を禁止
 - 練習結果のランキング送信を禁止
 - 盤面へbank IDとfallback状態を記録
+- feature gate無効化後もCIが成立する可変期待値
+- 8秒の取得時間切れと旧30問fallback
+- 一時fallbackを固定せず次回練習で再試行
+- 成功bankだけをページ内で再利用
 
 固定成果物:
 
@@ -574,6 +578,9 @@ review/variable-stage-review.html
 - feature gateで即時ロールバック可能
 - 読込失敗時は旧30問へ自動fallback
 - 専用iPhone SE相当E2Eを追加
+- feature gateの1行停止を静的・E2E契約へ反映
+- 読込停止を8秒で打ち切り旧30問へ復帰
+- 一時fallback後は次回練習開始時に再取得
 
 ## 8. 公開・実機の継続確認
 

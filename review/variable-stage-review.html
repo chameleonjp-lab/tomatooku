@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>トマトオク 可変盤面レビュー</title>
+  <link rel="stylesheet" href="./variable-stage-review.css">
+</head>
+<body>
+  <main id="review-app" class="review-app" aria-busy="true">
+    <header class="review-header">
+      <div>
+        <p class="eyebrow">開発用・ゲーム本体未接続</p>
+        <h1>可変盤面レビュー</h1>
+        <p class="lead">候補盤面と最近傍盤面を比較し、採用・除外・保留を記録します。判断内容はこの端末内だけに保存されます。</p>
+      </div>
+      <div id="load-state" class="load-state" role="status" aria-live="polite">候補プールを読み込み中</div>
+    </header>
+
+    <section class="summary-panel" aria-labelledby="summary-title">
+      <h2 id="summary-title">レビュー進捗</h2>
+      <div class="summary-grid">
+        <div><span id="summary-total">0</span><small>対象</small></div>
+        <div><span id="summary-reviewed">0</span><small>判断済み</small></div>
+        <div><span id="summary-keep">0</span><small>採用</small></div>
+        <div><span id="summary-reject">0</span><small>除外</small></div>
+        <div><span id="summary-hold">0</span><small>保留</small></div>
+      </div>
+      <progress id="review-progress" value="0" max="108">0 / 108</progress>
+    </section>
+
+    <details class="filter-panel" open>
+      <summary>表示条件</summary>
+      <div class="filter-grid">
+        <label>判断
+          <select id="filter-status">
+            <option value="all">すべて</option>
+            <option value="unreviewed">未判断</option>
+            <option value="keep">採用</option>
+            <option value="reject">除外</option>
+            <option value="hold">保留</option>
+          </select>
+        </label>
+        <label>最近傍距離
+          <select id="filter-distance">
+            <option value="all">すべて</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3+">3以上</option>
+          </select>
+        </label>
+        <label>難易度
+          <select id="filter-difficulty">
+            <option value="all">すべて</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+        <label>対称クラス
+          <select id="filter-class">
+            <option value="all">すべて</option>
+          </select>
+        </label>
+        <label>サイズ構成
+          <select id="filter-profile">
+            <option value="all">すべて</option>
+          </select>
+        </label>
+        <label>並び順
+          <select id="sort-order">
+            <option value="distance">距離が近い順</option>
+            <option value="difficulty">難易度順</option>
+            <option value="id">ID順</option>
+          </select>
+        </label>
+        <label class="search-label">ID検索
+          <input id="filter-search" type="search" inputmode="search" placeholder="STG-..." autocomplete="off">
+        </label>
+      </div>
+      <div class="filter-actions">
+        <button id="reset-filters" type="button">条件をリセット</button>
+        <button id="next-unreviewed" type="button">次の未判断へ</button>
+      </div>
+    </details>
+
+    <section class="navigator" aria-label="候補移動">
+      <button id="previous-stage" type="button" aria-label="前の候補">← 前へ</button>
+      <div>
+        <strong id="position-label">0 / 0</strong>
+        <span id="filtered-label">表示対象 0問</span>
+      </div>
+      <button id="next-stage" type="button" aria-label="次の候補">次へ →</button>
+    </section>
+
+    <section id="empty-state" class="empty-state" hidden>
+      <h2>条件に一致する候補がありません</h2>
+      <p>表示条件を変更してください。</p>
+    </section>
+
+    <section id="comparison" class="comparison" aria-labelledby="comparison-title" hidden>
+      <div class="comparison-heading">
+        <div>
+          <p class="eyebrow">最近傍比較</p>
+          <h2 id="comparison-title">候補盤面の比較</h2>
+        </div>
+        <label class="toggle-label"><input id="toggle-solution" type="checkbox"> 正解を表示</label>
+      </div>
+
+      <div class="board-pair">
+        <article class="stage-card" aria-labelledby="current-stage-title">
+          <header>
+            <div>
+              <span class="card-label">レビュー対象</span>
+              <h3 id="current-stage-title">-</h3>
+            </div>
+            <span id="current-decision" class="decision-chip">未判断</span>
+          </header>
+          <div id="current-board" class="review-board" role="img" aria-label="レビュー対象盤面"></div>
+          <dl id="current-metadata" class="metadata-list"></dl>
+        </article>
+
+        <article class="stage-card neighbor-card" aria-labelledby="neighbor-stage-title">
+          <header>
+            <div>
+              <span class="card-label">最近傍</span>
+              <h3 id="neighbor-stage-title">-</h3>
+            </div>
+            <span id="distance-chip" class="distance-chip">距離 -</span>
+          </header>
+          <div id="neighbor-board" class="review-board" role="img" aria-label="最近傍盤面"></div>
+          <dl id="neighbor-metadata" class="metadata-list"></dl>
+        </article>
+      </div>
+
+      <p id="difference-summary" class="difference-summary" aria-live="polite"></p>
+
+      <section class="decision-panel" aria-labelledby="decision-title">
+        <h2 id="decision-title">この候補の判断</h2>
+        <div class="decision-buttons" role="group" aria-label="レビュー判断">
+          <button type="button" data-decision="keep">採用</button>
+          <button type="button" data-decision="reject">除外</button>
+          <button type="button" data-decision="hold">保留</button>
+          <button id="clear-decision" type="button">未判断へ戻す</button>
+        </div>
+        <label>除外・保留理由
+          <select id="decision-reason">
+            <option value="">未選択</option>
+            <option value="near-duplicate">近似盤面</option>
+            <option value="visual-boundary">境界が見づらい</option>
+            <option value="difficulty-mismatch">自動難易度と体感が不一致</option>
+            <option value="too-easy">簡単すぎる</option>
+            <option value="too-hard">難しすぎる</option>
+            <option value="other">その他</option>
+          </select>
+        </label>
+        <label>メモ
+          <textarea id="decision-note" rows="3" maxlength="500" placeholder="判断根拠や実機で気になった点"></textarea>
+        </label>
+        <p id="save-state" class="save-state" role="status" aria-live="polite"></p>
+      </section>
+    </section>
+
+    <details class="transfer-panel">
+      <summary>レビュー結果の入出力</summary>
+      <p>JSONを書き出すと、別端末への移行やGitHubへ反映する判断資料として利用できます。</p>
+      <div class="transfer-actions">
+        <button id="export-review" type="button">JSONを書き出す</button>
+        <label class="file-button">JSONを読み込む
+          <input id="import-review" type="file" accept="application/json,.json">
+        </label>
+        <button id="clear-all-reviews" class="danger" type="button">全判断を消去</button>
+      </div>
+      <p id="transfer-state" role="status" aria-live="polite"></p>
+    </details>
+  </main>
+
+  <noscript>このレビュー画面にはJavaScriptが必要です。</noscript>
+  <script type="module" src="./variable-stage-review.js"></script>
+</body>
+</html>

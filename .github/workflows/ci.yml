@@ -57,8 +57,8 @@ jobs:
       - name: Verify completed variable-stage bank is reproducible
         run: git diff --exit-code -- generated/variable-stage-bank-v2.json
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run iPhone SE browser E2E
         run: npm run e2e
@@ -68,3 +68,9 @@ jobs:
 
       - name: Run practice final bank iPhone SE E2E
         run: npm run e2e:practice-bank
+
+      - name: Run iPhone SE WebKit E2E
+        run: npm run e2e:webkit
+
+      - name: Run practice final bank WebKit E2E
+        run: npm run e2e:practice-bank:webkit

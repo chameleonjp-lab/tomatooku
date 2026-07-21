@@ -126,8 +126,8 @@ GitHub Actionsで次を自動実行する。
 - 固定5マス成立性監査
 - 可変4〜6マス成立性監査
 - manifest再生成差分0
-- Chromium導入
-- iPhone SE相当Playwright E2E
+- Chromium・WebKit導入
+- iPhone SE相当Playwright E2E（Chromium・WebKit）
 
 ### 3-8. 現行文書の整合
 
@@ -617,6 +617,23 @@ docs/RELEASE_DEVICE_CHECK_v2.md
 scripts/release-device-check.test.js
 ```
 
+### 7-9. WebKit自動回帰検証（implemented / automated verification enabled）
+
+- `scripts/launch.js`の既定Chromium契約を維持
+- `PW_BROWSER=webkit`指定時だけPlaywright WebKitを起動
+- 公開ゲームの公式3問・ランキングmock・基本UIをChromiumとWebKitで検証
+- 練習84問、公式隔離、fallbackをChromiumとWebKitで検証
+- 未対応ブラウザ名を暗黙fallbackせず明示的に拒否
+- WebKit自動検証はSafari系差異の早期検出であり、iPhone・iPad実機確認の代用にはしない
+
+固定成果物:
+
+```text
+scripts/launch.js
+scripts/browser-launch.test.js
+.github/workflows/ci.yml
+```
+
 ## 8. 公開・実機の継続確認
 
 実施記録の正本:
@@ -632,7 +649,7 @@ docs/RELEASE_DEVICE_CHECK_v2.md
 - 実験場カード
 - 詳細ランキング表示
 - 本番RPCの初回・ベスト・プレイ回数
-- ChromiumによるiPhone SE相当E2E
+- Chromium・WebKitによるiPhone SE相当E2E
 
 公開後の人間確認待ち:
 

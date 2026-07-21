@@ -23,15 +23,17 @@
 
 - 5×5盤面
 - 5エリア
-- 現行ステージでは各エリア5マス
+- 公式3問と練習fallbackの`legacy-v1`は各エリア5マス
+- 練習primaryの84問完成バンクは各エリア4〜6マス
 - 各行・各列・各エリアに🍅1個
 - 🍅同士は上下左右・斜めで隣接禁止
-- 3ステージ
+- 1プレイ3ステージ
 
 ### モード
 
-- 公式3問: `T001 / T011 / T021`
-- ランダム練習: 現行30問から3問選出
+- 公式3問: `legacy-v1`の`T001 / T011 / T021`
+- ランダム練習primary: `candidate-v2-variable-4-6-final`の84問から難易度1→2→3
+- ランダム練習fallback: `legacy-v1`の既存30問
 - 練習結果はランキング未送信
 
 ### 補正タイム
@@ -126,6 +128,15 @@ GitHub Actionsで次を自動実行する。
 - manifest再生成差分0
 - Chromium導入
 - iPhone SE相当Playwright E2E
+
+### 3-8. 現行文書の整合
+
+状態: **implemented / PR review pending**
+
+- `docs/REQUIREMENTS_v2.md`を現行製品要件へ更新
+- `docs/SPEC_v2.md`をランキング公開・練習84問接続後の現行仕様へ更新
+- 本計画書の正式仕様と完了状態を更新
+- 文書とコードの主要契約をCIで照合
 
 ## 4. 生成器v2
 
@@ -308,7 +319,7 @@ docs/VARIABLE_STAGE_CANDIDATE_POOL.md
 
 ### 4-7. Slice 7：人間レビュー基盤
 
-状態: **completed / REVIEW EXECUTION PENDING**
+状態: **completed / REVIEW EXECUTION COMPLETED**
 
 実装:
 
@@ -335,7 +346,7 @@ scripts/variable-stage-review.e2e.js
 docs/VARIABLE_STAGE_REVIEW_TOOL.md
 ```
 
-レビュー基盤の実装完了は、108問の採否レビュー完了を意味しない。
+レビュー基盤の実装と108問の採否レビューは分離して実施した。採否レビューの完了結果はSlice 8に記録する。
 
 ### 4-8. Slice 8：レビュー第1巡
 
@@ -564,7 +575,8 @@ review/variable-stage-review.html
 - 未判断を自動採用しない
 - 採用84問未満なら生成・選別条件を再検討
 - 完成バンクを独立validatorへ再投入
-- runtime・rankingは引き続き無効
+- 完成バンクのruntimeはランダム練習だけで有効
+- rankingは引き続き無効
 - `generated/variable-stage-bank-v2.json`へ固定済み
 
 ### 7-6. 練習モード先行切替（implemented / device check pending）
@@ -582,16 +594,30 @@ review/variable-stage-review.html
 - 読込停止を8秒で打ち切り旧30問へ復帰
 - 一時fallback後は次回練習開始時に再取得
 
+### 7-7. 現行文書の整合（implemented / PR review pending）
+
+- ランキング未公開・旧30問primaryなどの古い記述を現行化
+- 完了済み事項と実機確認待ちを分離
+- 主要なコード契約と文書の一致を静的テストへ追加
+- ゲームロジック、UI、ランキング、Supabaseは変更しない
+
 ## 8. 公開・実機の継続確認
 
-- Codeberg Pages反映
+接続・自動確認済み:
+
 - 実験場カード
 - 詳細ランキング表示
-- iPhone 17 Pro実送信
+- 本番RPCの初回・ベスト・プレイ回数
+- ChromiumによるiPhone SE相当E2E
+
+公開後の人間確認待ち:
+
+- Codeberg Pagesへの最新`main`反映
+- iPhone 17 Pro実送信と練習84問
 - iPhone 11 Pro
 - iPad Pro縦横
 - 低速回線
-- 一時オフライン
+- 一時オフラインと次回練習の再試行
 - 共有キャンセル
 
 ## 9. 完成条件

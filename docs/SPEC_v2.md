@@ -1,9 +1,13 @@
 # トマトオク v2 技術仕様
 
+- 文書種別: 現行実装仕様
 - 対象: `chameleonjp-lab/tomatooku`
 - `game_slug`: `tomatoku`
 - 公開名・リポジトリ名: `tomatooku`
 - 標準公開先: `https://chameleonjp.codeberg.page/tomatooku/`
+- 基準ブランチ: `main`
+- 更新日: 2026-07-21
+- 現在状態: 公式ランキング公開済み／ランダム練習84問接続済み／公開後実機確認待ち
 
 ## 1. ゲーム概要
 
@@ -47,36 +51,50 @@ T021
 mode = "practice"
 ```
 
-難易度1・2・3から1問ずつ選ぶ。ステージIDと正解配置署名が重複しない有効な3問組を事前列挙し、その中から選ぶ。
+通常時は承認済み84問完成バンク `candidate-v2-variable-4-6-final`から、難易度1・2・3を1問ずつ選ぶ。ステージIDと正解配置署名が重複しない有効な3問組だけを利用する。
 
-ランキングへは送信しない。
+完成バンクは練習開始時に遅延取得し、取得とJSON読込を8秒で打ち切る。その後Stage Schema v2で検証し、取得の時間切れまたは検証失敗時は既存30問の`legacy-v1`へ自動fallbackする。一時的なfallback結果は固定せず、次の練習開始時に再取得する。完成バンクの取得成功とfeature gate無効時のfallbackだけは同じページ内で再利用する。
+
+ランダム練習の結果は常にランキングへ送信しない。
 
 ## 3. モジュール責務
 
 ```text
 index.html
-  画面構造、モード選択、結果内訳
+  画面構造、モード選択、結果内訳、公開導線
 
 src/main.js
-  状態遷移、DOM、入力、共有、ランキング連携
+  状態遷移、DOM、入力、共有、ランキング連携、練習バンク起動
 
 src/game.js
   盤面ルール、モード別問題選出、セッション、タイマー、補正タイム
 
 src/stages.js
-  検証済み30ステージ
+  公式3問と練習fallbackが利用する検証済み30ステージ
+
+src/stage-bank-config.js
+  公式・練習active bank、feature gate、bank catalog
+
+src/practice-stage-bank.js
+  84問完成バンクの遅延取得、検証、時間切れ、fallback、再試行
+
+src/variable-stage-contract.js
+  4〜6マス可変エリアのStage Schema v2独立validator
+
+generated/variable-stage-bank-v2.json
+  人間承認済み84問完成バンク
 
 src/ranking-config.js
   ブラウザ公開可能な接続設定と送信ゲート
 
 src/ranking.js
-  共有Supabase RPC、通信状態、二重送信防止
+  共有Supabase RPC、通信状態、play ID単位の二重送信防止
 
 src/tutorial.js
   4×4チュートリアル
 
-src/styles.css
-  モバイル優先UI
+src/styles.css / src/accessibility.css / src/accessibility.js
+  モバイル優先UIとアクセシビリティ補助
 ```
 
 ## 4. 状態遷移
@@ -115,6 +133,8 @@ GameSession {
   mode: "official" | "practice";
   playerName: string;
   stages: Stage[];
+  stageBankId: string;
+  stageBankFallback: boolean;
   index: number;
   states: StageState[];
   mistakeCount: number;
@@ -205,7 +225,7 @@ POST /rest/v1/rpc/submit_score
   "p_display_name": "表示名",
   "p_game_slug": "tomatoku",
   "p_score": 4835,
-  "p_client_version": "tomatooku-web-2.1.0-mode-score-v1"
+  "p_client_version": "tomatooku-web-2.2.0-ranking-live-v1"
 }
 ```
 
@@ -239,13 +259,15 @@ updated_at
 
 ## 10. 送信ゲート
 
-現在は`public.games`への登録と本番疎通が未完了のため、次で停止する。
+`public.games`登録、共有RPC疎通、確認用データ削除まで完了している。現行公開設定は次のとおり。
 
 ```js
-submissionsEnabled: false
+submissionsEnabled: true
 ```
 
-解除は公開準備工程で行う。コード実装完了だけで有効化しない。
+送信条件は§9をすべて満たす公式プレイに限定する。練習、設定不備、空のplay ID、不正な表示名・スコアは送信しない。
+
+緊急停止時は`src/ranking-config.js`の送信ゲートを`false`へ戻す。DB登録やランキング取得を残したまま、新規スコア送信だけを停止できる。
 
 ## 11. 通信状態
 
@@ -361,6 +383,11 @@ ranking Promise
 - 公式送信ゲート
 - 共通RPC本文
 - 同一play ID二重送信防止
+- 公式active bankと練習active bankの分離
+- 84問完成バンクpayload検証
+- feature gate有効・無効
+- HTTP・不正bank・通信例外・8秒時間切れfallback
+- 一時fallback後の再試行と成功bankの再利用
 
 E2E:
 
@@ -370,16 +397,30 @@ E2E:
 - 公式3問クリア
 - 補正タイム結果
 - ステージ別内訳
-- 練習開始
+- 練習84問の難易度1→2→3
+- 公式開始時の84問JSON取得禁止
+- 練習結果のランキング送信禁止
+- fallbackとfeature gate
 - 送信ゲート表示
 - 320px横スクロールなし
 
-## 20. 公開前の残作業
+## 20. 公開・検証状態
+
+自動確認・接続確認済み:
 
 - `public.games`登録
 - 本番RPC疎通
-- 送信ゲート有効化
+- 公式送信ゲート有効化
 - 実験場カード・詳細ランキング導線
-- Chromium / WebKit E2E
-- iPhone実機確認
-- 公開URL確認
+- ChromiumによるiPhone SE相当E2E
+- 公式と練習84問の隔離、fallback、feature gate E2E
+
+公開後に人間が確認する残作業:
+
+- Codeberg Pagesへ最新`main`が反映されていること
+- iPhone 17 Pro Safariで公式送信と練習84問
+- iPhone 11 Pro
+- iPad Pro 2018の縦・横
+- 低速回線、一時オフライン、復帰後の再試行
+- 共有キャンセル
+- 必要に応じたWebKit自動検証の追加

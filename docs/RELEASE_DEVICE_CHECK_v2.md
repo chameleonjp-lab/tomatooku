@@ -44,7 +44,7 @@
 | iPad Pro 2018 / Safari | 縦 | レイアウト、入力、モーダル、外部導線 | 未記入 |
 | iPad Pro 2018 / Safari | 横 | レイアウト、入力、モーダル、外部導線 | 未記入 |
 
-iPhone SE相当Chromium E2EはGitHub Actionsの自動検証であり、上表の実機合格の代用にはしない。
+iPhone SE相当Chromium / WebKit E2EはGitHub Actionsの自動検証であり、上表の実機合格の代用にはしない。
 
 ## 4. 実行方法
 

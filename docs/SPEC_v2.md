@@ -391,6 +391,7 @@ ranking Promise
 
 E2E:
 
+- Chromium・WebKitで同じ主要フローを実行
 - モードボタン
 - カウントダウン
 - 公式ID順序
@@ -412,8 +413,9 @@ E2E:
 - 本番RPC疎通
 - 公式送信ゲート有効化
 - 実験場カード・詳細ランキング導線
-- ChromiumによるiPhone SE相当E2E
+- Chromium・WebKitによるiPhone SE相当E2E
 - 公式と練習84問の隔離、fallback、feature gate E2E
+- WebKit自動検証は実機Safari確認の代用にしない
 
 公開後に人間が確認する残作業:
 
@@ -423,4 +425,3 @@ E2E:
 - iPad Pro 2018の縦・横
 - 低速回線、一時オフライン、復帰後の再試行
 - 共有キャンセル
-- 必要に応じたWebKit自動検証の追加

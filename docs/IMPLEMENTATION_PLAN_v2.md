@@ -131,7 +131,7 @@ GitHub Actionsで次を自動実行する。
 
 ### 3-8. 現行文書の整合
 
-状態: **implemented / PR review pending**
+状態: **completed**
 
 - `docs/REQUIREMENTS_v2.md`を現行製品要件へ更新
 - `docs/SPEC_v2.md`をランキング公開・練習84問接続後の現行仕様へ更新
@@ -594,14 +594,38 @@ review/variable-stage-review.html
 - 読込停止を8秒で打ち切り旧30問へ復帰
 - 一時fallback後は次回練習開始時に再取得
 
-### 7-7. 現行文書の整合（implemented / PR review pending）
+### 7-7. 現行文書の整合（completed）
 
 - ランキング未公開・旧30問primaryなどの古い記述を現行化
 - 完了済み事項と実機確認待ちを分離
 - 主要なコード契約と文書の一致を静的テストへ追加
 - ゲームロジック、UI、ランキング、Supabaseは変更しない
 
+### 7-8. 公開・実機確認台帳（implemented / human execution pending）
+
+- 同一公開候補版を特定するGitHub `main` SHAとCodeberg反映情報を記録
+- iPhone 17 Pro、iPhone 11 Pro、iPad Pro 2018縦横の確認欄を固定
+- 公式送信、練習84問、fallback、復帰、共有キャンセルを分離して記録
+- 30分継続、10回反復、バックグラウンド復帰10回、3回連続合格を明記
+- 公開停止条件、証跡、未適用項目の理由を同じ台帳へ残す
+- このPRではブラウザ操作・実機試験・Codeberg公開操作を行わない
+
+固定成果物:
+
+```text
+docs/RELEASE_DEVICE_CHECK_v2.md
+scripts/release-device-check.test.js
+```
+
 ## 8. 公開・実機の継続確認
+
+実施記録の正本:
+
+```text
+docs/RELEASE_DEVICE_CHECK_v2.md
+```
+
+台帳は作成済みだが、ブラウザ操作・実機確認・Codeberg反映確認は未実施である。
 
 接続・自動確認済み:
 

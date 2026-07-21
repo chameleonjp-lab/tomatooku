@@ -262,7 +262,7 @@ primary = candidate-v2-variable-4-6-final
 fallback = legacy-v1
 ```
 
-接続実装と自動テストは完了しています。残る工程はCodeberg Pages反映後の実機確認です。
+接続実装とChromium / WebKit自動テストは完了しています。残る工程はCodeberg Pages反映後の実機確認です。自動E2Eは実機確認の代用にはしません。
 
 詳細:
 
@@ -276,6 +276,7 @@ fallback = legacy-v1
 - `docs/VARIABLE_STAGE_REVIEW_ROUND1.md`
 - `docs/VARIABLE_STAGE_FINAL_BANK.md`
 - `docs/PRACTICE_STAGE_BANK_ROLLOUT.md`
+- `docs/RELEASE_DEVICE_CHECK_v2.md`
 
 ## 画面フロー
 
@@ -354,6 +355,7 @@ npm test                                 # 全静的・契約テスト
 npm run test:game                        # ゲームロジック
 npm run test:ranking                     # ランキング契約
 npm run test:launch                      # 本番送信ゲートと公開導線
+npm run test:browser-launch              # Chromium既定・WebKit選択・CI文書契約
 npm run test:accessibility               # UIアクセシビリティ契約
 npm run test:generator-v2                # v2生成器の全契約
 npm run test:generator-v2:foundation     # v2列挙・対称性・seed・ID契約
@@ -366,9 +368,11 @@ npm run test:variable-stage-review        # レビュー画面・108問距離再
 npm run test:variable-stage-review-round1 # 採用84・除外24レビュー契約
 npm run test:variable-stage-final-bank    # 84問完成バンク・出典SHA・分布契約
 npm run test:practice-stage-bank          # 練習bank routing・fallback契約
-npm run e2e                              # 公開ゲームPlaywrightブラウザテスト
+npm run e2e                              # 公開ゲームChromium E2E
+npm run e2e:webkit                       # 公開ゲームWebKit E2E
 npm run e2e:review                       # レビュー画面iPhone SE相当E2E
-npm run e2e:practice-bank                 # 公式隔離・練習84問・fallback E2E
+npm run e2e:practice-bank                 # 公式隔離・練習84問・fallback Chromium E2E
+npm run e2e:practice-bank:webkit          # 同じ練習契約のWebKit E2E
 npm run serve                            # ローカルHTTPサーバー
 ```
 
@@ -432,7 +436,10 @@ scripts/
   generate_variable_stage_bank_v2.js
   game.test.js
   ranking.test.js
+  launch.js
   launch-config.test.js
+  browser-launch.test.js
+  release-device-check.test.js
   e2e.test.js
 docs/
   REQUIREMENTS_v2.md
@@ -453,6 +460,7 @@ docs/
   VARIABLE_STAGE_REVIEW_ROUND1.md
   VARIABLE_STAGE_FINAL_BANK.md
   PRACTICE_STAGE_BANK_ROLLOUT.md
+  RELEASE_DEVICE_CHECK_v2.md
 ```
 
 ## セキュリティ

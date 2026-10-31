@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: tomatooku-github-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -49,6 +49,7 @@ jobs:
           path: _site
 
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     name: Publish verified static game
     environment:
       name: github-pages
@@ -58,6 +59,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Check this is still the production branch head
+        id: current
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ref = await github.rest.git.getRef({
+              ...context.repo, ref: 'heads/main'
+            });
+            core.setOutput('current', ref.data.object.sha === context.sha);
       - name: Deploy to GitHub Pages
         id: deployment
+        if: steps.current.outputs.current == 'true'
         uses: actions/deploy-pages@v4

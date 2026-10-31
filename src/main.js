@@ -74,12 +74,7 @@ let officialSubmissionPromise = null;
 const rankingRequestIds = new Map();
 
 function gameUrl() {
-  try {
-    const current = location.origin + location.pathname;
-    return current.startsWith("http") ? current : GAME_URL;
-  } catch (_) {
-    return GAME_URL;
-  }
+  return GAME_URL;
 }
 
 function modeLabel(mode) {
@@ -925,11 +920,16 @@ async function loadRankingInto(selector) {
   box.innerHTML = `<div class="rank-empty">読み込み中…</div>`;
   const requestId = (rankingRequestIds.get(selector) || 0) + 1;
   rankingRequestIds.set(selector, requestId);
-  const result = await fetchBestRanking(10);
+  const result = await fetchBestRanking(30);
   if (rankingRequestIds.get(selector) !== requestId) return;
 
   if (result.status === "error") {
-    box.innerHTML = `<div class="rank-empty">公式ランキングは公開準備中です</div>`;
+    box.innerHTML = `<div class="rank-empty">ランキングを読み込めませんでした。</div>`;
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.textContent = "再試行";
+    retry.onclick = () => loadRankingInto(selector);
+    box.append(retry);
     return;
   }
   if (result.status === "not_configured") {
@@ -966,20 +966,29 @@ function escapeHtml(value) {
 }
 
 async function shareText(text) {
+  const intent = new URL('https://x.com/intent/post');
+  intent.searchParams.set('text', text);
   try {
-    if (navigator.share) {
-      await navigator.share({ text, title: "トマトオク" });
-      return;
-    }
-  } catch (error) {
-    if (error && error.name === "AbortError") return;
-  }
-
+    const popup = window.open(intent.href, '_blank');
+    if (popup) { popup.opener = null; showToast('Xの投稿画面を開きました'); return; }
+  } catch (_) { /* Fall through to copying. */ }
   try {
     await navigator.clipboard.writeText(text);
     showToast("シェア文をコピーしました");
   } catch (_) {
-    showToast("シェア文をコピーできませんでした");
+    const fallback = document.createElement('textarea');
+    fallback.readOnly = true;
+    fallback.value = text;
+    fallback.setAttribute('aria-label', 'シェア文');
+    fallback.style.cssText = 'width:100%;min-height:6em;font-size:16px';
+    const old = document.getElementById('share-fallback');
+    old?.remove();
+    fallback.id = 'share-fallback';
+    const button = document.querySelector('#result-share-btn');
+    const host = button && button.getClientRects().length ? button.parentElement : document.querySelector('#home-share-btn').parentElement;
+    host.append(fallback);
+    fallback.focus(); fallback.select();
+    showToast("シェア文を選択してコピーできます");
   }
 }
 

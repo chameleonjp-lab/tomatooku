@@ -1,7 +1,7 @@
 /**
  * トマトオク 効果音
  *
- * 初回は無音。利用者が有効にした場合だけ、Web Audio APIで短い音を作る。
+ * 初回は音あり。保存済みの消音は維持し、操作後にWeb Audio APIで短い音を作る。
  * 音源ファイルを持たないため、追加通信や外部素材は発生しない。
  */
 
@@ -17,9 +17,9 @@ function audioContextConstructor() {
 
 function loadSoundSetting() {
   try {
-    return globalThis.localStorage?.getItem(SOUND_STORAGE_KEY) === "true";
+    return globalThis.localStorage?.getItem(SOUND_STORAGE_KEY) !== "false";
   } catch (_) {
-    return false;
+    return true;
   }
 }
 

@@ -155,12 +155,12 @@ async function main() {
   });
   const page = await context.newPage();
   await page.addInitScript(() => {
-    Object.defineProperty(navigator, "share", {
-      configurable: true,
-      value: async (data) => {
-        window.__lastShareData = data;
-      },
-    });
+    window.open = (value) => {
+      const intent = new URL(value);
+      if (intent.origin !== "https://x.com" || intent.pathname !== "/intent/post") throw new Error("Unexpected share URL");
+      window.__lastShareData = { text: intent.searchParams.get("text") };
+      return { opener: null };
+    };
   });
   let rpcRequests = 0;
   let competitionRequests = 0;
@@ -174,7 +174,7 @@ async function main() {
       body.p_game_slug === "tomatoku_competition_v1",
       "ランキング取得は新世代slugだけを使う"
     );
-    ok(body.p_limit === 10, "結果ランキングは上位10名を取得");
+    ok(body.p_limit === 30, "結果ランキングは上位30名を取得");
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -261,25 +261,25 @@ async function main() {
     "320pxで横スクロールなし"
   );
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false" &&
-      (await page.textContent("#sound-toggle-label")).trim() === "なし",
-    "効果音は初回なし"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true" &&
+      (await page.textContent("#sound-toggle-label")).trim() === "あり",
+    "効果音は初回あり"
   );
   await page.click("#sound-toggle");
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true" &&
-      (await page.textContent("#sound-toggle-label")).trim() === "あり",
-    "効果音を任意でありに変更"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false" &&
+      (await page.textContent("#sound-toggle-label")).trim() === "なし",
+    "効果音を任意でなしに変更"
   );
   ok(
     (await page.evaluate(() => localStorage.getItem("tomatoku.soundEnabled"))) ===
-      "true",
+      "false",
     "効果音の選択を端末へ保存"
   );
   await page.click("#sound-toggle");
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false",
-    "効果音をなしへ戻せる"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true",
+    "効果音をありへ戻せる"
   );
 
   await page.click("#howto-btn");
@@ -581,8 +581,8 @@ async function main() {
   );
   ok(await page.isVisible("#result-ranking"), "結果画面下部にランキングを表示");
   ok(
-    (await page.locator("#result-ranking .rank-row").count()) <= 10,
-    "結果ランキングは上位10名まで"
+    (await page.locator("#result-ranking .rank-row").count()) <= 30,
+    "結果ランキングは上位30名まで"
   );
   ok(await page.isVisible("#result-detail-ranking-link"), "詳細ランキングを表示");
   ok(submitRequests === 1, "公式1プレイの送信リクエスト1件");
@@ -608,7 +608,7 @@ async function main() {
   );
   ok(!resultShareText.includes("実時間"), "公式結果のシェア文に実時間を含めない");
   ok(
-    resultShareLines[2] === `http://localhost:${PORT}/`,
+    resultShareLines[2] === "https://chameleonjp-lab.github.io/tomatooku/",
     "公式結果のシェア文末尾にゲームURL"
   );
 

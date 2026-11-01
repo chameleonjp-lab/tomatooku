@@ -27,6 +27,8 @@ import {
 import { playTutorial, stopTutorial } from "./tutorial.js";
 import { createRandomStageBankLoader } from "./practice-stage-bank.js";
 import {
+  getSoundVolume,
+  setSoundVolume,
   isSoundEnabled,
   isSoundSupported,
   playCorrectSound,
@@ -178,7 +180,11 @@ function syncSoundControl() {
       : "この端末では効果音を利用できません"
   );
   label.textContent = supported ? (enabled ? "あり" : "なし") : "非対応";
-  icon.textContent = enabled ? "🔊" : "🔇";
+  icon.textContent = enabled && getSoundVolume() > 0 ? "🔊" : "🔇";
+  const volume = $("#sound-volume");
+  if (volume) { volume.value = String(Math.round(getSoundVolume() * 100)); volume.disabled = !supported; }
+  const output = $("#sound-volume-value");
+  if (output) output.textContent = `${Math.round(getSoundVolume() * 100)}%`;
 }
 
 function setHomePreparing(preparing, message = "問題を準備しています…") {
@@ -217,6 +223,11 @@ function initHome() {
   const input = $("#player-name");
   input.value = loadPlayerName();
   syncSoundControl();
+
+  $("#sound-volume").addEventListener("input", (event) => {
+    setSoundVolume(Number(event.target.value) / 100);
+    syncSoundControl();
+  });
 
   $("#sound-toggle").addEventListener("click", () => {
     const enabled = setSoundEnabled(!isSoundEnabled());

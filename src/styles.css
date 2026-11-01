@@ -1063,3 +1063,7 @@ details.rules summary {
 }
 
 #home-share-btn, #result-share-btn { background: #000; color: #fff; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+
+/* Keep the volume control touchable in short/landscape home screens. */
+.sound-volume-setting { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; width: 100%; }
+.sound-volume-setting input { min-height: 44px; min-width: 0; flex: 1 1 140px; }

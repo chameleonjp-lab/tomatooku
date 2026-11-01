@@ -282,6 +282,20 @@ async function main() {
     "効果音をありへ戻せる"
   );
 
+  ok(await page.inputValue("#sound-volume") === "100", "初回音量は旧基準と同じ100%");
+  await page.locator("#sound-volume").focus();
+  await page.locator("#sound-volume").press("Home");
+  ok(await page.evaluate(() => localStorage.getItem("tomatoku.soundVolume")) === "0", "音量0を保存");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.inputValue("#sound-volume") === "0", "再読込後も音量0");
+  ok((await page.textContent("#sound-volume-value")).trim() === "0%", "表示値も音量0");
+  await page.click("#sound-toggle");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.getAttribute("#sound-toggle", "aria-checked") === "false", "保存OFFを再読込で保持");
+  await page.locator("#sound-volume").evaluate((input) => { input.value = "50"; input.dispatchEvent(new Event("input", { bubbles: true })); });
+  ok(await page.getAttribute("#sound-toggle", "aria-checked") === "false", "slider変更だけではONにしない");
+  await page.click("#sound-toggle");
+
   await page.click("#howto-btn");
   await page.waitForSelector("#howto-modal.open");
   ok(

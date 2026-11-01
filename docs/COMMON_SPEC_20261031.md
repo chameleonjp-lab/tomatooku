@@ -70,7 +70,9 @@
 
 ## 適用順・公開後確認・切戻し
 
-**設定が必要**: Settings → Pages → Build and deployment → Source を `GitHub Actions` に変更する。現在は `main` の branch配信（legacy）。ユーザーのマージ前には変更しない。マージ後のworkflow検証成功と同じSHAを確認して設定を切替え、workflow_dispatchでmainを再実行。旧branch配信との二重公開を防ぐ。設定変更をこの作業で実施したとは報告しない。
+**マージ前の必須条件（未確認のため保留）**: 管理者が Settings → Pages → Build and deployment → Source = `GitHub Actions`（APIの`build_type=workflow`）を読み戻し確認する。以前の調査はmainのbranch配信（legacy）だったが、2026-11-02 JSTの再調査では接続ツールがPages設定読取に未対応（400）で、現在値は未確認。legacyのまま先にマージすると別の旧配信経路が検証を迂回し得るため、**確認できるまでマージしない**。必要な設定変更は権限のある本人・管理者だけが行い、既存Source/公開commit/環境制限を控え、承認やブランチ保護を解除しない。現在の公開を保持できる切替手順を確認できない場合も停止する。このPRは設定を自動変更せず、コード変更だけで旧配信リスクを解消済みとはしない。
+
+設定確認後、ユーザーがmainへマージする。公開workflowは既存CIを同じcommitで再利用し、静的・契約・feasibility・生成物再現性・Chromium/WebKitをすべて通過してからbuild/artifact/deployへ進む。失敗・skip・cancel時は配備しない。main以外の手動実行も配備しない。包装前と配備直前にSourceと最新main SHAを読取検査し、読取失敗/legacy/不明/古いSHAは停止する。これはマージ前の管理者確認の代わりにはならない。マージ後はActionsのcommitとartifact、正式URLを照合し、失敗時は既存成功版を維持する。
 
 1. PR差分とCIを確認し、ユーザーが `main` へマージする。直接push/自動マージはしない。
 2. マージコミットの検証/ビルド/公開が成功したことと、公開URLの共有ラベル・ランキング詳細導線・今回の変更を確認する。PR段階の成功を本番公開済みとは扱わない。

@@ -446,9 +446,24 @@ async function main() {
 
   await page.fill("#player-name", "IME確認");
   const beforeImeRequests = competitionRequests;
-  await page.dispatchEvent("#player-name", "keydown", {key:"Enter",code:"Enter",keyCode:229,which:229,isComposing:false,bubbles:true});
-  ok(competitionRequests === beforeImeRequests && await page.isVisible("#screen-home"), "Safari IME終端Enterで開始しない");
+  const imeDiagnostic = await page.locator("#player-name").evaluate(input => {
+    const event = new KeyboardEvent("keydown", {key:"Enter",code:"Enter",keyCode:229,which:229,isComposing:false,bubbles:true,cancelable:true});
+    const constructedKeyCode = event.keyCode;
+    // WebKit may ignore this deprecated constructor option. Model the actual
+    // Safari IME guard value explicitly; this is not a real-device IME test.
+    Object.defineProperty(event,"keyCode",{get:()=>229});
+    Object.defineProperty(event,"which",{get:()=>229});
+    input.dispatchEvent(event);
+    return {constructedKeyCode,deliveredKeyCode:event.keyCode,isComposing:event.isComposing,inputDisabled:input.disabled,value:input.value,busy:document.querySelector("#home-card").getAttribute("aria-busy")};
+  });
+  console.log("IME event diagnostic", JSON.stringify(imeDiagnostic));
+  ok(imeDiagnostic.deliveredKeyCode===229 && imeDiagnostic.isComposing===false, "IME終端イベント229を実handlerへ渡す");
+  ok(!imeDiagnostic.inputDisabled && imeDiagnostic.busy==="false", "IME終端で準備状態にしない");
+  if(imeDiagnostic.inputDisabled || imeDiagnostic.busy!=="false") throw new Error("IME unexpectedly prepared a play: "+JSON.stringify(imeDiagnostic));
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  ok(competitionRequests === beforeImeRequests && await page.isVisible("#screen-home") && await page.locator("#player-name").isEnabled() && await page.locator("#start-official-btn").isEnabled() && await page.locator("#home-card").getAttribute("aria-busy")==="false", "Safari IME終端Enterで開始しない");
   await page.fill("#player-name", "");
+  ok(await page.inputValue("#player-name")==="", "名前必須検査の入力を実際に空欄へ戻す");
   await page.click("#start-official-btn");
   ok((await page.textContent("#name-error")).length > 0, "名前必須");
   const beforeErrorRefreshRequests = competitionRequests;

@@ -166,6 +166,8 @@ async function main() {
   let rpcRequests = 0;
   let competitionRequests = 0;
   let submitRequests = 0;
+  let rankingHold = null;
+  let rankingHttpFailure = false;
 
   await page.route("**/rest/v1/rpc/**", async (route) => {
     rpcRequests++;
@@ -176,8 +178,9 @@ async function main() {
       "ランキング取得は新世代slugだけを使う"
     );
     ok(body.p_limit === 30, "結果ランキングは上位30名を取得");
+    if (rankingHold) await rankingHold;
     await route.fulfill({
-      status: 200,
+      status: rankingHttpFailure ? 503 : 200,
       contentType: "application/json",
       body: "[]",
     });
@@ -683,9 +686,31 @@ async function main() {
     "練習データ属性"
   );
 
-  await page.evaluate(() => {
-    window.confirm = () => true;
-  });
+  const beforePracticeSubmissions = submitRequests;
+  const beforePracticeCompetition = competitionRequests;
+  rankingHttpFailure = true;
+  let releasePracticeRanking;
+  rankingHold = new Promise(resolve => { releasePracticeRanking = resolve; });
+  for (let stageIndex=0; stageIndex<3; stageIndex++) {
+    await solveCurrentStage(page);
+    if (stageIndex<2) await page.waitForFunction(next => document.querySelector("#hud-stage")?.textContent===next+"/3" && document.querySelector("#screen-game")?.classList.contains("active") && document.querySelector("#board .cell") && !document.querySelector("#board .cell").disabled,stageIndex+2,{timeout:6000});
+  }
+  await page.waitForSelector("#screen-result.active");
+  await page.waitForFunction(() => document.querySelector("#result-ranking")?.textContent.includes("読み込み中"));
+  ok(await page.isVisible("#result-detail-ranking-link"), "練習結果も公式ランキング詳細へ移動できる");
+  ok((await page.getAttribute("#result-detail-ranking-link","href")).endsWith("ranking.html?game=tomatoku_competition_v1"), "練習の閲覧先は既存公式詳細slug");
+  rankingHold = null; releasePracticeRanking();
+  await page.waitForSelector("#result-ranking button");
+  ok((await page.textContent("#result-ranking")).includes("読み込めません"), "練習結果でも取得失敗を表示");
+  rankingHttpFailure = false;
+  await page.click("#result-ranking button");
+  await page.waitForFunction(() => document.querySelector("#result-ranking")?.textContent.includes("まだランキングがありません"));
+  ok((await page.textContent("#submit-state")).includes("ランキング対象外"), "練習を公式登録扱いにしない");
+  ok(submitRequests===beforePracticeSubmissions && competitionRequests===beforePracticeCompetition, "閲覧/失敗/再試行で練習結果を送信しない");
+  await page.click("#home-btn");
+  await page.waitForSelector("#screen-home.active");
+  await page.click("#start-practice-btn"); await waitForPlaying(page);
+  await page.evaluate(() => { window.confirm = () => true; });
   await page.click("#quit-btn");
   await page.waitForSelector("#screen-home.active");
   ok(await page.isVisible("#screen-home"), "練習からホームへ戻れる");

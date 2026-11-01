@@ -1,3 +1,4 @@
+import { t } from "./locale-runtime.js";
 /**
  * トマトオク UIアクセシビリティ補助。
  *
@@ -99,7 +100,7 @@ function cellPosition(board, cell) {
 
 function inferMistakeReason(board, cell) {
   const position = cellPosition(board, cell);
-  if (!position) return "そのマスには置けません。";
+  if (!position) return t("そのマスには置けません。");
 
   const { row, col, cells } = position;
   const filled = cells
@@ -112,15 +113,15 @@ function inferMistakeReason(board, cell) {
     .filter(({ candidate }) => candidate.getAttribute("aria-pressed") === "true");
 
   if (filled.some((item) => item.row === row)) {
-    return "同じ行には、🍅を1個だけ置けます。";
+    return t("同じ行には、🍅を1個だけ置けます。");
   }
   if (filled.some((item) => item.col === col)) {
-    return "同じ列には、🍅を1個だけ置けます。";
+    return t("同じ列には、🍅を1個だけ置けます。");
   }
 
   const area = [...cell.classList].find((name) => name.startsWith("area-"));
   if (area && filled.some((item) => item.area === area)) {
-    return "同じエリアには、🍅を1個だけ置けます。";
+    return t("同じエリアには、🍅を1個だけ置けます。");
   }
 
   if (
@@ -130,14 +131,14 @@ function inferMistakeReason(board, cell) {
         Math.abs(item.col - col) <= 1
     )
   ) {
-    return "🍅同士は、上下左右や斜めで隣り合えません。";
+    return t("🍅同士は、上下左右や斜めで隣り合えません。");
   }
 
   if (filled.length >= 5) {
-    return "🍅は盤面に5個までです。";
+    return t("🍅は盤面に5個までです。");
   }
 
-  return "ルールに合わないため、そのマスには置けません。";
+  return t("ルールに合わないため、そのマスには置けません。");
 }
 
 function announceGameStatus(message, tone = "info") {
@@ -194,9 +195,9 @@ function initBoardAnnouncements() {
       }
 
       const placed = cell.getAttribute("aria-pressed") === "true";
-      const label = cell.getAttribute("aria-label") || "選択したマス";
+      const label = cell.getAttribute("aria-label") || t("選択したマス");
       announceGameStatus(
-        placed ? `${label}に🍅を置きました。` : `${label}の🍅を取り除きました。`
+        placed ? t("{label}に🍅を置きました。",{label}) : t("{label}の🍅を取り除きました。",{label})
       );
     });
   });
@@ -204,7 +205,7 @@ function initBoardAnnouncements() {
   const screenObserver = new MutationObserver(() => {
     const gameScreen = document.querySelector("#screen-game");
     if (gameScreen?.classList.contains("active")) {
-      announceGameStatus("マスを選んで🍅を置いてください。");
+      announceGameStatus(t("マスを選んで🍅を置いてください。"));
     }
   });
 
@@ -219,10 +220,8 @@ function initBoardAnnouncements() {
 
 function initExternalLinkLabels() {
   document.querySelectorAll('a[target="_blank"]').forEach((link) => {
-    const label = link.getAttribute("aria-label") || link.textContent.trim();
-    if (!label.includes("新しいタブ")) {
-      link.setAttribute("aria-label", `${label}（新しいタブで開きます）`);
-    }
+    const label = link.textContent.trim();
+    link.setAttribute("aria-label", t("{label}（新しいタブで開きます）", {label}));
   });
 }
 
@@ -248,6 +247,7 @@ function init() {
   initBoardKeyboard();
   initBoardAnnouncements();
   initExternalLinkLabels();
+  document.addEventListener("tomatoku:languagechange", initExternalLinkLabels);
   initTutorialProgress();
 }
 

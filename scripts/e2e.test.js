@@ -148,6 +148,7 @@ async function main() {
   const server = await startServer();
   const browser = await launchBrowser();
   const context = await browser.newContext({
+    locale: "ja-JP",
     viewport: { width: 320, height: 568 },
     deviceScaleFactor: 2,
     isMobile: true,
@@ -296,6 +297,22 @@ async function main() {
   ok(await page.getAttribute("#sound-toggle", "aria-checked") === "false", "slider変更だけではONにしない");
   await page.click("#sound-toggle");
 
+  const beforeLanguageRequests = competitionRequests;
+  for (const id of ['ja','en','es','pt-BR','zh-Hans','fr','de','ko','ru','it','zh-Hant','id','tr','vi','th']) {
+    await page.selectOption("#language-select", id);
+    ok(await page.getAttribute("html","lang") === id, "表示言語 " + id);
+    ok(await page.evaluate(() => localStorage.getItem("tomatoku.language.v1")) === id, "言語保存 " + id);
+    ok((await page.textContent("#start-official-btn")).trim().length > 0, "開始本文 " + id);
+    ok(await page.$eval("#language-select",element=>element.getBoundingClientRect().height>=44), "言語選択のタップ領域 " + id);
+    ok(await page.$eval("#start-official-btn",element=>element.scrollWidth<=element.clientWidth+1), "長い開始文の横欠けなし " + id);
+  }
+  ok(competitionRequests === beforeLanguageRequests, "言語変更でプレイ発行しない");
+  await page.selectOption("#language-select", "en");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.getAttribute("html","lang") === "en", "保存選択はブラウザjaより優先");
+  ok((await page.textContent("#howto-btn")).trim() === "How to play", "英語本文");
+  await page.selectOption("#language-select", "ja");
+
   await page.click("#howto-btn");
   await page.waitForSelector("#howto-modal.open");
   ok(
@@ -424,8 +441,22 @@ async function main() {
     () => !document.querySelector("#tutorial-modal").classList.contains("open")
   );
 
+  await page.fill("#player-name", "IME確認");
+  const beforeImeRequests = competitionRequests;
+  await page.dispatchEvent("#player-name", "keydown", {key:"Enter",code:"Enter",keyCode:229,which:229,isComposing:false,bubbles:true});
+  ok(competitionRequests === beforeImeRequests && await page.isVisible("#screen-home"), "Safari IME終端Enterで開始しない");
+  await page.fill("#player-name", "");
   await page.click("#start-official-btn");
   ok((await page.textContent("#name-error")).length > 0, "名前必須");
+  const beforeErrorRefreshRequests = competitionRequests;
+  await page.fill("#player-name", "草稿 Draft");
+  await page.selectOption("#language-select", "en");
+  ok((await page.textContent("#name-error")).trim() === "Please enter a player name", "既存エラーも英語へ再描画");
+  ok(await page.inputValue("#player-name") === "草稿 Draft", "言語変更で名前草稿を変えない");
+  ok(competitionRequests === beforeErrorRefreshRequests, "エラー翻訳でプレイを発行しない");
+  await page.selectOption("#language-select", "ja");
+  ok((await page.textContent("#name-error")).trim() === "プレイヤー名を入力してください", "エラーの原因を保って日本語へ戻す");
+
 
   await page.fill("#player-name", "\u200B");
   await page.click("#start-official-btn");
@@ -470,6 +501,12 @@ async function main() {
   );
   ok((await page.textContent("#countdown-mode")).includes("公式"), "公式表示");
   ok(!(await page.isVisible("#screen-game")), "カウントダウン中は盤面非表示");
+  const beforeForbiddenSwitch = competitionRequests;
+  ok(await page.isDisabled("#language-select"), "進行中の言語選択は無効");
+  await page.locator("#language-select").evaluate(select => {select.value="en";select.dispatchEvent(new Event("change",{bubbles:true}));});
+  ok(await page.getAttribute("html","lang") === "ja", "進行中の変更要求は保留");
+  ok(competitionRequests === beforeForbiddenSwitch, "変更要求で問題/送信を再発行しない");
+
 
   await page.waitForFunction(
     () => document.querySelector("#countdown-value")?.textContent.trim() === "スタート"
@@ -501,6 +538,14 @@ async function main() {
   await fastFirst.tap();
   await page.waitForTimeout(80);
   await fastSecond.tap();
+  ok(await page.evaluate(() => {
+    const board=document.querySelector("#board"), cell=board.firstElementChild;
+    const before=board.innerHTML, time=document.querySelector("#hud-time").textContent;
+    const select=document.querySelector("#language-select");
+    select.value="fr"; select.dispatchEvent(new Event("change",{bubbles:true}));
+    return board.firstElementChild===cell && board.innerHTML===before && document.querySelector("#hud-time").textContent===time && document.documentElement.lang==="ja";
+  }), "プレイ途中の言語要求で配置/盤面/時間をリセットしない");
+
   ok(
     await page.evaluate(
       ([firstCol, secondCol]) => {

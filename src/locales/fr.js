@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Seulement 1 🍅 dans <b>chaque zone (de même couleur)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Les tomates ne doivent pas se toucher <b>horizontalement, verticalement ou en diagonale</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 secondes</b> pour chaque appui incorrect",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 secondes</b> pour chaque indice"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 secondes</b> pour chaque indice",
+  "端末に保存した結果": "Résultats sur cet appareil",
+  "保存した結果: {time}秒": "Résultat enregistré : {time} s",
+  "この端末に保存済み": "Enregistré sur cet appareil",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Le stockage n’a pas pu être vérifié. Fermer cette page risque de perdre le résultat.",
+  "受領を確認できません。結果は保持しています。": "Réception non confirmée. Le résultat est conservé.",
+  "同じ結果を再送": "Renvoyer ce résultat",
+  "別の送信が進行中です。少し待って再試行してください。": "Un autre envoi est en cours. Patientez puis réessayez.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Certains résultats sont illisibles. Ils sont conservés sans être écrasés.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "Le délai expire 30 minutes après le début. Les envois tardifs peuvent être refusés. Le résultat sera conservé.",
+  "記録を受け付けました": "Résultat reçu",
+  "誤タップ{mistakes} / ヒント{hints}": "Erreurs {mistakes} / Indices {hints}"
 };

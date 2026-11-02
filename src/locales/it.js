@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Solo 1 🍅 in <b>ogni area (dello stesso colore)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "I pomodori non possono toccarsi <b>in orizzontale, verticale o diagonale</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 secondi</b> per ogni tocco errato",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 secondi</b> per ogni aiuto"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 secondi</b> per ogni aiuto",
+  "端末に保存した結果": "Risultati su questo dispositivo",
+  "保存した結果: {time}秒": "Risultato salvato: {time} s",
+  "この端末に保存済み": "Salvato su questo dispositivo",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Impossibile verificare il salvataggio. Chiudendo questa pagina il risultato potrebbe andare perso.",
+  "受領を確認できません。結果は保持しています。": "Ricezione non confermata. Il risultato viene conservato.",
+  "同じ結果を再送": "Invia di nuovo questo risultato",
+  "別の送信が進行中です。少し待って再試行してください。": "Un altro invio è in corso. Attendi e riprova.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Alcuni risultati non sono leggibili. Vengono conservati senza sovrascriverli.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "Il termine scade 30 minuti dopo l’inizio. Gli invii in ritardo potrebbero essere rifiutati. Il risultato verrà conservato.",
+  "記録を受け付けました": "Risultato ricevuto",
+  "誤タップ{mistakes} / ヒント{hints}": "Errori {mistakes} / Suggerimenti {hints}"
 };

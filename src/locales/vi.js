@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Chỉ 1 🍅 trong <b>mỗi vùng (cùng màu)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Các quả cà chua không được sát nhau <b>theo chiều ngang, dọc hoặc chéo</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 giây</b> cho mỗi lần chạm sai",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 giây</b> cho mỗi lần dùng gợi ý"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 giây</b> cho mỗi lần dùng gợi ý",
+  "端末に保存した結果": "Kết quả trên thiết bị này",
+  "保存した結果: {time}秒": "Kết quả đã lưu: {time} giây",
+  "この端末に保存済み": "Đã lưu trên thiết bị này",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Không thể xác nhận bộ nhớ. Đóng trang này có thể làm mất kết quả.",
+  "受領を確認できません。結果は保持しています。": "Chưa xác nhận đã nhận. Kết quả vẫn được giữ.",
+  "同じ結果を再送": "Gửi lại kết quả này",
+  "別の送信が進行中です。少し待って再試行してください。": "Đang có lần gửi khác. Hãy đợi rồi thử lại.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Không thể đọc một số kết quả. Chúng được giữ lại, không ghi đè.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "Hạn nhận kết thúc 30 phút sau khi bắt đầu. Yêu cầu gửi chậm có thể bị từ chối. Kết quả vẫn được giữ.",
+  "記録を受け付けました": "Đã nhận kết quả",
+  "誤タップ{mistakes} / ヒント{hints}": "Lỗi {mistakes} / Gợi ý {hints}"
 };

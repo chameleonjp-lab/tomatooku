@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "<b>Her bölgede (aynı renk)</b> yalnızca 1 🍅",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Domatesler <b>yatay, dikey veya çapraz</b> olarak birbirine değemez",
   "誤タップ1回につき<b>+3秒</b>": "Her hatalı dokunuş için <b>+3 saniye</b>",
-  "ヒント1回につき<b>+30秒</b>": "Her ipucu için <b>+30 saniye</b>"
+  "ヒント1回につき<b>+30秒</b>": "Her ipucu için <b>+30 saniye</b>",
+  "端末に保存した結果": "Bu cihazdaki sonuçlar",
+  "保存した結果: {time}秒": "Kaydedilen sonuç: {time} sn",
+  "この端末に保存済み": "Bu cihaza kaydedildi",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Cihaza kayıt doğrulanamadı. Sayfayı kapatırsanız sonuç kaybolabilir.",
+  "受領を確認できません。結果は保持しています。": "Alındığı doğrulanmadı. Sonuç korunuyor.",
+  "同じ結果を再送": "Bu sonucu yeniden gönder",
+  "別の送信が進行中です。少し待って再試行してください。": "Başka bir gönderim sürüyor. Biraz bekleyip yeniden deneyin.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Bazı sonuçlar okunamıyor. Üzerlerine yazılmadan korunuyor.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "Gönderim süresi başlangıçtan 30 dakika sonra dolar. Geciken gönderimler reddedilebilir. Sonuç korunacaktır.",
+  "記録を受け付けました": "Sonuç alındı",
+  "誤タップ{mistakes} / ヒント{hints}": "Hatalar {mistakes} / İpuçları {hints}"
 };

@@ -55,3 +55,14 @@ assert.equal(requests.every(r=>r.body.p_limit===30 && r.body.p_game_slug==='toma
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/id="result-detail-ranking-link"[\s\S]*?ranking\.html\?game=tomatoku_competition_v1/);
 console.log('✓ Actual practice result handler: read-only top30, exact slug, loading/empty/failure/retry and escaped names');
+// A successful manual finish retry must refresh top30, not leave the failed attempt's list.
+context.session={...session,playId:'official-test',mode:'official'};
+context.officialSubmissionPromise=Promise.resolve({status:'error',accepted:false,persisted:true});
+context.resultOutbox={attempt:async()=>({result:{status:'ok',accepted:true,score:100},persisted:true})};
+context.sendSavedSnapshot=()=>{};context.refreshRecovery=()=>{};
+context.goToResult('official-test');await new Promise(resolve=>setImmediate(resolve));
+const beforeRetry=requests.length;
+const retryButton=get('#submit-state').children.findLast(child=>typeof child.onclick==='function');
+assert.ok(retryButton,'failed official result exposes retry');
+await retryButton.onclick();await new Promise(resolve=>setImmediate(resolve));
+assert.equal(requests.length,beforeRetry+1,'successful finish retry reloads latest top30');

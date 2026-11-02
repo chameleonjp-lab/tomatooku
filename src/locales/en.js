@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Only 1 🍅 in <b>each area (color-coded)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Tomatoes must not touch <b>horizontally, vertically or diagonally</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 seconds</b> for each incorrect tap",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 seconds</b> for each hint"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 seconds</b> for each hint",
+  "端末に保存した結果": "Results on this device",
+  "保存した結果: {time}秒": "Saved result: {time} s",
+  "この端末に保存済み": "Saved on this device",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Device storage could not be verified. Closing this page may lose the result.",
+  "受領を確認できません。結果は保持しています。": "Receipt is unconfirmed. The result is retained.",
+  "同じ結果を再送": "Resend this result",
+  "別の送信が進行中です。少し待って再試行してください。": "Another submission is in progress. Wait a moment and retry.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Some saved results cannot be read. They are kept without overwriting.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "The submission window ends 30 minutes after starting. Delayed requests may be rejected. Your result will be retained.",
+  "記録を受け付けました": "Result received",
+  "誤タップ{mistakes} / ヒント{hints}": "Mistakes {mistakes} / Hints {hints}"
 };

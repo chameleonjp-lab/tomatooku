@@ -30,6 +30,11 @@
   <body>
     <div class="app">
       <section id="screen-home" class="screen active" aria-labelledby="home-title">
+        <details class="card result-recovery">
+          <summary>端末に保存した結果</summary>
+          <p>受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。</p>
+          <div id="saved-results" aria-live="polite"></div>
+        </details>
         <div class="brand">
           <div class="logo" aria-hidden="true">🍅</div>
           <h1 id="home-title">トマトオク</h1>

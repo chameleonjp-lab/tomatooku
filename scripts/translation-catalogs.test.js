@@ -19,7 +19,7 @@ for(const {id} of SUPPORTED_LANGUAGES){
 assert.equal(ja['Xでシェア'],'Xでシェア');
 assert.equal(ja['ランキング'],'ランキング');
 console.log('✓ All 15 catalogs have complete keys, preserved parameters and restricted markup');
-for(const filename of ['src/main.js','src/tutorial.js','src/accessibility.js']){
+for(const filename of ['src/main.js','src/tutorial.js','src/accessibility.js','src/result-recovery.js']){
  const source=fs.readFileSync(filename,'utf8');
  for(const match of source.matchAll(/\bt\(("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g)){
   const quoted=match[1];

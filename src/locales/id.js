@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Hanya 1 🍅 dalam <b>setiap area (berwarna sama)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Tomat tidak boleh bersentuhan <b>secara mendatar, tegak, atau diagonal</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 detik</b> untuk setiap ketukan salah",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 detik</b> untuk setiap petunjuk"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 detik</b> untuk setiap petunjuk",
+  "端末に保存した結果": "Hasil di perangkat ini",
+  "保存した結果: {time}秒": "Hasil tersimpan: {time} dtk",
+  "この端末に保存済み": "Tersimpan di perangkat ini",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "Penyimpanan tidak dapat dikonfirmasi. Menutup halaman ini dapat menghilangkan hasil.",
+  "受領を確認できません。結果は保持しています。": "Penerimaan belum dikonfirmasi. Hasil tetap disimpan.",
+  "同じ結果を再送": "Kirim ulang hasil ini",
+  "別の送信が進行中です。少し待って再試行してください。": "Pengiriman lain sedang berlangsung. Tunggu lalu coba lagi.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Beberapa hasil tidak dapat dibaca. Hasil tetap disimpan tanpa ditimpa.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "Batas pengiriman berakhir 30 menit setelah mulai. Pengiriman terlambat mungkin ditolak. Hasil tetap disimpan.",
+  "記録を受け付けました": "Hasil diterima",
+  "誤タップ{mistakes} / ヒント{hints}": "Kesalahan {mistakes} / Petunjuk {hints}"
 };

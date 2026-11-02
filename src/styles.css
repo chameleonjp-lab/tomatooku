@@ -1082,3 +1082,8 @@ details.rules summary {
   padding: 8px 12px;
 }
 #language-select:focus-visible { outline: 3px solid #f6d365; outline-offset: 2px; }
+
+.result-recovery { margin-block: 1rem; overflow-wrap: anywhere; }
+.result-recovery summary { cursor: pointer; padding: .5rem; font-weight: 700; }
+.saved-result { border-top: 1px solid currentColor; padding-block: .75rem; }
+.saved-result .btn { white-space: normal; min-height: 44px; max-width: 100%; }

@@ -162,5 +162,16 @@ export default {
   "<b>各エリア（色分け）</b>に🍅は1個だけ": "Solo 1 🍅 en <b>cada zona (del mismo color)</b>",
   "🍅同士は<b>上下左右ななめ</b>で隣り合えない": "Los tomates no pueden tocarse <b>horizontal, vertical ni diagonalmente</b>",
   "誤タップ1回につき<b>+3秒</b>": "<b>+3 segundos</b> por cada toque erróneo",
-  "ヒント1回につき<b>+30秒</b>": "<b>+30 segundos</b> por cada pista"
+  "ヒント1回につき<b>+30秒</b>": "<b>+30 segundos</b> por cada pista",
+  "端末に保存した結果": "Resultados en este dispositivo",
+  "保存した結果: {time}秒": "Resultado guardado: {time} s",
+  "この端末に保存済み": "Guardado en este dispositivo",
+  "端末保存を確認できません。この画面を閉じると失う可能性があります。": "No se pudo verificar el almacenamiento. Al cerrar esta página podría perderse el resultado.",
+  "受領を確認できません。結果は保持しています。": "Recepción sin confirmar. El resultado se conserva.",
+  "同じ結果を再送": "Reenviar este resultado",
+  "別の送信が進行中です。少し待って再試行してください。": "Hay otro envío en curso. Espera y vuelve a intentarlo.",
+  "読み取れない保存結果があります。上書きせず保留しています。": "Algunos resultados no se pueden leer. Se conservan sin sobrescribir.",
+  "受付期限は開始から30分です。通信が遅れると受け付けられない場合があります。結果は残ります。": "El plazo termina 30 minutos después de empezar. Los envíos tardíos pueden rechazarse. El resultado se conserva.",
+  "記録を受け付けました": "Resultado recibido",
+  "誤タップ{mistakes} / ヒント{hints}": "Errores {mistakes} / Pistas {hints}"
 };

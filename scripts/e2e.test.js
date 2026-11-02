@@ -155,6 +155,9 @@ async function main() {
     hasTouch: true,
   });
   const page = await context.newPage();
+  // No request may escape to production; more specific routes below are local mocks.
+  await page.route("**/*", route => new URL(route.request().url()).hostname === "localhost"
+    ? route.continue() : route.abort());
   await page.addInitScript(() => {
     window.open = (value) => {
       const intent = new URL(value);
@@ -166,6 +169,8 @@ async function main() {
   let rpcRequests = 0;
   let competitionRequests = 0;
   let submitRequests = 0;
+  let finishFailure = false;
+  const finishBodies = [];
   let rankingHold = null;
   let rankingHttpFailure = false;
 
@@ -199,6 +204,8 @@ async function main() {
       responseBody = { accepted: true, stageIds: officialStageIds };
     } else if (body.action === "finish") {
       submitRequests++;
+      finishBodies.push(JSON.stringify(body));
+      if(finishFailure){await route.fulfill({status:503,contentType:"application/json",body:"{}"});return;}
       const verified = validateTranscript({
         stages: officialStages,
         transcript: body.transcript,
@@ -730,6 +737,42 @@ async function main() {
   await page.click("#quit-btn");
   await page.waitForSelector("#screen-home.active");
   ok(await page.isVisible("#screen-home"), "練習からホームへ戻れる");
+  // Real final-clear -> failed finish -> page reload -> explicit same-body retry.
+  finishFailure=true;
+  await page.click("#start-official-btn"); await waitForPlaying(page);
+  for(let stageIndex=0;stageIndex<3;stageIndex++){
+    await solveCurrentStage(page);
+    if(stageIndex<2) await page.waitForFunction(next => document.querySelector("#hud-stage")?.textContent===next+"/3" && document.querySelector("#screen-game")?.classList.contains("active") && document.querySelector("#board .cell") && !document.querySelector("#board .cell").disabled,stageIndex+2,{timeout:6000});
+  }
+  await page.waitForSelector("#screen-result.active");
+  await page.waitForFunction(()=>document.querySelector("#submit-state")?.textContent.includes("この端末に保存済み") && document.querySelector("#submit-state button"));
+  const failedBody=finishBodies.at(-1), failedCount=submitRequests;
+  const failedScore=await page.textContent("#result-score");
+  await page.reload({waitUntil:"networkidle"});
+  await page.locator(".result-recovery summary").click();
+  await page.waitForSelector("#saved-results button");
+  ok(submitRequests===failedCount,"再読込復元は自動再送しない");
+  ok((await page.textContent("#saved-results")).includes(failedScore),"確定結果を再読込後も復元");
+  await page.fill("#player-name","別の現在名");
+  finishFailure=false;
+  await page.locator("#saved-results button").click();
+  await page.waitForFunction(()=>document.querySelectorAll("#saved-results button").length===0);
+  ok(submitRequests===failedCount+1,"復元結果を本人操作で1回再送");
+  ok(finishBodies.at(-1)===failedBody,"名前変更/再読込後も同token/同記録/同elapsed");
+  await page.reload({waitUntil:"networkidle"});
+  await page.locator(".result-recovery summary").click();
+  await page.waitForSelector("#saved-results article");
+  ok((await page.locator("#saved-results button").count())===0,"受領保存後は再読込しても再送操作なし");
+  ok(submitRequests===failedCount+1,"受領済み結果は再送されない");
+  const isolated=await page.evaluate(async()=>{
+    const {createIndexedResultStorage,createResultOutbox}=await import('./src/result-outbox.js');
+    const storage=createIndexedResultStorage();
+    // Preserve rather than overwrite malformed entries; no score request is involved.
+    await storage.mutate('mock-corrupt',()=>({id:'mock-corrupt',schema:999}));
+    const q=createResultOutbox({storage});const report=await q.list();
+    return report.quarantined===1 && (await storage.all()).some(r=>r.id==='mock-corrupt'&&r.schema===999);
+  });
+  ok(isolated,"実IndexedDBの破損レコードを無削除で隔離");
   ok(pageErrors.length === 0, `未捕捉エラーなし (${pageErrors.join("; ")})`);
 
   await browser.close();

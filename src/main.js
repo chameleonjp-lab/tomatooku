@@ -1,3 +1,5 @@
+import { createResultOutbox } from "./result-outbox.js";
+import { createRecoveryView } from "./result-recovery.js";
 import { createLocalizedMessage } from "./i18n-dom.js";
 import { t, getLanguage, setLanguage, applyTranslations } from "./locale-runtime.js";
 import { SUPPORTED_LANGUAGES } from "./i18n.js";
@@ -18,6 +20,7 @@ import {
 } from "./game.js";
 import {
   submitScore,
+  CLIENT_VERSION,
   prepareOfficialRun,
   beginOfficialRun,
   fetchBestRanking,
@@ -78,6 +81,31 @@ let startInFlight = false;
 let startRequestId = 0;
 let officialSubmissionPromise = null;
 const rankingRequestIds = new Map();
+const resultOutbox = createResultOutbox();
+const completedSnapshots = new Map();
+let recoveryView;
+function refreshRecovery() { return recoveryView?.refresh(); }
+function sendSavedSnapshot(snapshot) {
+  // A queued old clientVersion must not silently acquire the current contract.
+  if (snapshot.clientVersion !== CLIENT_VERSION) return Promise.resolve({status:"error",accepted:false});
+  return submitScore(snapshot);
+}
+async function submitCompletedSession(completedSession) {
+  let snapshot=completedSnapshots.get(completedSession.playId);
+  if (!snapshot) {
+    const b=completedSession.resultBreakdown(monotonicNow());
+    snapshot={playId:completedSession.playId,mode:completedSession.mode,runToken:completedSession.runToken,
+      clientVersion:CLIENT_VERSION,transcript:completedSession.transcript(),elapsedMs:Math.floor(b.elapsedMs),completedAt:Date.now(),
+      display:{score:b.adjustedTimeCentiseconds,elapsedMs:Math.floor(b.elapsedMs),mistakes:b.mistakeCount,hints:b.hintCount,
+        stageTimesMs:b.stageTimesMs,stageMistakeCounts:b.stageMistakeCounts,stageHintCounts:b.stageHintCounts}};
+    completedSnapshots.set(completedSession.playId,snapshot);
+  }
+  const stored=await resultOutbox.save(snapshot);
+  if(stored.error)return {status:"error",accepted:false,message:"ランキングへ送信できない結果です",persisted:false,retryable:false};
+  const answer=await resultOutbox.attempt(snapshot.playId,sendSavedSnapshot);
+  void refreshRecovery();
+  return {...answer.result,persisted:answer.persisted};
+}
 
 function gameUrl() {
   return GAME_URL;
@@ -237,6 +265,7 @@ function initHome() {
   languages.addEventListener("change", () => {
     if (phase !== PHASE.HOME || startInFlight) { languages.value = getLanguage(); return; }
     setLanguage(languages.value);
+    void refreshRecovery();
     applyTranslations();
     nameError.refresh();
     syncSoundControl();
@@ -749,13 +778,7 @@ function onStageClear(clearedAt = monotonicNow()) {
   session.finishStage(clearedAt);
   const lastStage = session.isLastStage();
   if (lastStage && session.mode === GAME_MODE.OFFICIAL) {
-    officialSubmissionPromise = submitScore({
-      playId,
-      mode: session.mode,
-      runToken: session.runToken,
-      transcript: session.transcript(),
-      elapsedMs: Math.floor(session.accumulatedMs),
-    });
+    officialSubmissionPromise = submitCompletedSession(session);
   }
   playCorrectSound();
   setPhase(PHASE.STAGE_TRANSITION);
@@ -874,13 +897,9 @@ function goToResult(playId) {
       : submitScore({ playId, mode: completedSession.mode });
   Promise.resolve(
     submissionPromise ||
-      submitScore({
-        playId,
-        mode: completedSession.mode,
-        runToken: completedSession.runToken,
-        transcript: completedSession.transcript(),
-        elapsedMs: Math.floor(breakdown.elapsedMs),
-      })
+      (completedSession.mode === GAME_MODE.OFFICIAL
+        ? submitCompletedSession(completedSession)
+        : submitScore({playId,mode:completedSession.mode}))
   ).then((result) => {
     if (
       !isActivePlay(playId) ||
@@ -905,6 +924,26 @@ function goToResult(playId) {
       return;
     }
     applySubmitResult(stateElement, result);
+    if (completedSession.mode === GAME_MODE.OFFICIAL) {
+      const storageState = document.createElement("p");
+      storageState.textContent=t(result.persisted ? "この端末に保存済み" : "端末保存を確認できません。この画面を閉じると失う可能性があります。");
+      stateElement.append(storageState);
+      if(result.status!=="ok" && result.retryable!==false){
+        const retry=document.createElement("button");retry.type="button";retry.className="btn secondary";retry.textContent=t("同じ結果を再送");
+        retry.onclick=async()=>{
+          retry.disabled=true;
+          const answer=await resultOutbox.attempt(playId,sendSavedSnapshot);
+          if(isActivePlay(playId)&&session===completedSession&&phase===PHASE.RESULT){
+            applySubmitResult(stateElement,answer.result);
+            if(answer.result.status==="ok" && isRankingEnabled())void loadRankingInto("#result-ranking");
+            const saved=document.createElement("p");saved.textContent=t(answer.persisted ? "この端末に保存済み" : "端末保存を確認できません。この画面を閉じると失う可能性があります。");stateElement.append(saved);
+            if(answer.result.status!=="ok"){retry.disabled=false;stateElement.append(retry);}
+          }
+          void refreshRecovery();
+        };
+        stateElement.append(retry);
+      }
+    }
     if (isRankingEnabled()) loadRankingInto("#result-ranking");
   });
 
@@ -931,7 +970,7 @@ function applySubmitResult(stateElement, result) {
 
   stateElement.className =
     result.status === "error" ? "submit-state error" : "submit-state skipped";
-  stateElement.textContent = result.message ? t(result.message) : "";
+  stateElement.textContent = result.message ? t(result.message) : t(result.status === "busy" ? "別の送信が進行中です。少し待って再試行してください。" : "受領を確認できません。結果は保持しています。");
 }
 
 async function loadRankingInto(selector) {
@@ -1070,6 +1109,8 @@ function boot() {
     initHome();
     initGameControls();
     initResultControls();
+    recoveryView=createRecoveryView({host:$("#saved-results"),outbox:resultOutbox,submit:sendSavedSnapshot,t,formatTime:formatCentiseconds});
+    void refreshRecovery();
     setHomePreparing(false);
     setPhase(PHASE.HOME);
   } catch (error) {

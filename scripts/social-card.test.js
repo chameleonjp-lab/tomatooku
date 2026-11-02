@@ -1,0 +1,19 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+import {SUPPORTED_LANGUAGES,createI18n} from '../src/i18n.js';import {TRANSLATIONS} from '../src/translations.js';
+import {formatCentiseconds} from '../src/game.js';
+import {GITHUB_PAGES_PUBLIC_ENTRIES} from './prepare-github-pages.js';
+const html=fs.readFileSync('index.html','utf8'),main=fs.readFileSync('src/main.js','utf8');
+test('official 1200x630 social image metadata and exact stage entry',()=>{for(const key of ['og:image','twitter:image']){const tag=html.match(new RegExp(`<meta[^>]+(?:property|name)="${key}"[^>]*>`))?.[0];assert.ok(tag?.includes('https://chameleonjp-lab.github.io/tomatooku/assets/social-card.png'));}assert.ok(GITHUB_PAGES_PUBLIC_ENTRIES.includes('assets/social-card.png'));const png=fs.readFileSync('assets/social-card.png');assert.equal(png.readUInt32BE(16),1200);assert.equal(png.readUInt32BE(20),630);});
+test('real X share function has exactly the official two tags for every locale',async()=>{
+ const fn=main.slice(main.indexOf('async function shareText(text)'),main.indexOf('\nfunction showToast(',main.indexOf('async function shareText(text)')));
+ for(const language of SUPPORTED_LANGUAGES){const {t}=createI18n({storage:null,navigatorObject:{language:language.locale},catalogs:TRANSLATIONS});for(const message of [t('「トマトオク」5×5に🍅を置くパズル!\n{url}',{url:'https://chameleonjp-lab.github.io/tomatooku/'}),t('トマトオク {mode}で補正タイム{time}秒！\n誤タップ{mistakes} / ヒント{hints}\n{url}',{mode:t('ランダム練習'),time:'12.34',mistakes:0,hints:0,url:'https://chameleonjp-lab.github.io/tomatooku/'})]){let intent;const context={URL,window:{open:value=>{intent=new URL(value);return {opener:null};}},showToast(){},t};vm.runInNewContext(fn+';globalThis.callShare=shareText;',context);await context.callShare(message);const text=intent.searchParams.get('text');assert.equal(intent.origin,'https://x.com');assert.equal(intent.pathname,'/intent/post');assert.equal(text,message+'\n#トマトオク #ゲーム制作');assert.equal((text.match(/#/g)||[]).length,2);const body=text.replace(/https:\/\/\S+/g,'x'.repeat(23));assert.ok([...body].reduce((n,c)=>n+(c.codePointAt(0)>0x10ff?2:1),0)<=280);}}
+});
+test('real share function null/throw popup preserves clipboard fallback with the two tags',async()=>{const fn=main.slice(main.indexOf('async function shareText(text)'),main.indexOf('\nfunction showToast(',main.indexOf('async function shareText(text)')));for(const behavior of ['null','throw']){let copied=null,calls=0;const context={URL,window:{open:()=>{calls++;if(behavior==='throw')throw new Error('local popup blocked');return null;}},navigator:{clipboard:{writeText:async value=>{copied=value;}}},showToast(){},t:value=>value};vm.runInNewContext(fn+';globalThis.callShare=shareText;',context);await context.callShare('Local fixture');assert.equal(calls,1);assert.equal(copied,'Local fixture\n#トマトオク #ゲーム制作');}});
+
+test('official maximum-value envelope stays within 280 weighted characters in all 15 locales',()=>{
+ // Validator limits: 1,800,000ms and 300 actions. Use an intentionally larger
+ // envelope of 300 mistakes PLUS 300 hints, rather than pretend both are reachable.
+ const validator=fs.readFileSync('supabase/functions/tomatoku-competition/validator.js','utf8');
+ assert.match(validator,/MAX_ACTIONS = 300/);assert.match(validator,/MAX_ELAPSED_MS = 30 \* 60 \* 1000/);
+ for(const language of SUPPORTED_LANGUAGES){const {t}=createI18n({storage:null,navigatorObject:{language:language.locale},catalogs:TRANSLATIONS});const text=t('トマトオク {mode}で補正タイム{time}秒！\n誤タップ{mistakes} / ヒント{hints}\n{url}',{mode:t('公式モード'),time:formatCentiseconds(180000+300*300+300*3000),mistakes:300,hints:300,url:'https://chameleonjp-lab.github.io/tomatooku/'})+'\n#トマトオク #ゲーム制作';const weight=[...text.replace(/https:\/\/\S+/g,'x'.repeat(23))].reduce((n,c)=>n+(c.codePointAt(0)>0x10ff?2:1),0);assert(weight<=280,language.id+': '+weight);}
+});

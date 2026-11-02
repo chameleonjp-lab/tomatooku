@@ -7,6 +7,7 @@ const DEFAULT_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
 
 export const GITHUB_PAGES_PUBLIC_ENTRIES = Object.freeze([
   "index.html",
+  "assets/social-card.png",
   "src",
   "generated/variable-stage-bank-v2.json",
   "generated/balanced-official-draw-v1.json",
@@ -156,7 +157,9 @@ export function prepareGitHubPages({
     }
   }
 
-  fs.rmSync(resolvedOutput, { recursive: true, force: true });
+  if (fs.existsSync(resolvedOutput)) {
+    throw new Error("output already exists; preserved without modification");
+  }
   fs.mkdirSync(resolvedOutput, { recursive: true });
   for (const entry of GITHUB_PAGES_PUBLIC_ENTRIES) {
     copyEntry(path.join(resolvedRoot, entry), path.join(resolvedOutput, entry));

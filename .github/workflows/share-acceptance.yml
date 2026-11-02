@@ -1,0 +1,36 @@
+name: Isolated share acceptance
+on:
+  push:
+    branches: [work/tomatooku-share-thumbnail-20261102]
+permissions:
+  contents: read
+concurrency:
+  group: tomato-share-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  share:
+    if: github.ref == 'refs/heads/work/tomatooku-share-thumbnail-20261102'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Local unit and staging checks (fresh outputs retained)
+        run: npm test && node --test scripts/social-card.test.js scripts/share-visibility.test.mjs scripts/share-fixture.test.cjs
+      - name: Capture original practice board with all external requests denied
+        env:
+          TOMATO_SHARE_OUTPUT: test-artifacts/tomato-share-${{ github.run_id }}-${{ github.run_attempt }}
+        run: node scripts/share-capture.cjs && node scripts/share-acceptance.cjs
+      - name: Preserve anonymous board images and numeric receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tomato-share-${{ github.sha }}-${{ github.run_attempt }}
+          path: test-artifacts/tomato-share-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: error
+          retention-days: 7

@@ -680,7 +680,8 @@ async function main() {
     () => window.__lastShareData.text
   );
   const resultShareLines = resultShareText.split("\n");
-  ok(resultShareLines.length === 3, "公式結果のシェア文は3行");
+  ok(resultShareLines.length === 4, "公式結果のシェア文は本文3行と正式タグ1行");
+  ok(resultShareLines[3] === "#トマトオク #ゲーム制作", "公式結果は正式な2タグだけを最後に表示");
   ok(
     /^トマトオク 公式モードで補正タイム\d+\.\d{2}秒！$/.test(
       resultShareLines[0]
@@ -694,7 +695,7 @@ async function main() {
   ok(!resultShareText.includes("実時間"), "公式結果のシェア文に実時間を含めない");
   ok(
     resultShareLines[2] === "https://chameleonjp-lab.github.io/tomatooku/",
-    "公式結果のシェア文末尾にゲームURL"
+    "公式結果のシェア文3行目にゲームURL"
   );
 
   await page.click("#home-btn");

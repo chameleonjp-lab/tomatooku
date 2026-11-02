@@ -1036,6 +1036,7 @@ function escapeHtml(value) {
 }
 
 async function shareText(text) {
+  text += "\n#トマトオク #ゲーム制作";
   const intent = new URL('https://x.com/intent/post');
   intent.searchParams.set('text', text);
   try {

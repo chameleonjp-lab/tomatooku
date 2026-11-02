@@ -12,19 +12,20 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUTPUT = path.join(
   ROOT,
-  `.github-pages-site-test-${process.pid}`
+  `.github-pages-site-test-${process.pid}-${Date.now()}`
 );
 const read = (relativePath) =>
   fs.readFileSync(path.join(ROOT, relativePath), "utf8");
 
 assert.deepEqual(GITHUB_PAGES_PUBLIC_ENTRIES, [
   "index.html",
+  "assets/social-card.png",
   "src",
   "generated/variable-stage-bank-v2.json",
   "generated/balanced-official-draw-v1.json",
 ]);
 
-try {
+{
   const files = prepareGitHubPages({ rootDir: ROOT, outputDir: OUTPUT });
   assert.ok(files.includes("index.html"));
   assert.ok(files.includes("src/main.js"));
@@ -75,9 +76,11 @@ try {
   assert.equal(randomBank.stageCount, 84);
   assert.equal(randomBank.runtimeEnabled, true);
   assert.equal(randomBank.rankingEligible, true);
-} finally {
-  fs.rmSync(OUTPUT, { recursive: true, force: true });
+  const before = fs.readFileSync(path.join(OUTPUT, "index.html"));
+  assert.throws(() => prepareGitHubPages({ rootDir: ROOT, outputDir: OUTPUT }), /output already exists/);
+  assert.deepEqual(fs.readFileSync(path.join(OUTPUT, "index.html")), before);
 }
+// Keep the uniquely named staging evidence; never recursively remove it.
 
 const workflow = read(".github/workflows/deploy-github-pages.yml");
 assert.match(workflow, /branches:\s*\n\s+- main/);

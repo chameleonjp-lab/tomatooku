@@ -1,0 +1,13 @@
+# Fixed social thumbnail and share acceptance
+
+The 1200×630 `assets/social-card.png` uses the real 380×380 practice board captured by WebKit from main `86f4c8febdb577c59062688306a2f56d2cc9cf62`, using ordinary practice start and two legal taps. The 5×5 board, five colored regions and two tomatoes are not redrawn or altered; only proportional scaling, a title and factual three-stage introduction were composed around it. This is a fixed introduction thumbnail, not a player's result card. No player name, score or run token is present.
+
+Initial material CI: 41437599392, head `2b585559a687a3532813d5c123a2a9371e09f6d0`. Both Chromium and WebKit completed the same real practice rendering with zero unknown external requests. The PNGs and final composed image were visually inspected. Final PNG SHA-256: `831f4dd2295923a82b35b4a07468f7b0ab723813fad8f225d2eeba5cd8bbbfbf`.
+
+OG and Twitter metadata use the existing canonical GitHub Pages URL. Staging includes this image only, not the whole evidence directory. A pre-existing staging directory is now preserved and rejected; uniquely named staging test outputs are retained, with no recursive deletion.
+
+The ordinary X buttons remain the only sharing controls. Their existing popup/clipboard/manual-text fallback is preserved, with exactly `#トマトオク #ゲーム制作` added. All 15 locales have home/result text and weighted 280-character checks. Official-result text also uses a conservative upper envelope derived from the existing validator (30 minutes and 300 actions); the deliberately larger combined mistake/hint envelope is not claimed to be a reachable play.
+
+Isolated browser acceptance uses only a fake HTTPS origin served from fixed local files. All other traffic is fulfilled locally or aborted; service workers and WebSockets are blocked. The only fake backend endpoint is an empty ranking read. No official start, finish, score write or real backend request is allowed. Each locale completes three practice stages through normal cell taps. Both engines check portrait/landscape home/result X controls for translated text, black/white styling, 44px size, ancestor visibility/clipping, center hit, actual touch-to-intent, and unchanged result contents. Screenshots and numeric receipts are retained. This does not claim physical iPhone/Safari acceptance or a resolution of user-specific hidden-button symptoms.
+
+The new branch workflow is non-deploying. Existing main publishing triggers, permissions, game rules, score/identity contracts, official deadlines and durable result recovery are unchanged. A passing branch check is not production delivery; publication follows only the owner's merge and the existing release workflow.

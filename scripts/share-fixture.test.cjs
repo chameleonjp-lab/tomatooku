@@ -1,0 +1,3 @@
+const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const {installRankingFixture}=require('./share-fixture.cjs');
+test('actual inline defaults cannot replace isolated fake backend config',()=>{const window={};installRankingFixture(window,'https://tomato-backend.invalid');const html=fs.readFileSync('index.html','utf8');const inline=html.match(/<script>\s*(window\.TOMATOKU_CONFIG[\s\S]*?)<\/script>/)[1];vm.runInNewContext(inline,{window});assert.equal(window.TOMATOKU_CONFIG.supabaseUrl,'https://tomato-backend.invalid');assert.equal(window.TOMATOKU_CONFIG.submissionsEnabled,false);assert.equal(window.TOMATOKU_CONFIG.bestRankingRpc,'get_best_score_ranking');});

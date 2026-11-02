@@ -21,7 +21,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - name: Local unit and staging checks (fresh outputs retained)
-        run: npm test && node --test scripts/social-card.test.js scripts/share-visibility.test.mjs
+        run: npm test && node --test scripts/social-card.test.js scripts/share-visibility.test.mjs scripts/share-fixture.test.cjs
       - name: Capture original practice board with all external requests denied
         env:
           TOMATO_SHARE_OUTPUT: test-artifacts/tomato-share-${{ github.run_id }}-${{ github.run_attempt }}

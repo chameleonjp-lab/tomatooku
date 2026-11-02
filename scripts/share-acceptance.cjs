@@ -3,6 +3,7 @@ const {readFileSync,mkdirSync,writeFileSync}=require('node:fs');
 const {resolve,extname}=require('node:path');
 const {chromium,webkit}=require('playwright');
 const {assets,solve}=require('./share-capture.cjs');
+const {installRankingFixture}=require('./share-fixture.cjs');
 const {inspectShareTarget}=require('./share-visibility.cjs');
 const origin='https://tomato-fixture.invalid',backend='https://tomato-backend.invalid',canonical='https://chameleonjp-lab.github.io/tomatooku/';
 async function run(){
@@ -18,12 +19,13 @@ async function run(){
    await context.routeWebSocket('**/*',socket=>{unknown++;socket.close();});
    await context.route('**/*',route=>{const req=route.request(),u=new URL(req.url());
     if(req.method()==='GET'&&u.origin==='https://x.com'&&u.pathname==='/intent/post'&&!u.username&&!u.password&&[...u.searchParams.keys()].every(k=>k==='text')){intents.push(u.searchParams.get('text'));return route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Local intent fixture</title>'});}
-    if(req.method()==='POST'&&u.origin===backend&&u.pathname==='/rest/v1/rpc/get_best_score_ranking'&&!u.search){const body=req.postDataJSON();if(body.p_game_slug==='tomatoku_competition_v1'&&Number.isInteger(body.p_limit)){rankingReads++;return route.fulfill({status:200,contentType:'application/json',body:'[]'});}}
+    if(req.method()==='POST'&&u.origin===backend&&u.pathname==='/rest/v1/rpc/get_best_score_ranking'&&!u.search){const body=req.postDataJSON();if(body.p_game_slug==='tomatoku_competition_v1'&&Number.isInteger(body.p_limit)){rankingReads++;return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':origin},body:'[]'});}}
     const file=files.get(u.pathname);if(req.method()==='GET'&&u.origin===origin&&!u.username&&!u.password&&!u.search&&file)return route.fulfill({status:200,contentType:({'.js':'text/javascript','.css':'text/css','.json':'application/json'})[extname(file)]||'text/html',body:readFileSync(file)});
     unknown++;return route.abort('blockedbyclient');
    });
-   await context.addInitScript(({language,backend})=>{localStorage.setItem('tomatoku.language.v1',language);window.TOMATOKU_CONFIG={supabaseUrl:backend,supabasePublishableKey:'sb_publishable_local_fixture_not_a_key',rankingsEnabled:true,submissionsEnabled:false,bestRankingRpc:'get_best_score_ranking'};let seed=19;Math.random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('local clipboard unavailable')}}});},{language,backend});
-   const page=await context.newPage();page.on('pageerror',()=>errors++);await page.goto(origin+'/');
+   await context.addInitScript({content:`(${installRankingFixture.toString()})(window,${JSON.stringify(backend)});`});
+   await context.addInitScript(({language})=>{localStorage.setItem('tomatoku.language.v1',language);let seed=19;Math.random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('local clipboard unavailable')}}});},{language,backend});
+   const page=await context.newPage();page.on('pageerror',()=>errors++);await page.goto(origin+'/');assert.deepEqual(await page.evaluate(()=>({url:window.TOMATOKU_CONFIG.supabaseUrl,submissions:window.TOMATOKU_CONFIG.submissionsEnabled})),{url:backend,submissions:false});
    async function visible(selector){const target=page.locator(selector);await target.scrollIntoViewIfNeeded();const g=await target.evaluate(inspectShareTarget);assert(g.visible&&g.viewport&&g.unclipped&&g.hit&&g.fits&&g.width>=44&&g.height>=44,`${engineName}/${language}/${selector}: ${JSON.stringify(g)}`);return target;}
    async function snapshot(){return page.evaluate(()=>['result-score','result-time','result-stages','result-mistakes','result-hints','submit-state'].map(id=>document.getElementById(id)?.textContent||''));}
    async function screen(state){const selector=state==='home'?'#home-share-btn':'#result-share-btn';const expected=state==='home'?t('「トマトオク」5×5に🍅を置くパズル!\n{url}',{url:canonical}):t('トマトオク {mode}で補正タイム{time}秒！\n誤タップ{mistakes} / ヒント{hints}\n{url}',{mode:t('ランダム練習'),time:await page.locator('#result-score').textContent(),mistakes:await page.locator('#result-mistakes').textContent(),hints:await page.locator('#result-hints').textContent(),url:canonical});
@@ -33,13 +35,13 @@ async function run(){
      const before=await snapshot(),beforeIntents=intents.length;const popupPromise=context.waitForEvent('page');await target.tap();const popup=await popupPromise;await popup.waitForURL('https://x.com/intent/post?*');await popup.waitForLoadState();assert.equal(intents.length,beforeIntents+1);assert.equal(intents.at(-1),expected+'\n#トマトオク #ゲーム制作');assert(!intents.at(-1).includes('素材確認'));await popup.close();assert.deepEqual(await snapshot(),before);
      await visible(selector);await page.screenshot({path:resolve(output,`${engineName}-${language}-${orientation}-${state}.png`),fullPage:true});
      await visible(state==='home'?'#detail-ranking-link':'#result-detail-ranking-link');if(state==='result')await visible('#again-btn');
-     assert.equal(unknown,0);assert.equal(errors,0);receipts.push({engine:engineName,language,orientation,state,visible:true,touchHit:true,intent:true,externalRequests:unknown,pageErrors:errors});
+     assert.equal(unknown,0,"unknown-request-count");assert.equal(errors,0,"page-error-count");receipts.push({engine:engineName,language,orientation,state,visible:true,touchHit:true,intent:true,externalRequests:unknown,pageErrors:errors});
     }
    }
    await screen('home');await page.setViewportSize({width:393,height:852});await page.locator('#player-name').fill('素材確認');await page.locator('#start-practice-btn').click();await page.waitForSelector('#screen-game.active #board .cell');await page.waitForFunction(()=>!document.querySelector('#board .cell').disabled);
    for(let stage=0;stage<3;stage++){const areas=await page.locator('#board .cell').evaluateAll(cells=>cells.map(cell=>cell.className.match(/area-([A-E])/)[1]));const answer=solve(areas);for(let row=0;row<5;row++)await page.locator('#board .cell').nth(row*5+answer[row]).tap();if(stage<2)await page.waitForFunction(next=>document.querySelector('#hud-stage')?.textContent===next+'/3'&&document.querySelector('#screen-game')?.classList.contains('active')&&!document.querySelector('#board .cell').disabled,stage+2,{timeout:6000});}
-   await page.waitForSelector('#screen-result.active');await screen('result');
-   const before=await snapshot();await page.evaluate(()=>{window.open=()=>null;});await (await visible('#result-share-btn')).tap();await page.waitForSelector('#share-fallback');assert((await page.locator('#share-fallback').inputValue()).endsWith('#トマトオク #ゲーム制作'));assert.deepEqual(await snapshot(),before);assert.equal(unknown,0);assert.equal(errors,0);assert(rankingReads>0);
+   await page.waitForSelector('#screen-result.active');await page.waitForFunction(expected=>document.querySelector('#result-ranking')?.textContent===expected,t('まだランキングがありません'));await screen('result');
+   const before=await snapshot();await page.evaluate(()=>{window.open=()=>null;});await (await visible('#result-share-btn')).tap();await page.waitForSelector('#share-fallback');assert((await page.locator('#share-fallback').inputValue()).endsWith('#トマトオク #ゲーム制作'));assert.deepEqual(await snapshot(),before);assert.equal(unknown,0,"unknown-request-count");assert.equal(errors,0,"page-error-count");assert(rankingReads>0);
   }finally{await context.close();}
  }}finally{await browser.close();}
  }

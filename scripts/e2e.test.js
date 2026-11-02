@@ -207,6 +207,7 @@ async function main() {
       ok(verified.accepted === true, "操作記録をサーバー規則で再現");
       responseBody = {
         accepted: true,
+        under_review: false,
         score: verified.score,
         result_first_score: verified.score,
         result_best_score: verified.score,

@@ -106,3 +106,11 @@
 - 旧対応表の「練習結果の閲覧導線未完了」は古い記録だった。現goToResultはpracticeのローカルskipped結果からも公式ランキングを読み、詳細linkを表示する。ランキングの見出しは公式、slugはtomatoku_competition_v1、既存best/asc/scale100/2桁を維持し、練習の採点や送信を公式へ追加していない。
 - 実goToResult/loadRankingIntoと実ranking clientを使うNode回帰で、practice結果のread RPCだけ（bodyはslug/limit30、名前/scoreなし）、loading/empty/失敗/retry、名前HTMLエスケープを確認。本番へテストデータを送っていない。厳密な本人単位集計は既存name-key契約の残件。
 - i18n追加後CIのpractice-bankブラウザ検査は、既定英語に対し日本語文言を待つfixtureで失敗した。日本語条件を検査するそのcontextにja-JPを明示し、検査自体は削除しない。主E2Eの15言語切替と英語本文/保存優先の検査は維持する。
+
+
+## 2026-11-02 専用 Edge 受領と同プレイ再送の補修
+- `finish` は共有 RPC の9列ではなく、既存 Edge が返す8項目 JSON を検査する。accepted / under_review / 2フラグ、score と3集計値の整数型・int4範囲・昇順bestを確認し、不完全な受領を登録成功と表示しない。
+- 審査待ち `under_review=true` の集計3項目 null / 2フラグ false は合法として保持する。過去の first_score=0 / signed int4 を拒否しない。DB・Edge・採点式・参加者・既存記録の変更なし。
+- 初回送信の runToken / transcript / elapsedMs を凍結し、失敗時だけ同 playId・同内容の再送を許す。並行呼出しは同一 Promise、成功後も同一 Promise を再利用する。別内容への置換は拒否する。
+- 回帰検査は実 client と注入 mock を使い、実通信を禁止。不完全応答、範囲外、HTTP/通信失敗、同内容再送、並行呼出し、成功後再送なし、合法審査待ちを確認する。既存 browser mock も8項目契約に合わせる。
+- 制限：送信再試行 UI と永続 outbox は既存 main にない。結果は現在 session / officialSubmissionPromise のメモリ上にあり、再読込を越える保存は未実装。この補修をそれらの完了とは扱わない。後続は確定結果の playId・runToken・操作記録・経過時間の安全な永続化と、同プレイだけを再送する UI を別単位で検討する。本人操作前の実機・本番検証、名前識別の移行等の既存未完了事項は維持する。

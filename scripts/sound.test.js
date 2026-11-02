@@ -67,7 +67,8 @@ globalThis.AudioContext = FakeAudioContext;
 const sound = await import(`../src/sound.js?test=${Date.now()}`);
 
 assert.equal(sound.isSoundSupported(), true);
-assert.equal(sound.isSoundEnabled(), false, "初回は効果音なし");
+assert.equal(sound.isSoundEnabled(), true, "初回は効果音あり");
+sound.setSoundEnabled(false);
 assert.equal(sound.playCorrectSound(), false, "無音設定では正解音を作らない");
 assert.equal(oscillators.length, 0);
 
@@ -141,7 +142,13 @@ assert.match(
   "チュートリアル再生の操作でiPhoneの音声を再開"
 );
 
+values.set(sound.SOUND_STORAGE_KEY, "false");
+const savedOff = await import(`../src/sound.js?saved-off=${Date.now()}`);
+assert.equal(savedOff.isSoundEnabled(), false, "保存済みOFFは再読み込み後も維持");
+values.set(sound.SOUND_STORAGE_KEY, "invalid");
+const invalid = await import(`../src/sound.js?invalid=${Date.now()}`);
+assert.equal(invalid.isSoundEnabled(), true, "無効な設定は初回ONに戻す");
 delete globalThis.AudioContext;
 delete globalThis.localStorage;
 
-console.log("✓ 効果音は初回OFFで、利用者が有効にした場合だけ再生する");
+console.log("✓ 効果音は初回ON、保存済みOFFを維持する");

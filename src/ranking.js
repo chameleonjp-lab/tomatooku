@@ -123,6 +123,21 @@ function numberOrNull(value) {
   return Number.isFinite(numeric) ? numeric : null;
 }
 
+// Edge finish JSON is distinct from the shared ranking RPC contract.
+function validFinishReceipt(row) {
+  const int4 = value => Number.isInteger(value) && value >= -2147483648 && value <= 2147483647;
+  if (!row || Array.isArray(row) || row.accepted !== true ||
+      !int4(row.score) || row.score < 0 ||
+      typeof row.under_review !== "boolean" ||
+      typeof row.is_first_play !== "boolean" || typeof row.is_new_best !== "boolean") return false;
+  if (row.under_review) {
+    return row.result_first_score === null && row.result_best_score === null &&
+      row.result_play_count === null && !row.is_first_play && !row.is_new_best;
+  }
+  return int4(row.result_first_score) && int4(row.result_best_score) &&
+    row.result_best_score <= row.score && int4(row.result_play_count) && row.result_play_count >= 1;
+}
+
 export function createRankingClient(config = CONFIG, dependencies = {}) {
   const effectiveConfig = { ...DEFAULTS, ...config };
   const fetchImpl = dependencies.fetch || globalThis.fetch;
@@ -330,19 +345,29 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
       );
     }
 
-    if (submissionByPlayId.has(normalizedPlayId)) {
-      return submissionByPlayId.get(normalizedPlayId);
+    // Freeze the first submission, including nested transcript values. A retry must
+    // never replace this play's token/result with later mutable session state.
+    let body;
+    try {
+      body = JSON.stringify({ runToken: normalizedRunToken, transcript, elapsedMs: normalizedElapsedMs });
+    } catch (_) {
+      return Promise.resolve(baseResult("error", "ランキングへ送信できない結果です"));
+    }
+    let entry = submissionByPlayId.get(normalizedPlayId);
+    if (entry && entry.body !== body) {
+      return Promise.resolve(baseResult("error", "ランキングへ送信できない結果です"));
+    }
+    if (entry?.promise) return entry.promise;
+    if (!entry) {
+      entry = { body, promise: null };
+      submissionByPlayId.set(normalizedPlayId, entry);
     }
 
     const promise = (async () => {
       try {
-        const data = await competitionRequest("finish", {
-          runToken: normalizedRunToken,
-          transcript,
-          elapsedMs: normalizedElapsedMs,
-        });
+        const data = await competitionRequest("finish", JSON.parse(entry.body));
         const row = data;
-        if (!row || row.accepted !== true) {
+        if (!validFinishReceipt(row)) {
           return baseResult(
             "error",
             "ランキング登録を受け付けられませんでした"
@@ -369,7 +394,12 @@ export function createRankingClient(config = CONFIG, dependencies = {}) {
       }
     })();
 
-    submissionByPlayId.set(normalizedPlayId, promise);
+    entry.promise = promise;
+    promise.then(result => {
+      // Keep the payload and successful receipt, but release failed attempts so
+      // the same play can retry. Concurrent callers still share one promise.
+      if (result.status !== "ok" && entry.promise === promise) entry.promise = null;
+    });
     return promise;
   }
 

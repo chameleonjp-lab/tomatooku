@@ -47,7 +47,11 @@ Pull Requestでは公開ワークフローを起動しない。通常のCIが同
 
 ## 4. 初回だけ必要なリポジトリ設定
 
-GitHubのリポジトリ画面で、次を設定する。
+**ユーザーのマージ前に確認する必須条件**。権限のある本人・管理者が既存Source/公開commit/環境制限を控え、次を読み戻し確認する。legacyのままマージすると旧branch配信がCIを迂回する恐れがあるため、確認不能ならマージしない。既存承認/ブランチ保護は維持する。本PRは設定変更を行わない。
+
+2026-11-02 JST現在、接続ツールのPages設定読取は非対応400で最新Sourceは未確認。過去のlegacy記録は現在値の証明ではない。現在の成功版を保持できる切替を管理者が確認できない場合も保留する。
+
+GitHubのリポジトリ画面で、必要なら管理者が次を設定する。
 
 ```text
 Settings
@@ -63,12 +67,12 @@ Codebergリポジトリ、Pages通知、アクセストークン、`CODEBERG_USE
 
 `.github/workflows/deploy-github-pages.yml`は次の順で処理する。
 
-1. `main`を取得する。
-2. Node.js 20で依存関係を固定取得する。
+1. mainへのpushまたはmainの手動実行で、同じcommitの既存CI（静的・契約・全feasibility・生成物再現性・Chromium/WebKit）を再利用する。失敗/skip/cancelなら以後は動かない。
+2. 検証した `${{ github.sha }}` をcheckoutし、読取専用gateでSource=workflowと現在mainのSHA一致を確認する。Node.js 20で依存関係を固定取得する。
 3. 静的・契約テストをすべて実行する。
 4. 公開用14ファイルを`_site`へ作る。
 5. `actions/upload-pages-artifact`でGitHub Pages用成果物を登録する。
-6. `actions/deploy-pages`で`github-pages`環境へ公開する。
+6. Sourceと現在main SHAをもう一度確認してから `actions/deploy-pages` で同じrunの成果物を`github-pages`環境へ公開する。main以外の手動実行、Source読取失敗、legacy、不明値、古いcommitは停止する。
 
 ワークフロー権限は次だけを使う。
 
@@ -82,7 +86,7 @@ id-token: write
 
 ## 6. 失敗時
 
-- Pagesの公開元がGitHub Actionsでなければ、設定を直して同じワークフローを再実行する。
+- Pagesの公開元がGitHub Actionsでない、読取失敗、不明の場合は停止する。自動で設定を変更せず管理者へ引き継ぐ。マージ前の確認が済むまでマージしない。
 - 公開必須ファイル、84問バンク、参照先が欠けていれば、成果物登録前に失敗する。
 - 静的・契約テストが失敗した版は公開しない。
 - 公開内容を戻す場合はGitHubで復元用PRを作り、`main`へ統合後に通常の公開を行う。

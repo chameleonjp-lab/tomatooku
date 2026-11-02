@@ -1,3 +1,4 @@
+import { t } from "./locale-runtime.js";
 /**
  * トマトオク チュートリアル（4×4の自動アニメ）
  *
@@ -155,16 +156,16 @@ async function sequence(myRun) {
   resetBoard();
   setProgress(0);
 
-  setCaption("4×4で<b>あそびかた</b>を覚えよう。🍅をルール通りにならべるよ");
+  setCaption(t("4×4で<b>あそびかた</b>を覚えよう。🍅をルール通りにならべるよ"));
   await delay(2200, myRun);
   tick();
 
-  setCaption("マスをタップすると🍅を<b>置ける</b>よ");
+  setCaption(t("マスをタップすると🍅を<b>置ける</b>よ"));
   place(0, 1);
   await delay(2000, myRun);
   tick();
 
-  setCaption("ルール① <b>同じ行（よこ）</b>に🍅は1個だけ");
+  setCaption(t("ルール① <b>同じ行（よこ）</b>に🍅は1個だけ"));
   highlightRow(0);
   await delay(1100, myRun);
   ghostBad(0, 3);
@@ -173,7 +174,7 @@ async function sequence(myRun) {
   clearHighlights();
   tick();
 
-  setCaption("ルール② <b>同じ列（たて）</b>にも1個だけ");
+  setCaption(t("ルール② <b>同じ列（たて）</b>にも1個だけ"));
   highlightCol(1);
   await delay(1100, myRun);
   ghostBad(3, 1);
@@ -182,7 +183,7 @@ async function sequence(myRun) {
   clearHighlights();
   tick();
 
-  setCaption("ルール③ <b>同じ色のエリア</b>にも1個だけ");
+  setCaption(t("ルール③ <b>同じ色のエリア</b>にも1個だけ"));
   highlightRegion("A");
   await delay(1100, myRun);
   ghostBad(1, 0);
@@ -191,7 +192,7 @@ async function sequence(myRun) {
   clearHighlights();
   tick();
 
-  setCaption("ルール④ <b>ななめ・となり</b>は隣り合えない");
+  setCaption(t("ルール④ <b>ななめ・となり</b>は隣り合えない"));
   markAdjacency(0, 1);
   await delay(1100, myRun);
   ghostBad(1, 0);
@@ -202,7 +203,7 @@ async function sequence(myRun) {
   clearHighlights();
   tick();
 
-  setCaption("ルールを守って残りを置いていくよ…");
+  setCaption(t("ルールを守って残りを置いていくよ…"));
   await delay(900, myRun);
   place(1, 3, "ok");
   await delay(900, myRun);
@@ -212,13 +213,13 @@ async function sequence(myRun) {
   await delay(700, myRun);
   tick();
 
-  setCaption("🎉 <b>クリア!</b> 全部のルールを満たせたよ");
+  setCaption(t("🎉 <b>クリア!</b> 全部のルールを満たせたよ"));
   el("#tutorial-board").classList.add("tcleared");
   await delay(2200, myRun);
   tick();
 
   setCaption(
-    "本番は<b>5×5・3ステージ</b>。誤タップとヒントを抑えて、補正タイムを短くしよう!"
+    t("本番は<b>5×5・3ステージ</b>。誤タップとヒントを抑えて、補正タイムを短くしよう!")
   );
   setProgress(1);
 }

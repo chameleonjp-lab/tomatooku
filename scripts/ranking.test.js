@@ -1,14 +1,22 @@
 import assert from "node:assert/strict";
-import {
+import http from "node:http";
+import https from "node:https";
+import net from "node:net";
+import tls from "node:tls";
+const blockNetwork = () => { throw new Error("network forbidden in ranking tests"); };
+globalThis.fetch = blockNetwork;
+for (const transport of [http, https]) { transport.request = blockNetwork; transport.get = blockNetwork; }
+net.connect = net.createConnection = tls.connect = blockNetwork;
+const {
   createRankingClient,
   isConfigured,
   isRankingEnabled,
   isSubmissionEnabled,
   normalizeDisplayName,
-} from "../src/ranking.js";
+} = await import("../src/ranking.js");
 
 const CONFIG = {
-  supabaseUrl: "https://project.supabase.co",
+  supabaseUrl: "https://ranking.invalid",
   supabasePublishableKey: "sb_publishable_abcdefghijklmnopqrstuvwxyz",
   gameSlug: "tomatoku_competition_v1",
   clientVersion: "tomatooku-test",
@@ -37,6 +45,11 @@ function jsonResponse(data, status = 200) {
   };
 }
 
+const ACK = { accepted: true, score: 4835, under_review: false,
+  result_first_score: 5000, result_best_score: 4800, result_play_count: 2,
+  is_first_play: false, is_new_best: true };
+const ARGS = { playId: "receipt", mode: "official", runToken: "frozen-run",
+  transcript: TRANSCRIPT, elapsedMs: 1500 };
 let pass = 0;
 async function test(name, fn) {
   try {
@@ -175,6 +188,7 @@ await test("公式送信はスコアを自己申告せず操作記録だけを�
       request = { url, options };
       return jsonResponse({
         accepted: true,
+        under_review: false,
         score: 4835,
         result_first_score: 5000,
         result_best_score: 4800,
@@ -211,7 +225,7 @@ await test("同じplayIdは同一Promise・通信1回", async () => {
   const client = createRankingClient(CONFIG, {
     fetch: async () => {
       calls++;
-      return jsonResponse({ accepted: true, score: 10 });
+      return jsonResponse(ACK);
     },
   });
   const args = {
@@ -296,6 +310,65 @@ await test("タイムアウト時はAbortControllerで中止", async () => {
   );
   assert.equal((await client.fetchBestRanking()).status, "error");
   assert.equal(aborted, true);
+});
+
+await test("incomplete / malformed Edge receipts never succeed", async () => {
+  const invalid = [{ accepted: true }, [], null];
+  for (const key of Object.keys(ACK)) { const row = { ...ACK }; delete row[key]; invalid.push(row); }
+  for (const [key, values] of Object.entries({
+    score: [null, "4835", -1, 2147483648, NaN, 1.5],
+    result_first_score: [null, "0", 2147483648, -2147483649],
+    result_best_score: [null, 2147483648, -2147483649, 4836],
+    result_play_count: [null, "2", 0, 2147483648],
+    under_review: [null, "false"], is_first_play: [null, 1], is_new_best: [null, "true"],
+  })) for (const value of values) invalid.push({ ...ACK, [key]: value });
+  invalid.push({ ...ACK, under_review: true });
+  for (const receipt of invalid) {
+    const client = createRankingClient(CONFIG, { fetch: async () => jsonResponse(receipt) });
+    assert.equal((await client.submitScore(ARGS)).status, "error", JSON.stringify(receipt));
+  }
+});
+await test("review-pending null aggregates and signed historical first remain legal", async () => {
+  for (const receipt of [
+    { ...ACK, under_review: true, result_first_score: null, result_best_score: null,
+      result_play_count: null, is_first_play: false, is_new_best: false },
+    { ...ACK, result_first_score: 0 },
+    { ...ACK, result_first_score: -2147483648, result_play_count: 2147483647 },
+  ]) {
+    const client = createRankingClient(CONFIG, { fetch: async () => jsonResponse(receipt) });
+    assert.equal((await client.submitScore(ARGS)).status, "ok");
+  }
+});
+await test("failed finish retries only identical snapshot, coalesces in-flight and caches success", async () => {
+  for (const failure of ["network", "http", "malformed"]) {
+    const bodies = []; let release;
+    const client = createRankingClient(CONFIG, { fetch: async (_url, options) => {
+      bodies.push(options.body);
+      if (bodies.length === 1) {
+        if (failure === "network") throw new Error("offline");
+        return jsonResponse(failure === "malformed" ? { accepted: true } : {}, failure === "http" ? 500 : 200);
+      }
+      await new Promise(resolve => { release = resolve; });
+      return jsonResponse(ACK);
+    }});
+    const args = { ...ARGS, transcript: TRANSCRIPT.map(action => ({ ...action })) };
+    assert.equal((await client.submitScore(args)).status, "error");
+    for (const changed of [{ runToken: "other-run" }, { elapsedMs: 1501 },
+      { transcript: TRANSCRIPT.map((a, i) => i === 0 ? { ...a, row: 4 } : a) }]) {
+      assert.equal((await client.submitScore({ ...args, ...changed })).status, "error");
+    }
+    assert.equal(bodies.length, 1);
+    const retry = client.submitScore(args);
+    assert.equal(client.submitScore(args), retry);
+    args.transcript[0].row = 4; // mutation after send must not alter the frozen payload
+    assert.equal(bodies.length, 2, "failed attempt must perform a new request");
+    release();
+    assert.equal((await retry).status, "ok");
+    assert.equal(bodies.length, 2);
+    assert.equal(bodies[0], bodies[1]);
+    assert.equal(client.submitScore(ARGS), retry);
+    assert.equal(bodies.length, 2);
+  }
 });
 
 console.log(`\n==== RANKING TEST RESULT: PASS=${pass} FAIL=0 ====`);

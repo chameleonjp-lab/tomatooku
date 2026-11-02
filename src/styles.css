@@ -1061,3 +1061,29 @@ details.rules summary {
     font-size: 0.94rem;
   }
 }
+
+#home-share-btn, #result-share-btn { background: #000; color: #fff; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+
+/* Keep the volume control touchable in short/landscape home screens. */
+.sound-volume-setting { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; width: 100%; }
+.sound-volume-setting input { min-height: 44px; min-width: 0; flex: 1 1 140px; }
+
+#language-select {
+  min-height: 44px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+#language-select:focus-visible { outline: 3px solid #f6d365; outline-offset: 2px; }
+
+.result-recovery { margin-block: 1rem; overflow-wrap: anywhere; }
+.result-recovery summary { cursor: pointer; padding: .5rem; font-weight: 700; }
+.saved-result { border-top: 1px solid currentColor; padding-block: .75rem; }
+.saved-result .btn { white-space: normal; min-height: 44px; max-width: 100%; }

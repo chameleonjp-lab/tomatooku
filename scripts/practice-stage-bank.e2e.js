@@ -136,6 +136,7 @@ function ok(condition, message) {
 
 async function createMobilePage(browser) {
   const context = await browser.newContext({
+    locale: "ja-JP",
     viewport: { width: 320, height: 568 },
     deviceScaleFactor: 2,
     isMobile: true,

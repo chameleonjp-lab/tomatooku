@@ -45,11 +45,11 @@ assert.match(html, /id="detail-ranking-link"[\s\S]*data-ranking-only[\s\S]*hidde
 assert.doesNotMatch(html, /id="home-ranking"/);
 assert.match(
   html,
-  /id="screen-result"[\s\S]*公式ランキング 上位10名（補正タイム・短い順）[\s\S]*id="result-ranking"/
+  /id="screen-result"[\s\S]*公式ランキング 上位30名（補正タイム・短い順）[\s\S]*id="result-ranking"/
 );
 assert.doesNotMatch(main, /loadRankingInto\("#home-ranking"\)/);
 assert.match(main, /loadRankingInto\("#result-ranking"\)/);
-assert.match(main, /fetchBestRanking\(10\)/);
+assert.match(main, /fetchBestRanking\(30\)/);
 assert.match(
   html,
   /公式プレイでは、プレイヤー名、操作記録、計測時間、ゲーム名、ゲームの版を送信し、サーバーで補正タイムを確認します/

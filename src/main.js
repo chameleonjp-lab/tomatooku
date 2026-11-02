@@ -1,3 +1,8 @@
+import { createResultOutbox } from "./result-outbox.js";
+import { createRecoveryView } from "./result-recovery.js";
+import { createLocalizedMessage } from "./i18n-dom.js";
+import { t, getLanguage, setLanguage, applyTranslations } from "./locale-runtime.js";
+import { SUPPORTED_LANGUAGES } from "./i18n.js";
 /**
  * トマトオク 画面制御
  *
@@ -15,6 +20,7 @@ import {
 } from "./game.js";
 import {
   submitScore,
+  CLIENT_VERSION,
   prepareOfficialRun,
   beginOfficialRun,
   fetchBestRanking,
@@ -27,6 +33,8 @@ import {
 import { playTutorial, stopTutorial } from "./tutorial.js";
 import { createRandomStageBankLoader } from "./practice-stage-bank.js";
 import {
+  getSoundVolume,
+  setSoundVolume,
   isSoundEnabled,
   isSoundSupported,
   playCorrectSound,
@@ -41,7 +49,7 @@ const COUNTDOWN_STEPS = [
   { label: "3", durationMs: 650 },
   { label: "2", durationMs: 650 },
   { label: "1", durationMs: 650 },
-  { label: "スタート", durationMs: 420 },
+  { label: "スタート", isStart: true, durationMs: 420 },
 ];
 
 const PHASE = Object.freeze({
@@ -55,6 +63,7 @@ const PHASE = Object.freeze({
 });
 
 const $ = (selector) => document.querySelector(selector);
+const nameError = createLocalizedMessage(() => $("#name-error"), t);
 
 let phase = PHASE.HOME;
 let session = null;
@@ -72,18 +81,38 @@ let startInFlight = false;
 let startRequestId = 0;
 let officialSubmissionPromise = null;
 const rankingRequestIds = new Map();
+const resultOutbox = createResultOutbox();
+const completedSnapshots = new Map();
+let recoveryView;
+function refreshRecovery() { return recoveryView?.refresh(); }
+function sendSavedSnapshot(snapshot) {
+  // A queued old clientVersion must not silently acquire the current contract.
+  if (snapshot.clientVersion !== CLIENT_VERSION) return Promise.resolve({status:"error",accepted:false});
+  return submitScore(snapshot);
+}
+async function submitCompletedSession(completedSession) {
+  let snapshot=completedSnapshots.get(completedSession.playId);
+  if (!snapshot) {
+    const b=completedSession.resultBreakdown(monotonicNow());
+    snapshot={playId:completedSession.playId,mode:completedSession.mode,runToken:completedSession.runToken,
+      clientVersion:CLIENT_VERSION,transcript:completedSession.transcript(),elapsedMs:Math.floor(b.elapsedMs),completedAt:Date.now(),
+      display:{score:b.adjustedTimeCentiseconds,elapsedMs:Math.floor(b.elapsedMs),mistakes:b.mistakeCount,hints:b.hintCount,
+        stageTimesMs:b.stageTimesMs,stageMistakeCounts:b.stageMistakeCounts,stageHintCounts:b.stageHintCounts}};
+    completedSnapshots.set(completedSession.playId,snapshot);
+  }
+  const stored=await resultOutbox.save(snapshot);
+  if(stored.error)return {status:"error",accepted:false,message:"ランキングへ送信できない結果です",persisted:false,retryable:false};
+  const answer=await resultOutbox.attempt(snapshot.playId,sendSavedSnapshot);
+  void refreshRecovery();
+  return {...answer.result,persisted:answer.persisted};
+}
 
 function gameUrl() {
-  try {
-    const current = location.origin + location.pathname;
-    return current.startsWith("http") ? current : GAME_URL;
-  } catch (_) {
-    return GAME_URL;
-  }
+  return GAME_URL;
 }
 
 function modeLabel(mode) {
-  return mode === GAME_MODE.OFFICIAL ? "公式モード" : "ランダム練習";
+  return mode === GAME_MODE.OFFICIAL ? t("公式モード") : t("ランダム練習");
 }
 
 function phaseScreenId(nextPhase) {
@@ -121,6 +150,8 @@ function setPhase(nextPhase) {
       nextPhase === PHASE.STAGE_TRANSITION ? "true" : "false"
     );
   }
+  const languages = $("#language-select");
+  if (languages) languages.disabled = nextPhase !== PHASE.HOME;
   updateHintButton();
   window.scrollTo(0, 0);
 }
@@ -162,7 +193,7 @@ function syncRankingAvailability() {
 
   const badge = $("#release-badge");
   if (badge) {
-    badge.textContent = enabled ? "ランキング公開中" : "テスト版・記録なし";
+    badge.textContent = enabled ? t("ランキング公開中") : t("テスト版・記録なし");
   }
 }
 
@@ -179,14 +210,18 @@ function syncSoundControl() {
   button.setAttribute(
     "aria-label",
     supported
-      ? `効果音を${enabled ? "なし" : "あり"}にする`
-      : "この端末では効果音を利用できません"
+      ? enabled ? t("効果音をなしにする") : t("効果音をありにする")
+      : t("この端末では効果音を利用できません")
   );
-  label.textContent = supported ? (enabled ? "あり" : "なし") : "非対応";
-  icon.textContent = enabled ? "🔊" : "🔇";
+  label.textContent = supported ? (enabled ? t("あり") : t("なし")) : t("非対応");
+  icon.textContent = enabled && getSoundVolume() > 0 ? "🔊" : "🔇";
+  const volume = $("#sound-volume");
+  if (volume) { volume.value = String(Math.round(getSoundVolume() * 100)); volume.disabled = !supported; }
+  const output = $("#sound-volume-value");
+  if (output) output.textContent = `${Math.round(getSoundVolume() * 100)}%`;
 }
 
-function setHomePreparing(preparing, message = "問題を準備しています…") {
+function setHomePreparing(preparing, message = t("問題を準備しています…")) {
   const home = $("#screen-home");
   const card = $("#home-card");
   const panel = $("#start-preparing");
@@ -213,15 +248,38 @@ function cancelPendingStart(message = "") {
   if (phase === PHASE.PREPARING) setPhase(PHASE.HOME);
   if (message) {
     const error = $("#name-error");
-    if (error) error.textContent = message;
+    if (error) nameError.set(message);
   }
   return true;
 }
 
 function initHome() {
+  applyTranslations();
+  const languages = $("#language-select");
+  for (const language of SUPPORTED_LANGUAGES) {
+    const option = document.createElement("option");
+    option.value = language.id; option.textContent = language.name;
+    languages.appendChild(option);
+  }
+  languages.value = getLanguage();
+  languages.addEventListener("change", () => {
+    if (phase !== PHASE.HOME || startInFlight) { languages.value = getLanguage(); return; }
+    setLanguage(languages.value);
+    void refreshRecovery();
+    applyTranslations();
+    nameError.refresh();
+    syncSoundControl();
+    syncRankingAvailability();
+    document.dispatchEvent(new Event("tomatoku:languagechange"));
+  });
   const input = $("#player-name");
   input.value = loadPlayerName();
   syncSoundControl();
+
+  $("#sound-volume").addEventListener("input", (event) => {
+    setSoundVolume(Number(event.target.value) / 100);
+    syncSoundControl();
+  });
 
   $("#sound-toggle").addEventListener("click", () => {
     const enabled = setSoundEnabled(!isSoundEnabled());
@@ -236,13 +294,13 @@ function initHome() {
     void onStart(GAME_MODE.PRACTICE);
   });
   input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.isComposing) {
+    if (event.key === "Enter" && !event.isComposing && event.keyCode !== 229 && !startInFlight) {
       void onStart(GAME_MODE.OFFICIAL);
     }
   });
 
   $("#home-share-btn").addEventListener("click", () => {
-    shareText(`「トマトオク」5×5に🍅を置くパズル!\n${gameUrl()}`);
+    shareText(t("「トマトオク」5×5に🍅を置くパズル!\n{url}", { url: gameUrl() }));
   });
   $("#howto-btn").addEventListener("click", () => openModal("howto-modal"));
   $("#tutorial-btn").addEventListener("click", openTutorial);
@@ -310,22 +368,22 @@ async function startNamedGame(name, mode) {
   setHomePreparing(
     true,
     mode === GAME_MODE.PRACTICE
-      ? "練習問題を準備しています…"
-      : "公式問題を準備しています…"
+      ? t("練習問題を準備しています…")
+      : t("公式問題を準備しています…")
   );
   setPhase(PHASE.PREPARING);
 
   try {
     const randomBank = await ensureRandomStageBank();
     if (mode === GAME_MODE.OFFICIAL && randomBank.fallback) {
-      throw new Error("公式用の問題を読み込めませんでした");
+      throw new Error(t("公式用の問題を読み込めませんでした"));
     }
     const officialRun =
       mode === GAME_MODE.OFFICIAL
         ? await prepareOfficialRun({ playerName: name })
         : null;
     if (mode === GAME_MODE.OFFICIAL && officialRun?.status !== "ok") {
-      throw new Error("公式プレイ番号を発行できませんでした");
+      throw new Error(t("公式プレイ番号を発行できませんでした"));
     }
 
     if (
@@ -339,10 +397,10 @@ async function startNamedGame(name, mode) {
 
     startInFlight = false;
     setHomePreparing(false);
-    if (error) error.textContent = "";
+    if (error) nameError.set("");
     beginCountdown(name, mode, randomBank, officialRun);
     if (mode === GAME_MODE.PRACTICE && randomBank.fallback) {
-      setTimeout(() => showToast("従来の練習問題で開始します"), 0);
+      setTimeout(() => showToast(t("従来の練習問題で開始します")), 0);
     }
   } catch (startError) {
     if (requestId !== startRequestId) return;
@@ -350,8 +408,7 @@ async function startNamedGame(name, mode) {
     setHomePreparing(false);
     setPhase(PHASE.HOME);
     if (error) {
-      error.textContent =
-        "ゲームを開始できませんでした。通信を確認してもう一度お試しください。";
+      nameError.set("ゲームを開始できませんでした。通信を確認してもう一度お試しください。");
     }
     console.error(startError);
   }
@@ -365,12 +422,12 @@ async function onStart(mode) {
   input.value = name;
 
   if (!name) {
-    error.textContent = "プレイヤー名を入力してください";
+    nameError.set("プレイヤー名を入力してください");
     input.focus();
     return;
   }
 
-  error.textContent = "";
+  nameError.set("");
   savePlayerName(name);
   await startNamedGame(name, mode);
 }
@@ -490,8 +547,8 @@ function runCountdown(playId) {
       return;
     }
 
-    value.textContent = step.label;
-    value.classList.toggle("is-start-label", step.label === "スタート");
+    value.textContent = step.isStart ? t(step.label) : step.label;
+    value.classList.toggle("is-start-label", step.isStart === true);
     index++;
     const timerId = setTimeout(showNext, step.durationMs);
     countdownTimerIds.push(timerId);
@@ -517,15 +574,14 @@ function prepareFirstStage(playId) {
     if (!isActivePlay(playId) || phase !== PHASE.STAGE_TRANSITION) return;
 
     if (pendingOfficial) {
-      setGameStatus("公式プレイを確認しています…");
+      setGameStatus(t("公式プレイを確認しています…"));
       const begun = await beginOfficialRun({ runToken: pendingOfficial.runToken });
       if (!isActivePlay(playId) || phase !== PHASE.STAGE_TRANSITION) return;
       if (begun.status !== "ok") {
         cancelActivePlay({ goHome: true });
         const error = $("#name-error");
         if (error) {
-          error.textContent =
-            "公式モードを開始できませんでした。通信を確認してもう一度お試しください。";
+          nameError.set("公式モードを開始できませんでした。通信を確認してもう一度お試しください。");
         }
         return;
       }
@@ -584,7 +640,7 @@ function buildBoard() {
   board.dataset.mode = session.mode;
   board.dataset.stageBankId = session.stageBankId;
   board.dataset.stageBankFallback = String(session.stageBankFallback);
-  setGameStatus("マスを選んで🍅を置いてください。");
+  setGameStatus(t("マスを選んで🍅を置いてください。"));
   cells = [];
 
   const state = session.current;
@@ -602,7 +658,7 @@ function buildBoard() {
       if (c === 0 || regions[r][c - 1] !== area) cell.classList.add("edge-left");
       if (c === N - 1 || regions[r][c + 1] !== area) cell.classList.add("edge-right");
 
-      cell.setAttribute("aria-label", `${r + 1}行${c + 1}列 エリア${area}`);
+      cell.setAttribute("aria-label", t("{row}行{col}列 エリア{area}", {row:r+1,col:c+1,area}));
       const tomato = document.createElement("span");
       tomato.className = "tomato";
       tomato.textContent = "🍅";
@@ -689,15 +745,14 @@ function onHint() {
     const [r, c] = result.placed;
     cells[r][c].classList.add("hinted");
     const removedCount = result.removed?.length || 0;
-    const removedText = removedCount
-      ? `誤った🍅を${removedCount}個取り除き、`
-      : "";
     setGameStatus(
-      `ヒントで${removedText}${r + 1}行${c + 1}列に🍅を置きました（+30秒）。`,
+      removedCount
+        ? t("ヒントで誤った🍅を{count}個取り除き、{row}行{col}列に🍅を置きました（+30秒）。", {count:removedCount,row:r+1,col:c+1})
+        : t("ヒントで{row}行{col}列に🍅を置きました（+30秒）。", {row:r+1,col:c+1}),
       "success"
     );
   } else {
-    setGameStatus("ヒントを使いました（+30秒）。", "success");
+    setGameStatus(t("ヒントを使いました（+30秒）。"), "success");
   }
 
   updateHintButton();
@@ -723,13 +778,7 @@ function onStageClear(clearedAt = monotonicNow()) {
   session.finishStage(clearedAt);
   const lastStage = session.isLastStage();
   if (lastStage && session.mode === GAME_MODE.OFFICIAL) {
-    officialSubmissionPromise = submitScore({
-      playId,
-      mode: session.mode,
-      runToken: session.runToken,
-      transcript: session.transcript(),
-      elapsedMs: Math.floor(session.accumulatedMs),
-    });
+    officialSubmissionPromise = submitCompletedSession(session);
   }
   playCorrectSound();
   setPhase(PHASE.STAGE_TRANSITION);
@@ -740,13 +789,13 @@ function onStageClear(clearedAt = monotonicNow()) {
   $("#board").classList.add("cleared");
   setGameStatus(
     session.isLastStage()
-      ? "全3ステージをクリアしました！"
-      : `ステージ${session.stageNumber}をクリアしました！`,
+      ? t("全3ステージをクリアしました！")
+      : t("ステージ{stage}をクリアしました！", {stage:session.stageNumber}),
     "success"
   );
   vibrate([20, 40, 30]);
 
-  showToast(lastStage ? "全ステージクリア!" : "ステージクリア!");
+  showToast(lastStage ? t("全ステージクリア!") : t("ステージクリア!"));
 
   clearTransitionWork();
   transitionTimerId = setTimeout(() => {
@@ -805,7 +854,7 @@ function renderStageTimes(completedSession) {
     .map((time, index) => {
       const mistakes = completedSession.stageMistakeCounts[index] || 0;
       const hints = completedSession.stageHintCounts[index] || 0;
-      return `<li>ステージ${index + 1}: ${formatTime(time)} / 誤${mistakes} / ヒント${hints}</li>`;
+      return `<li>${escapeHtml(t("ステージ{stage}: {time} / 誤{mistakes} / ヒント{hints}", {stage:index+1,time:formatTime(time),mistakes,hints}))}</li>`;
     })
     .join("");
 }
@@ -823,8 +872,8 @@ function goToResult(playId) {
   $("#result-time").textContent = formatTime(breakdown.elapsedMs);
   $("#result-mistakes").textContent = String(breakdown.mistakeCount);
   $("#result-hints").textContent = String(breakdown.hintCount);
-  $("#result-mistake-penalty").textContent = `+${formatCentiseconds(breakdown.mistakePenaltyCentiseconds)}秒`;
-  $("#result-hint-penalty").textContent = `+${formatCentiseconds(breakdown.hintPenaltyCentiseconds)}秒`;
+  $("#result-mistake-penalty").textContent = t("+{time}秒", {time:formatCentiseconds(breakdown.mistakePenaltyCentiseconds)});
+  $("#result-hint-penalty").textContent = t("+{time}秒", {time:formatCentiseconds(breakdown.hintPenaltyCentiseconds)});
   $("#result-stages").textContent = `${completedSession.totalStages}/${completedSession.totalStages}`;
   renderStageTimes(completedSession);
 
@@ -833,13 +882,13 @@ function goToResult(playId) {
   const stateElement = $("#submit-state");
   if (completedSession.mode === GAME_MODE.PRACTICE) {
     stateElement.className = "submit-state skipped";
-    stateElement.textContent = "ランダム練習はランキング対象外です";
+    stateElement.textContent = t("ランダム練習はランキング対象外です");
   } else if (!isSubmissionEnabled()) {
     stateElement.className = "submit-state skipped";
-    stateElement.textContent = "テスト中のため、今回の記録は保存されません";
+    stateElement.textContent = t("テスト中のため、今回の記録は保存されません");
   } else {
     stateElement.className = "submit-state pending";
-    stateElement.textContent = "公式ランキングへ送信中…";
+    stateElement.textContent = t("公式ランキングへ送信中…");
   }
 
   const submissionPromise =
@@ -848,13 +897,9 @@ function goToResult(playId) {
       : submitScore({ playId, mode: completedSession.mode });
   Promise.resolve(
     submissionPromise ||
-      submitScore({
-        playId,
-        mode: completedSession.mode,
-        runToken: completedSession.runToken,
-        transcript: completedSession.transcript(),
-        elapsedMs: Math.floor(breakdown.elapsedMs),
-      })
+      (completedSession.mode === GAME_MODE.OFFICIAL
+        ? submitCompletedSession(completedSession)
+        : submitScore({playId,mode:completedSession.mode}))
   ).then((result) => {
     if (
       !isActivePlay(playId) ||
@@ -879,25 +924,45 @@ function goToResult(playId) {
       return;
     }
     applySubmitResult(stateElement, result);
+    if (completedSession.mode === GAME_MODE.OFFICIAL) {
+      const storageState = document.createElement("p");
+      storageState.textContent=t(result.persisted ? "この端末に保存済み" : "端末保存を確認できません。この画面を閉じると失う可能性があります。");
+      stateElement.append(storageState);
+      if(result.status!=="ok" && result.retryable!==false){
+        const retry=document.createElement("button");retry.type="button";retry.className="btn secondary";retry.textContent=t("同じ結果を再送");
+        retry.onclick=async()=>{
+          retry.disabled=true;
+          const answer=await resultOutbox.attempt(playId,sendSavedSnapshot);
+          if(isActivePlay(playId)&&session===completedSession&&phase===PHASE.RESULT){
+            applySubmitResult(stateElement,answer.result);
+            if(answer.result.status==="ok" && isRankingEnabled())void loadRankingInto("#result-ranking");
+            const saved=document.createElement("p");saved.textContent=t(answer.persisted ? "この端末に保存済み" : "端末保存を確認できません。この画面を閉じると失う可能性があります。");stateElement.append(saved);
+            if(answer.result.status!=="ok"){retry.disabled=false;stateElement.append(retry);}
+          }
+          void refreshRecovery();
+        };
+        stateElement.append(retry);
+      }
+    }
     if (isRankingEnabled()) loadRankingInto("#result-ranking");
   });
 
-  const shareMessage =
-    `トマトオク ${modeLabel(completedSession.mode)}で補正タイム${formatCentiseconds(adjusted)}秒！` +
-    `\n誤タップ${breakdown.mistakeCount} / ヒント${breakdown.hintCount}` +
-    `\n${gameUrl()}`;
+  const shareMessage = t("トマトオク {mode}で補正タイム{time}秒！\n誤タップ{mistakes} / ヒント{hints}\n{url}", {
+    mode:modeLabel(completedSession.mode), time:formatCentiseconds(adjusted),
+    mistakes:breakdown.mistakeCount, hints:breakdown.hintCount, url:gameUrl()
+  });
   $("#result-share-btn").onclick = () => shareText(shareMessage);
 }
 
 function applySubmitResult(stateElement, result) {
   if (result.status === "ok") {
     stateElement.className = "submit-state ok";
-    const parts = [result.message];
+    const parts = [result.message ? t(result.message) : ""];
     if (result.bestScore != null) {
-      parts.push(`ベスト ${formatCentiseconds(result.bestScore)}秒`);
+      parts.push(t("ベスト {time}秒",{time:formatCentiseconds(result.bestScore)}));
     }
     if (result.firstScore != null) {
-      parts.push(`初回 ${formatCentiseconds(result.firstScore)}秒`);
+      parts.push(t("初回 {time}秒",{time:formatCentiseconds(result.firstScore)}));
     }
     stateElement.textContent = parts.join(" / ");
     return;
@@ -905,7 +970,7 @@ function applySubmitResult(stateElement, result) {
 
   stateElement.className =
     result.status === "error" ? "submit-state error" : "submit-state skipped";
-  stateElement.textContent = result.message;
+  stateElement.textContent = result.message ? t(result.message) : t(result.status === "busy" ? "別の送信が進行中です。少し待って再試行してください。" : "受領を確認できません。結果は保持しています。");
 }
 
 async function loadRankingInto(selector) {
@@ -913,31 +978,36 @@ async function loadRankingInto(selector) {
   if (!box) return;
 
   if (!isRankingEnabled()) {
-    box.innerHTML = `<div class="rank-empty">テスト中のためランキングを停止しています</div>`;
+    box.innerHTML = `<div class="rank-empty">${escapeHtml(t("テスト中のためランキングを停止しています"))}</div>`;
     return;
   }
 
   if (!isConfigured()) {
-    box.innerHTML = `<div class="rank-empty">ランキングは未設定です</div>`;
+    box.innerHTML = `<div class="rank-empty">${escapeHtml(t("ランキングは未設定です"))}</div>`;
     return;
   }
 
-  box.innerHTML = `<div class="rank-empty">読み込み中…</div>`;
+  box.innerHTML = `<div class="rank-empty">${escapeHtml(t("読み込み中…"))}</div>`;
   const requestId = (rankingRequestIds.get(selector) || 0) + 1;
   rankingRequestIds.set(selector, requestId);
-  const result = await fetchBestRanking(10);
+  const result = await fetchBestRanking(30);
   if (rankingRequestIds.get(selector) !== requestId) return;
 
   if (result.status === "error") {
-    box.innerHTML = `<div class="rank-empty">公式ランキングは公開準備中です</div>`;
+    box.innerHTML = `<div class="rank-empty">${escapeHtml(t("ランキングを読み込めませんでした。"))}</div>`;
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.textContent = t("再試行");
+    retry.onclick = () => loadRankingInto(selector);
+    box.append(retry);
     return;
   }
   if (result.status === "not_configured") {
-    box.innerHTML = `<div class="rank-empty">ランキングは未設定です</div>`;
+    box.innerHTML = `<div class="rank-empty">${escapeHtml(t("ランキングは未設定です"))}</div>`;
     return;
   }
   if (result.status === "empty") {
-    box.innerHTML = `<div class="rank-empty">まだランキングがありません</div>`;
+    box.innerHTML = `<div class="rank-empty">${escapeHtml(t("まだランキングがありません"))}</div>`;
     return;
   }
 
@@ -945,13 +1015,13 @@ async function loadRankingInto(selector) {
     .map((row) => {
       const first =
         row.firstScore != null
-          ? `<span class="first">初回 ${formatCentiseconds(row.firstScore)}秒</span>`
+          ? `<span class="first">${escapeHtml(t("初回 {time}秒",{time:formatCentiseconds(row.firstScore)}))}</span>`
           : "";
       return `
         <div class="rank-row">
           <span class="pos">${escapeHtml(row.rank)}</span>
           <span class="name">${escapeHtml(row.playerName)}${first}</span>
-          <span class="sc">${formatCentiseconds(row.bestScore)}秒</span>
+          <span class="sc">${escapeHtml(t("{time}秒",{time:formatCentiseconds(row.bestScore)}))}</span>
         </div>`;
     })
     .join("");
@@ -966,20 +1036,29 @@ function escapeHtml(value) {
 }
 
 async function shareText(text) {
+  const intent = new URL('https://x.com/intent/post');
+  intent.searchParams.set('text', text);
   try {
-    if (navigator.share) {
-      await navigator.share({ text, title: "トマトオク" });
-      return;
-    }
-  } catch (error) {
-    if (error && error.name === "AbortError") return;
-  }
-
+    const popup = window.open(intent.href, '_blank');
+    if (popup) { popup.opener = null; showToast(t('Xの投稿画面を開きました')); return; }
+  } catch (_) { /* Fall through to copying. */ }
   try {
     await navigator.clipboard.writeText(text);
-    showToast("シェア文をコピーしました");
+    showToast(t("シェア文をコピーしました"));
   } catch (_) {
-    showToast("シェア文をコピーできませんでした");
+    const fallback = document.createElement('textarea');
+    fallback.readOnly = true;
+    fallback.value = text;
+    fallback.setAttribute('aria-label', t('シェア文'));
+    fallback.style.cssText = 'width:100%;min-height:6em;font-size:16px';
+    const old = document.getElementById('share-fallback');
+    old?.remove();
+    fallback.id = 'share-fallback';
+    const button = document.querySelector('#result-share-btn');
+    const host = button && button.getClientRects().length ? button.parentElement : document.querySelector('#home-share-btn').parentElement;
+    host.append(fallback);
+    fallback.focus(); fallback.select();
+    showToast(t("シェア文を選択してコピーできます"));
   }
 }
 
@@ -1006,7 +1085,7 @@ function vibrate(pattern) {
 function initGameControls() {
   $("#hint-btn").addEventListener("click", onHint);
   $("#quit-btn").addEventListener("click", () => {
-    if (confirm("ホームに戻りますか?(現在のプレイは記録されません)")) {
+    if (confirm(t("ホームに戻りますか?(現在のプレイは記録されません)"))) {
       cancelActivePlay({ goHome: true });
     }
   });
@@ -1030,12 +1109,14 @@ function boot() {
     initHome();
     initGameControls();
     initResultControls();
+    recoveryView=createRecoveryView({host:$("#saved-results"),outbox:resultOutbox,submit:sendSavedSnapshot,t,formatTime:formatCentiseconds});
+    void refreshRecovery();
     setHomePreparing(false);
     setPhase(PHASE.HOME);
   } catch (error) {
     const banner = document.createElement("div");
     banner.className = "error-banner";
-    banner.textContent = "初期化に失敗しました。ページを再読み込みしてください。";
+    banner.textContent = t("初期化に失敗しました。ページを再読み込みしてください。");
     document.body.prepend(banner);
     console.error(error);
   }

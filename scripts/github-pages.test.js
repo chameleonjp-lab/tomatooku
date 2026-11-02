@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SUPPORTED_LANGUAGES } from "../src/i18n.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +28,14 @@ try {
   const files = prepareGitHubPages({ rootDir: ROOT, outputDir: OUTPUT });
   assert.ok(files.includes("index.html"));
   assert.ok(files.includes("src/main.js"));
+  for (const {id} of SUPPORTED_LANGUAGES) {
+    const catalogPath = "src/locales/" + id + ".js";
+    assert.ok(files.includes(catalogPath), "public bundle contains " + catalogPath);
+    assert.equal(fs.readFileSync(path.join(OUTPUT,catalogPath),"utf8"), read(catalogPath));
+  }
+  for (const modulePath of ["src/i18n.js","src/i18n-dom.js","src/locale-runtime.js","src/translations.js"]) {
+    assert.ok(files.includes(modulePath), "public bundle contains " + modulePath);
+  }
   assert.ok(files.includes("src/styles.css"));
   assert.ok(files.includes("src/accessibility.css"));
   assert.ok(files.includes("generated/variable-stage-bank-v2.json"));

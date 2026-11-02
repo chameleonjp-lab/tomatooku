@@ -148,23 +148,31 @@ async function main() {
   const server = await startServer();
   const browser = await launchBrowser();
   const context = await browser.newContext({
+    locale: "ja-JP",
     viewport: { width: 320, height: 568 },
     deviceScaleFactor: 2,
     isMobile: true,
     hasTouch: true,
   });
   const page = await context.newPage();
+  // No request may escape to production; more specific routes below are local mocks.
+  await page.route("**/*", route => new URL(route.request().url()).hostname === "localhost"
+    ? route.continue() : route.abort());
   await page.addInitScript(() => {
-    Object.defineProperty(navigator, "share", {
-      configurable: true,
-      value: async (data) => {
-        window.__lastShareData = data;
-      },
-    });
+    window.open = (value) => {
+      const intent = new URL(value);
+      if (intent.origin !== "https://x.com" || intent.pathname !== "/intent/post") throw new Error("Unexpected share URL");
+      window.__lastShareData = { text: intent.searchParams.get("text") };
+      return { opener: null };
+    };
   });
   let rpcRequests = 0;
   let competitionRequests = 0;
   let submitRequests = 0;
+  let finishFailure = false;
+  const finishBodies = [];
+  let rankingHold = null;
+  let rankingHttpFailure = false;
 
   await page.route("**/rest/v1/rpc/**", async (route) => {
     rpcRequests++;
@@ -174,9 +182,10 @@ async function main() {
       body.p_game_slug === "tomatoku_competition_v1",
       "ランキング取得は新世代slugだけを使う"
     );
-    ok(body.p_limit === 10, "結果ランキングは上位10名を取得");
+    ok(body.p_limit === 30, "結果ランキングは上位30名を取得");
+    if (rankingHold) await rankingHold;
     await route.fulfill({
-      status: 200,
+      status: rankingHttpFailure ? 503 : 200,
       contentType: "application/json",
       body: "[]",
     });
@@ -195,6 +204,8 @@ async function main() {
       responseBody = { accepted: true, stageIds: officialStageIds };
     } else if (body.action === "finish") {
       submitRequests++;
+      finishBodies.push(JSON.stringify(body));
+      if(finishFailure){await route.fulfill({status:503,contentType:"application/json",body:"{}"});return;}
       const verified = validateTranscript({
         stages: officialStages,
         transcript: body.transcript,
@@ -203,6 +214,7 @@ async function main() {
       ok(verified.accepted === true, "操作記録をサーバー規則で再現");
       responseBody = {
         accepted: true,
+        under_review: false,
         score: verified.score,
         result_first_score: verified.score,
         result_best_score: verified.score,
@@ -261,26 +273,56 @@ async function main() {
     "320pxで横スクロールなし"
   );
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false" &&
-      (await page.textContent("#sound-toggle-label")).trim() === "なし",
-    "効果音は初回なし"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true" &&
+      (await page.textContent("#sound-toggle-label")).trim() === "あり",
+    "効果音は初回あり"
   );
   await page.click("#sound-toggle");
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true" &&
-      (await page.textContent("#sound-toggle-label")).trim() === "あり",
-    "効果音を任意でありに変更"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false" &&
+      (await page.textContent("#sound-toggle-label")).trim() === "なし",
+    "効果音を任意でなしに変更"
   );
   ok(
     (await page.evaluate(() => localStorage.getItem("tomatoku.soundEnabled"))) ===
-      "true",
+      "false",
     "効果音の選択を端末へ保存"
   );
   await page.click("#sound-toggle");
   ok(
-    (await page.getAttribute("#sound-toggle", "aria-checked")) === "false",
-    "効果音をなしへ戻せる"
+    (await page.getAttribute("#sound-toggle", "aria-checked")) === "true",
+    "効果音をありへ戻せる"
   );
+
+  ok(await page.inputValue("#sound-volume") === "100", "初回音量は旧基準と同じ100%");
+  await page.locator("#sound-volume").focus();
+  await page.locator("#sound-volume").press("Home");
+  ok(await page.evaluate(() => localStorage.getItem("tomatoku.soundVolume")) === "0", "音量0を保存");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.inputValue("#sound-volume") === "0", "再読込後も音量0");
+  ok((await page.textContent("#sound-volume-value")).trim() === "0%", "表示値も音量0");
+  await page.click("#sound-toggle");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.getAttribute("#sound-toggle", "aria-checked") === "false", "保存OFFを再読込で保持");
+  await page.locator("#sound-volume").evaluate((input) => { input.value = "50"; input.dispatchEvent(new Event("input", { bubbles: true })); });
+  ok(await page.getAttribute("#sound-toggle", "aria-checked") === "false", "slider変更だけではONにしない");
+  await page.click("#sound-toggle");
+
+  const beforeLanguageRequests = competitionRequests;
+  for (const id of ['ja','en','es','pt-BR','zh-Hans','fr','de','ko','ru','it','zh-Hant','id','tr','vi','th']) {
+    await page.selectOption("#language-select", id);
+    ok(await page.getAttribute("html","lang") === id, "表示言語 " + id);
+    ok(await page.evaluate(() => localStorage.getItem("tomatoku.language.v1")) === id, "言語保存 " + id);
+    ok((await page.textContent("#start-official-btn")).trim().length > 0, "開始本文 " + id);
+    ok(await page.$eval("#language-select",element=>element.getBoundingClientRect().height>=44), "言語選択のタップ領域 " + id);
+    ok(await page.$eval("#start-official-btn",element=>element.scrollWidth<=element.clientWidth+1), "長い開始文の横欠けなし " + id);
+  }
+  ok(competitionRequests === beforeLanguageRequests, "言語変更でプレイ発行しない");
+  await page.selectOption("#language-select", "en");
+  await page.reload({ waitUntil: "networkidle" });
+  ok(await page.getAttribute("html","lang") === "en", "保存選択はブラウザjaより優先");
+  ok((await page.textContent("#howto-btn")).trim() === "How to play", "英語本文");
+  await page.selectOption("#language-select", "ja");
 
   await page.click("#howto-btn");
   await page.waitForSelector("#howto-modal.open");
@@ -410,8 +452,37 @@ async function main() {
     () => !document.querySelector("#tutorial-modal").classList.contains("open")
   );
 
+  await page.fill("#player-name", "IME確認");
+  const beforeImeRequests = competitionRequests;
+  const imeDiagnostic = await page.locator("#player-name").evaluate(input => {
+    const event = new KeyboardEvent("keydown", {key:"Enter",code:"Enter",keyCode:229,which:229,isComposing:false,bubbles:true,cancelable:true});
+    const constructedKeyCode = event.keyCode;
+    // WebKit may ignore this deprecated constructor option. Model the actual
+    // Safari IME guard value explicitly; this is not a real-device IME test.
+    Object.defineProperty(event,"keyCode",{get:()=>229});
+    Object.defineProperty(event,"which",{get:()=>229});
+    input.dispatchEvent(event);
+    return {constructedKeyCode,deliveredKeyCode:event.keyCode,isComposing:event.isComposing,inputDisabled:input.disabled,value:input.value,busy:document.querySelector("#home-card").getAttribute("aria-busy")};
+  });
+  console.log("IME event diagnostic", JSON.stringify(imeDiagnostic));
+  ok(imeDiagnostic.deliveredKeyCode===229 && imeDiagnostic.isComposing===false, "IME終端イベント229を実handlerへ渡す");
+  ok(!imeDiagnostic.inputDisabled && imeDiagnostic.busy==="false", "IME終端で準備状態にしない");
+  if(imeDiagnostic.inputDisabled || imeDiagnostic.busy!=="false") throw new Error("IME unexpectedly prepared a play: "+JSON.stringify(imeDiagnostic));
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  ok(competitionRequests === beforeImeRequests && await page.isVisible("#screen-home") && await page.locator("#player-name").isEnabled() && await page.locator("#start-official-btn").isEnabled() && await page.locator("#home-card").getAttribute("aria-busy")==="false", "Safari IME終端Enterで開始しない");
+  await page.fill("#player-name", "");
+  ok(await page.inputValue("#player-name")==="", "名前必須検査の入力を実際に空欄へ戻す");
   await page.click("#start-official-btn");
   ok((await page.textContent("#name-error")).length > 0, "名前必須");
+  const beforeErrorRefreshRequests = competitionRequests;
+  await page.fill("#player-name", "草稿 Draft");
+  await page.selectOption("#language-select", "en");
+  ok((await page.textContent("#name-error")).trim() === "Please enter a player name", "既存エラーも英語へ再描画");
+  ok(await page.inputValue("#player-name") === "草稿 Draft", "言語変更で名前草稿を変えない");
+  ok(competitionRequests === beforeErrorRefreshRequests, "エラー翻訳でプレイを発行しない");
+  await page.selectOption("#language-select", "ja");
+  ok((await page.textContent("#name-error")).trim() === "プレイヤー名を入力してください", "エラーの原因を保って日本語へ戻す");
+
 
   await page.fill("#player-name", "\u200B");
   await page.click("#start-official-btn");
@@ -456,6 +527,12 @@ async function main() {
   );
   ok((await page.textContent("#countdown-mode")).includes("公式"), "公式表示");
   ok(!(await page.isVisible("#screen-game")), "カウントダウン中は盤面非表示");
+  const beforeForbiddenSwitch = competitionRequests;
+  ok(await page.isDisabled("#language-select"), "進行中の言語選択は無効");
+  await page.locator("#language-select").evaluate(select => {select.value="en";select.dispatchEvent(new Event("change",{bubbles:true}));});
+  ok(await page.getAttribute("html","lang") === "ja", "進行中の変更要求は保留");
+  ok(competitionRequests === beforeForbiddenSwitch, "変更要求で問題/送信を再発行しない");
+
 
   await page.waitForFunction(
     () => document.querySelector("#countdown-value")?.textContent.trim() === "スタート"
@@ -487,6 +564,14 @@ async function main() {
   await fastFirst.tap();
   await page.waitForTimeout(80);
   await fastSecond.tap();
+  ok(await page.evaluate(() => {
+    const board=document.querySelector("#board"), cell=board.firstElementChild;
+    const before=board.innerHTML, time=document.querySelector("#hud-time").textContent;
+    const select=document.querySelector("#language-select");
+    select.value="fr"; select.dispatchEvent(new Event("change",{bubbles:true}));
+    return board.firstElementChild===cell && board.innerHTML===before && document.querySelector("#hud-time").textContent===time && document.documentElement.lang==="ja";
+  }), "プレイ途中の言語要求で配置/盤面/時間をリセットしない");
+
   ok(
     await page.evaluate(
       ([firstCol, secondCol]) => {
@@ -581,8 +666,8 @@ async function main() {
   );
   ok(await page.isVisible("#result-ranking"), "結果画面下部にランキングを表示");
   ok(
-    (await page.locator("#result-ranking .rank-row").count()) <= 10,
-    "結果ランキングは上位10名まで"
+    (await page.locator("#result-ranking .rank-row").count()) <= 30,
+    "結果ランキングは上位30名まで"
   );
   ok(await page.isVisible("#result-detail-ranking-link"), "詳細ランキングを表示");
   ok(submitRequests === 1, "公式1プレイの送信リクエスト1件");
@@ -608,7 +693,7 @@ async function main() {
   );
   ok(!resultShareText.includes("実時間"), "公式結果のシェア文に実時間を含めない");
   ok(
-    resultShareLines[2] === `http://localhost:${PORT}/`,
+    resultShareLines[2] === "https://chameleonjp-lab.github.io/tomatooku/",
     "公式結果のシェア文末尾にゲームURL"
   );
 
@@ -624,12 +709,70 @@ async function main() {
     "練習データ属性"
   );
 
-  await page.evaluate(() => {
-    window.confirm = () => true;
-  });
+  const beforePracticeSubmissions = submitRequests;
+  const beforePracticeCompetition = competitionRequests;
+  rankingHttpFailure = true;
+  let releasePracticeRanking;
+  rankingHold = new Promise(resolve => { releasePracticeRanking = resolve; });
+  for (let stageIndex=0; stageIndex<3; stageIndex++) {
+    await solveCurrentStage(page);
+    if (stageIndex<2) await page.waitForFunction(next => document.querySelector("#hud-stage")?.textContent===next+"/3" && document.querySelector("#screen-game")?.classList.contains("active") && document.querySelector("#board .cell") && !document.querySelector("#board .cell").disabled,stageIndex+2,{timeout:6000});
+  }
+  await page.waitForSelector("#screen-result.active");
+  await page.waitForFunction(() => document.querySelector("#result-ranking")?.textContent.includes("読み込み中"));
+  ok(await page.isVisible("#result-detail-ranking-link"), "練習結果も公式ランキング詳細へ移動できる");
+  ok((await page.getAttribute("#result-detail-ranking-link","href")).endsWith("ranking.html?game=tomatoku_competition_v1"), "練習の閲覧先は既存公式詳細slug");
+  rankingHold = null; releasePracticeRanking();
+  await page.waitForSelector("#result-ranking button");
+  ok((await page.textContent("#result-ranking")).includes("読み込めません"), "練習結果でも取得失敗を表示");
+  rankingHttpFailure = false;
+  await page.click("#result-ranking button");
+  await page.waitForFunction(() => document.querySelector("#result-ranking")?.textContent.includes("まだランキングがありません"));
+  ok((await page.textContent("#submit-state")).includes("ランキング対象外"), "練習を公式登録扱いにしない");
+  ok(submitRequests===beforePracticeSubmissions && competitionRequests===beforePracticeCompetition, "閲覧/失敗/再試行で練習結果を送信しない");
+  await page.click("#home-btn");
+  await page.waitForSelector("#screen-home.active");
+  await page.click("#start-practice-btn"); await waitForPlaying(page);
+  await page.evaluate(() => { window.confirm = () => true; });
   await page.click("#quit-btn");
   await page.waitForSelector("#screen-home.active");
   ok(await page.isVisible("#screen-home"), "練習からホームへ戻れる");
+  // Real final-clear -> failed finish -> page reload -> explicit same-body retry.
+  finishFailure=true;
+  await page.click("#start-official-btn"); await waitForPlaying(page);
+  for(let stageIndex=0;stageIndex<3;stageIndex++){
+    await solveCurrentStage(page);
+    if(stageIndex<2) await page.waitForFunction(next => document.querySelector("#hud-stage")?.textContent===next+"/3" && document.querySelector("#screen-game")?.classList.contains("active") && document.querySelector("#board .cell") && !document.querySelector("#board .cell").disabled,stageIndex+2,{timeout:6000});
+  }
+  await page.waitForSelector("#screen-result.active");
+  await page.waitForFunction(()=>document.querySelector("#submit-state")?.textContent.includes("この端末に保存済み") && document.querySelector("#submit-state button"));
+  const failedBody=finishBodies.at(-1), failedCount=submitRequests;
+  const failedScore=await page.textContent("#result-score");
+  await page.reload({waitUntil:"networkidle"});
+  await page.locator(".result-recovery summary").click();
+  await page.waitForSelector("#saved-results button");
+  ok(submitRequests===failedCount,"再読込復元は自動再送しない");
+  ok((await page.textContent("#saved-results")).includes(failedScore),"確定結果を再読込後も復元");
+  await page.fill("#player-name","別の現在名");
+  finishFailure=false;
+  await page.locator("#saved-results button").click();
+  await page.waitForFunction(()=>document.querySelectorAll("#saved-results button").length===0);
+  ok(submitRequests===failedCount+1,"復元結果を本人操作で1回再送");
+  ok(finishBodies.at(-1)===failedBody,"名前変更/再読込後も同token/同記録/同elapsed");
+  await page.reload({waitUntil:"networkidle"});
+  await page.locator(".result-recovery summary").click();
+  await page.waitForSelector("#saved-results article");
+  ok((await page.locator("#saved-results button").count())===0,"受領保存後は再読込しても再送操作なし");
+  ok(submitRequests===failedCount+1,"受領済み結果は再送されない");
+  const isolated=await page.evaluate(async()=>{
+    const {createIndexedResultStorage,createResultOutbox}=await import('./src/result-outbox.js');
+    const storage=createIndexedResultStorage();
+    // Preserve rather than overwrite malformed entries; no score request is involved.
+    await storage.mutate('mock-corrupt',()=>({id:'mock-corrupt',schema:999}));
+    const q=createResultOutbox({storage});const report=await q.list();
+    return report.quarantined===1 && (await storage.all()).some(r=>r.id==='mock-corrupt'&&r.schema===999);
+  });
+  ok(isolated,"実IndexedDBの破損レコードを無削除で隔離");
   ok(pageErrors.length === 0, `未捕捉エラーなし (${pageErrors.join("; ")})`);
 
   await browser.close();

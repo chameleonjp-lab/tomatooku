@@ -36,3 +36,27 @@ const corruptDisplay=adapter();corruptDisplay.rows.set('test-play',{schema:1,id:
 assert.equal((await createResultOutbox({storage:corruptDisplay}).list()).quarantined,1,'invalid display breakdown is quarantined');
 const nonJson=adapter();nonJson.rows.set('test-play',{schema:1,id:'test-play',snapshot:snapshot(),state:'pending',leaseUntil:0,receipt:null,extra:1n});
 assert.equal((await createResultOutbox({storage:nonJson}).list()).quarantined,1,'non-JSON corrupt record is isolated without crashing results');
+
+
+// A best result cannot be worse than the preserved first result (ascending score).
+const conflictDb=adapter();const conflictQ=createResultOutbox({storage:conflictDb});await conflictQ.save(snapshot());
+const originalSnapshot=JSON.stringify(conflictDb.rows.get('test-play').snapshot);
+const malformed={...accepted,firstScore:Math.max(0,accepted.score-2),bestScore:accepted.score-1,isFirstPlay:false,isNewBest:false,playCount:3};
+const conflictAttempt=await conflictQ.attempt('test-play',async()=>malformed);
+assert.equal(conflictAttempt.result.status,'error');
+assert.notEqual(conflictDb.rows.get('test-play').state,'accepted');
+assert.equal(JSON.stringify(conflictDb.rows.get('test-play').snapshot),originalSnapshot);
+const conflictReopen=createResultOutbox({storage:conflictDb});
+assert.equal((await conflictReopen.attempt('test-play',async body=>{assert.equal(JSON.stringify(body),originalSnapshot);return accepted;})).result.status,'ok');
+for(const aggregates of [
+  {firstScore:0,bestScore:0},
+  {firstScore:-2147483648,bestScore:-2147483648,playCount:2147483647},
+  {underReview:true,firstScore:null,bestScore:null,playCount:null,isFirstPlay:false,isNewBest:false}
+]) {
+  const legalDb=adapter();const legalQ=createResultOutbox({storage:legalDb});await legalQ.save(snapshot());
+  assert.equal((await legalQ.attempt('test-play',async()=>({...accepted,...aggregates}))).result.status,'ok');
+}
+const historic=adapter();historic.rows.set('test-play',{schema:1,id:'test-play',snapshot:snapshot(),state:'accepted',leaseUntil:0,receipt:malformed});
+const historicBefore=structuredClone(historic.rows.get('test-play'));
+assert.equal((await createResultOutbox({storage:historic}).list()).quarantined,1);
+assert.deepEqual(historic.rows.get('test-play'),historicBefore);

@@ -25,7 +25,7 @@ function validReceipt(r,s) {
   return r?.status === 'ok' && r.accepted === true && r.score === s.display.score && int4(r.score) &&
     typeof r.underReview === 'boolean' && typeof r.isFirstPlay === 'boolean' && typeof r.isNewBest === 'boolean' &&
     (r.underReview ? r.firstScore === null && r.bestScore === null && r.playCount === null && !r.isFirstPlay && !r.isNewBest :
-      int4(r.firstScore) && int4(r.bestScore) && r.bestScore <= r.score && int4(r.playCount) && r.playCount >= 1);
+      int4(r.firstScore) && int4(r.bestScore) && r.bestScore <= r.score && r.bestScore <= r.firstScore && int4(r.playCount) && r.playCount >= 1);
 }
 function validRecord(r) {
   return serializable(r) && r?.schema === 1 && r.id === r.snapshot?.playId && validSnapshot(r.snapshot) &&
@@ -140,3 +140,4 @@ export function createResultOutbox({storage=createIndexedResultStorage(),now=Dat
   }
   return {save,list,attempt};
 }
+

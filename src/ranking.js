@@ -135,7 +135,7 @@ function validFinishReceipt(row) {
       row.result_play_count === null && !row.is_first_play && !row.is_new_best;
   }
   return int4(row.result_first_score) && int4(row.result_best_score) &&
-    row.result_best_score <= row.score && int4(row.result_play_count) && row.result_play_count >= 1;
+    row.result_best_score <= row.score && row.result_best_score <= row.result_first_score && int4(row.result_play_count) && row.result_play_count >= 1;
 }
 
 export function createRankingClient(config = CONFIG, dependencies = {}) {
@@ -484,3 +484,4 @@ export async function fetchRanking(limit = 10) {
 export function resetSubmission() {
   // playId単位で管理するため、画面遷移では解除しない。
 }
+

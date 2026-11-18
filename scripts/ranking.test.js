@@ -323,6 +323,7 @@ await test("incomplete / malformed Edge receipts never succeed", async () => {
     under_review: [null, "false"], is_first_play: [null, 1], is_new_best: [null, "true"],
   })) for (const value of values) invalid.push({ ...ACK, [key]: value });
   invalid.push({ ...ACK, under_review: true });
+  invalid.push({ ...ACK, result_first_score: 4700, result_best_score: 4800 });
   for (const receipt of invalid) {
     const client = createRankingClient(CONFIG, { fetch: async () => jsonResponse(receipt) });
     assert.equal((await client.submitScore(ARGS)).status, "error", JSON.stringify(receipt));
@@ -332,8 +333,8 @@ await test("review-pending null aggregates and signed historical first remain le
   for (const receipt of [
     { ...ACK, under_review: true, result_first_score: null, result_best_score: null,
       result_play_count: null, is_first_play: false, is_new_best: false },
-    { ...ACK, result_first_score: 0 },
-    { ...ACK, result_first_score: -2147483648, result_play_count: 2147483647 },
+    { ...ACK, result_first_score: 0, result_best_score: 0 },
+    { ...ACK, result_first_score: -2147483648, result_best_score: -2147483648, result_play_count: 2147483647 },
   ]) {
     const client = createRankingClient(CONFIG, { fetch: async () => jsonResponse(receipt) });
     assert.equal((await client.submitScore(ARGS)).status, "ok");
@@ -372,3 +373,4 @@ await test("failed finish retries only identical snapshot, coalesces in-flight a
 });
 
 console.log(`\n==== RANKING TEST RESULT: PASS=${pass} FAIL=0 ====`);
+
